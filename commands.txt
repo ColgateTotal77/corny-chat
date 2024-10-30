@@ -1,0 +1,23 @@
+
+/send_to <chat_id> <message_without_spaces>
+
+/msg_to <contact_id> <message_without_spaces>
+
+/create_chat <chat_name_without_spaces>
+
+/see_all_chats
+*may give weird output
+
+/see_all_users
+
+/add_contact <user_id>
+
+/see_my_contacts
+
+/join_chat <chat_id>
+
+/add_contact_to_chat <contact_id> <chat_id>
+
+/exit
+
+
