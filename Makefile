@@ -23,7 +23,7 @@ LIBRARY = libmx/libmx.a
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): $(LIBRARY) $(SERVER_OBJFILES)
-	${CC} ${CFLAG} -pthread ${SERVER_OBJFILES} -o ${SERVER} $(LIBRARY)
+	${CC} ${CFLAG} -pthread ${SERVER_OBJFILES} -o ${SERVER} $(LIBRARY) -lsqlite3
 
 $(CLIENT): $(LIBRARY) $(CLIENT_OBJFILES)
 	${CC} ${CFLAG} -pthread ${CLIENT_OBJFILES} -o ${CLIENT} $(LIBRARY)
