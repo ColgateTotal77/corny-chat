@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sqlite3.h>
 
 #include "hashTable.h"
 
@@ -46,8 +47,10 @@ typedef struct {
     ht_t *chats;
     pthread_mutex_t *clients_mutex;
     pthread_mutex_t *chats_mutex;
+    pthread_mutex_t *db_mutex;
     int *clients_count;
     int *chat_uid;
+    sqlite3* db;
 } call_data_t;
 
 

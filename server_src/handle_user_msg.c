@@ -254,26 +254,9 @@ void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t *call_
 
 
 void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data) {
-
-
-
-    sqlite3 *db; //connection variable
-    int rc = sqlite3_open("db/uchat_db.db", &db); //open DB connection
-    //check is connect successful
-    if (rc) {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-    }
-    //add row to DB
-    sql_insert_msg(db, 0, client_msg);
-    sqlite3_close(db);
-
-
-
-
-
-
-
+    pthread_mutex_lock(call_data->db_mutex);
+    sql_insert_msg(call_data->db, 0, client_msg);
+    pthread_mutex_unlock(call_data->db_mutex);
 
     if (bytes_received > 0) {
 		if (strlen(client_msg) <= 0) { return; }

@@ -2,15 +2,6 @@
 
 bool stop_flag;
 
-void str_del_newline(char* arr, int length) {
-    for (int i = 0; i < length; i++) {
-        if (arr[i] == '\n') {
-            arr[i] = '\0';
-            break;
-        }
-    }
-}
-
 void str_overwrite_stdout() {
     printf("%s", "> ");
     fflush(stdout);
@@ -97,16 +88,7 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    printf("Please enter your name: ");
-    char name[32];
-    fgets(name, 32, stdin);
-    str_del_newline(name, strlen(name));
-
-	if (strlen(name) > 32 || strlen(name) < 2){
-		printf("Name must be less than 30 and more than 2 characters.\n");
-		return EXIT_FAILURE;
-	}
-
+    cJSON *json_name_and_password = get_name_password();
     
     int port = atoi(argv[2]);
 
@@ -116,13 +98,21 @@ int main(int argc, char * argv[]) {
     sigaction(SIGINT, &psa, NULL);
     stop_flag = false;
 
-    send(sock, name, strlen(name), 0);
+    char *str_json_name_password = cJSON_Print(json_name_and_password);
+    cJSON_Minify(str_json_name_password);
 
+    send(sock, str_json_name_password, strlen(str_json_name_password), 0);
+
+    free(str_json_name_password);
+
+    cJSON *name_json = cJSON_GetObjectItemCaseSensitive(json_name_and_password, "name");
     
     call_data_t *call_data = (call_data_t *)malloc(sizeof(call_data_t));
     call_data->sockfd = sock;
     call_data->stop_flag = &stop_flag;
-    strcpy(call_data->name, name);
+    strcpy(call_data->name, name_json->valuestring);
+
+    cJSON_Delete(json_name_and_password);
     
     pthread_t send_msg_thread;
     if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {

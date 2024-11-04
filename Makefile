@@ -5,6 +5,7 @@ CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
 # Директории заголовков и библиотеки
 HEADERFILES = ./inc
 LIBRARYDIR = ./libmx
+JSON_C_DIR = ./json-c
 
 # Папки для серверных и клиентских файлов
 SERVER_OBJ = ./server_obj
@@ -22,21 +23,25 @@ CLIENT_OBJFILES := $(patsubst $(CLIENT_SRC)/%.c, $(CLIENT_OBJ)/%.o, $(CLIENT_SRC
 SERVER = server
 CLIENT = client
 LIBRARY = libmx/libmx.a
+JSON_C = json-c/json-c.a
 
 .PHONY: all clean uninstall reinstall $(LIBRARY)
 
 # Компиляция серверного и клиентского приложений
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): $(LIBRARY) $(SERVER_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) -lsqlite3
+$(SERVER): $(LIBRARY) $(JSON_C) $(SERVER_OBJFILES)
+	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) $(JSON_C) -lsqlite3
 
-$(CLIENT): $(LIBRARY) $(CLIENT_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY)
+$(CLIENT): $(LIBRARY) $(JSON_C) $(CLIENT_OBJFILES)
+	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY) $(JSON_C)
 
 # Компиляция библиотеки
 $(LIBRARY):
 	cd $(LIBRARYDIR) && make
+
+$(JSON_C):
+	cd $(JSON_C_DIR) && make
 
 # Правило для создания объектных файлов и нужных подкаталогов
 $(SERVER_OBJ)/%.o: $(SERVER_SRC)/%.c

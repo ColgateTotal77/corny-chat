@@ -13,6 +13,7 @@
 #include <netdb.h> 
 #include <arpa/inet.h>
 #include <stdbool.h>
+#include "cJSON.h"
 #define BUF_SIZE 256
 
 
@@ -24,5 +25,6 @@ typedef struct{
 
 
 int setup_client_socket(char *hostname, int port);
-
+cJSON* get_name_password(void);
+void str_del_newline(char* arr, int length);
 

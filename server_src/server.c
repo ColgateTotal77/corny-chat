@@ -1,12 +1,13 @@
 #include "server.h"
 #include "../libmx/inc/libmx.h"
-
+#include "cJSON.h"
+#include "sql.h"
 
 bool stop_server;
 
 void *handle_client(void *arg) {
     char buff_out[BUF_SIZE];
-	char name[32];
+	char str_json_name_password[BUF_SIZE];
 	int leave_flag = 0;
 	
 	call_data_t *call_data = (call_data_t*)arg;
@@ -14,16 +15,43 @@ void *handle_client(void *arg) {
 	ht_t *clients = call_data->clients;
 	*(call_data->clients_count) = *(call_data->clients_count) + 1;
 
-    if (recv(client_data->sockfd, name, 32, 0) <= 0 || strlen(name) <  2 || strlen(name) >= 32-1) {
-		printf("Didn't enter the name.\n");
+	recv(client_data->sockfd, str_json_name_password, BUF_SIZE, 0);
+	cJSON *json_name_password = cJSON_Parse(str_json_name_password);
+
+	cJSON *name = cJSON_GetObjectItemCaseSensitive(json_name_password, "name");
+	cJSON *password = cJSON_GetObjectItemCaseSensitive(json_name_password, "password");
+
+
+    if (strlen(name->valuestring) <  2 
+	    || strlen(name->valuestring) >= 32-1 
+		|| strlen(password->valuestring) < 8) {
+		printf("Invalid arguments.\n");
 		leave_flag = 1;
 	}
-    else {
-		strcpy(client_data->user_data->name, name);
+	
+	int res = sql_is_valid_user(call_data->db, name->valuestring, password->valuestring);
+
+
+	if (res == 2) {
+        send_message_to_user(call_data, "Invalid login input\n");
+		leave_flag = 1;
+	}
+	else if (res == 0) {
+		strcpy(client_data->user_data->name, name->valuestring);
 		sprintf(buff_out, "%s has joined\n", client_data->user_data->name);
-		printf("%s", buff_out);
+		// add new user here
+		sql_insert_user(call_data->db, name->valuestring, password->valuestring);
+	    printf("%s", buff_out);
+		send_message_to_another_ids(call_data, buff_out);
+		
+	}
+	else if (res == 1) {
+		strcpy(client_data->user_data->name, name->valuestring);
+		sprintf(buff_out, "%s has returned\n", client_data->user_data->name);
+	    printf("%s", buff_out);
 		send_message_to_another_ids(call_data, buff_out);
 	}
+	cJSON_Delete(json_name_password);
 
     bzero(buff_out, BUF_SIZE);
 	
@@ -70,6 +98,7 @@ int main(int argc, char * argv[]) {
     
     pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t chats_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_t db_mutex = PTHREAD_MUTEX_INITIALIZER;
     int clients_count = 0;
     int uid = 0;
 	int chat_uid = 0;
@@ -90,6 +119,16 @@ int main(int argc, char * argv[]) {
     strcpy(odd_chat->name, "odd_chat");
 
 	ht_set(chats, odd_chat->chat_id, (void*)odd_chat);
+
+	sqlite3 *db; //connection variable
+
+	int rc = sqlite3_open("db/uchat_db.db", &db); //open DB connection
+    //check is connect successful
+    if (rc) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+    }
+	printf("connection to db opened\n");
 
     while (!stop_server) {
         
@@ -124,16 +163,23 @@ int main(int argc, char * argv[]) {
 		call_data->chats = chats;
 		call_data->clients_mutex = &clients_mutex;
 		call_data->chats_mutex = &chats_mutex;
+		call_data->db_mutex = &db_mutex;
 		call_data->clients_count = &clients_count;
 		call_data->chat_uid = &chat_uid;
+		call_data->db = db;
+		
 		
 
         if (user_data->user_id % 2 != 0) {
             append_to_intarr(&odd_chat->users_id, &odd_chat->users_count, user_data->user_id);
         }
 
+		
+
 		ht_set(clients, user_data->user_id, (void*)client_data);
 
+		
+        
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
 
 		/* Reduce CPU usage */
@@ -142,6 +188,8 @@ int main(int argc, char * argv[]) {
 
 	printf("Gracefully stoping\n");
 	fflush(stdout);
+
+	sqlite3_close(db);
 
     int chats_count = 0;
 	entry_t **chat_hash_slots = ht_dump(chats, &chats_count);
