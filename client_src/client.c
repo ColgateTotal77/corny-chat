@@ -11,7 +11,7 @@ void str_del_newline(char* arr, int length) {
     }
 }
 
-void str_overwrite_stdout() {
+void str_overwrite_stdout(void) {
     printf("%s", "> ");
     fflush(stdout);
 }

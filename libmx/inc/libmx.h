@@ -33,8 +33,8 @@ int mx_strncmp(const char *s1, const char *s2, int n);
 void *mx_memcpy(void *restrict dst, const void *restrict src, size_t n);
 void *mx_realloc(void *ptr, size_t size);
 
-
-
+int mx_check_space (const char c);
+char *mx_strjoin(const char *s1, const char *s2);
 
 
 
