@@ -35,6 +35,8 @@ int select_user_by_id(sqlite3 *db, s_user *user, int id);
 void init_user(s_user *usr, const int id, const char *created_at, const char *login,
                const char *nickname,
                const int role_id, const bool active);
+int get_usr_qty(sqlite3 *db);
+s_user *select_all_users(sqlite3 *db);
 
 
 #endif //SQL_H
