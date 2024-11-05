@@ -15,21 +15,30 @@
  * @return success or error code
  */
 int insert_user(sqlite3 *db, user_create usr) {
-    char *err_msg = NULL; // error massage pointer
-    char sql_buf[256]; // buffer SQL-query
-    snprintf(sql_buf, sizeof(sql_buf), // prepare query
-             "INSERT INTO users (login, password, nickname, roleId) VALUES ('%s', '%s', '%s', '%d');",
-             usr.login, usr.password, usr.nickname, usr.role_id);
+    const char *sql = "INSERT INTO users (login, password, nickname, roleId) VALUES (?, ?, ?, ?);";
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-    int rc = sqlite3_exec(db, sql_buf, 0, 0, &err_msg); // execute query
-
-    // check is query successful
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", err_msg); // output error message
-        sqlite3_free(err_msg); // free error message memory
-        return rc; // return error code
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return rc;
     }
 
-    printf("User '%s' created successfully.\n", usr.login); // output success message
-    return SQLITE_OK; //return success code
+    // Привязка параметров
+    sqlite3_bind_text(stmt, 1, usr.login, -1, SQLITE_STATIC);           // Привязываем логин
+    sqlite3_bind_blob(stmt, 2, usr.password, sizeof(usr.password), SQLITE_STATIC); // Привязываем хеш пароля
+    sqlite3_bind_text(stmt, 3, usr.nickname, -1, SQLITE_STATIC);        // Привязываем никнейм
+    sqlite3_bind_int(stmt, 4, usr.role_id);                             // Привязываем роль
+
+    // Выполнение подготовленного выражения
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return rc;
+    }
+
+    sqlite3_finalize(stmt);
+    printf("User '%s' created successfully.\n", usr.login);
+    return SQLITE_OK;
 }
