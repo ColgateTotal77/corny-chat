@@ -1,7 +1,7 @@
 # Компилятор и флаги
 CC = clang
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
-
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE 
+LDFLAGS = -lssl -lcrypto
 # Директории заголовков и библиотеки
 HEADERFILES = ./inc
 LIBRARYDIR = ./libmx
@@ -29,10 +29,10 @@ LIBRARY = libmx/libmx.a
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): $(LIBRARY) $(SERVER_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) -lsqlite3
+	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) $(LDFLAGS) -lsqlite3
 
 $(CLIENT): $(LIBRARY) $(CLIENT_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY)
+	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY) $(LDFLAGS)
 
 # Компиляция библиотеки
 $(LIBRARY):
