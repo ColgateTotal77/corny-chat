@@ -44,14 +44,14 @@ int sql_is_valid_user(sqlite3 *db, char *name, char *password) {
     snprintf(sql_buf, sizeof(sql_buf), "SELECT * FROM users WHERE login LIKE '%s';", name);
 
     callback_data_t *callback_data = (callback_data_t*)malloc(sizeof(callback_data_t));
-    printf("here\n");
-    fflush(stdout);
+    
     callback_data->name = &name;
     callback_data->password = &password;
     int search_result = 0;
     callback_data->search_result = &search_result;
 
-    
+    printf("here\n");
+    fflush(stdout);
 
     int rc = sqlite3_exec(db, sql_buf, callback, callback_data, &err_msg);
 

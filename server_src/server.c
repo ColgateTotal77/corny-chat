@@ -2,6 +2,8 @@
 #include "../libmx/inc/libmx.h"
 #include "cJSON.h"
 #include "sql.h"
+#include "handlers.h"
+#include "password.h"
 
 bool stop_server;
 
@@ -21,16 +23,16 @@ void *handle_client(void *arg) {
 	cJSON *name = cJSON_GetObjectItemCaseSensitive(json_name_password, "name");
 	cJSON *password = cJSON_GetObjectItemCaseSensitive(json_name_password, "password");
 
-
-    if (strlen(name->valuestring) <  2 
-	    || strlen(name->valuestring) >= 32-1 
+    int res = 0;
+    if (!check_nickname(name->valuestring)
 		|| strlen(password->valuestring) < 8) {
 		printf("Invalid arguments.\n");
-		leave_flag = 1;
+		res = 2;
+	}
+	else {
+        res = sql_is_valid_user(call_data->db, name->valuestring, password->valuestring);
 	}
 	
-	int res = sql_is_valid_user(call_data->db, name->valuestring, password->valuestring);
-
 
 	if (res == 2) {
         send_message_to_user(call_data, "Invalid login input\n");
@@ -40,10 +42,15 @@ void *handle_client(void *arg) {
 		strcpy(client_data->user_data->name, name->valuestring);
 		sprintf(buff_out, "%s has joined\n", client_data->user_data->name);
 		// add new user here
-		sql_insert_user(call_data->db, name->valuestring, password->valuestring);
+		user_create *usr = (user_create*)malloc(sizeof(user_create));
+        strcpy(usr->login, name->valuestring);
+        strcpy(usr->nickname, name->valuestring);
+		strcpy(usr->password, password->valuestring);
+        usr->role_id = 1;
+		insert_user(call_data->db, *usr);
+		free(usr);
 	    printf("%s", buff_out);
 		send_message_to_another_ids(call_data, buff_out);
-		
 	}
 	else if (res == 1) {
 		strcpy(client_data->user_data->name, name->valuestring);
@@ -127,8 +134,11 @@ int main(int argc, char * argv[]) {
     if (rc) {
         fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
+		stop_server = true;
     }
-	printf("connection to db opened\n");
+	else {
+	    printf("connection to db opened\n");
+	}
 
     while (!stop_server) {
         

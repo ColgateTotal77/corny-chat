@@ -8,7 +8,7 @@ static char* get_name(void) {
     str_del_newline(name, strlen(name));
     int name_length = strlen(name);
 
-	if (name_length > 32 || name_length < 2) {
+	if (name_length > 30 || name_length < 2) {
 		printf("Invalid input. Name must be less than 30 and more than 1 characters.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -23,8 +23,8 @@ static char* get_name(void) {
 static char* get_password(void) {
     printf("Password must be less than 64 and more than 7 characters.\n");
     printf("Enter your password: ");
-    char password[64];
-    fgets(password, 64, stdin);
+    char password[66];
+    fgets(password, 66, stdin);
     str_del_newline(password, strlen(password));
     int password_length = strlen(password);
 
