@@ -12,16 +12,16 @@
 
 
 typedef struct User_create {
-    char login[50];
+    char login[15];
     char nickname[50];
-    char password[50];
+    char password[256];
     int role_id;
 } user_create;
 
 typedef struct User {
     int id;
     char createdAt[20];
-    char login[50];
+    char login[15];
     char nickname[50];
     int role_id;
     bool active;
