@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     createdAt DATETIME         DEFAULT CURRENT_TIMESTAMP,
     login     TEXT    NOT NULL UNIQUE,
-    password  TEXT,
+    password  BLOB,
     nickname  TEXT,
     roleId    INTEGER          DEFAULT 2,
     active    BOOLEAN NOT NULL DEFAULT TRUE,
