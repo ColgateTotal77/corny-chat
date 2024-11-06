@@ -14,7 +14,7 @@
 typedef struct User_create {
     char login[15];
     char nickname[50];
-    unsigned char password[256];
+    unsigned char password[32];
     int role_id;
 } user_create;
 
