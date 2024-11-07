@@ -1,21 +1,19 @@
 //
 // Created by konst on 07.11.24.
 //
+#include "../../inc/sql.h"
 
-#include <sqlite3.h>
-#include <stddef.h>
-#include <stdio.h>
 
 /**
- *@brief updates users password hash in DB
+ * @brief updates user nickname
  *
  * @param db
  * @param usr_id
- * @param hash
- * @return
+ * @param new_nickname
+ * @return 0 if Ok else sql error code
  */
-int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash) {
-	const char* sql = "UPDATE users SET password = ? WHERE id = ?;";
+int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname) {
+	const char * sql = "UPDATE users SET nickname = ? WHERE id = ?;";
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -24,7 +22,7 @@ int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* has
 		return rc;
 	}
 
-	sqlite3_bind_blob(stmt, 1, hash, 32, SQLITE_STATIC); // Привязываем хеш пароля
+	sqlite3_bind_text(stmt, 1, new_nickname, 50, SQLITE_STATIC);
 	sqlite3_bind_int(stmt, 2, usr_id);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE) {
@@ -33,6 +31,8 @@ int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* has
 		return rc;
 	}
 	sqlite3_finalize(stmt);
-	printf("Users '%d' password updated successfully.\n", usr_id);
-		return rc;
+	printf("Users '%s' nickname updated successfully.\n", new_nickname);
+	return rc;
+
 }
+
