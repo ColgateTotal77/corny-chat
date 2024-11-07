@@ -22,7 +22,7 @@ int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname) {
 		return rc;
 	}
 
-	sqlite3_bind_text(stmt, 1, new_nickname, 50, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 1, new_nickname, strlen(new_nickname), SQLITE_STATIC);
 	sqlite3_bind_int(stmt, 2, usr_id);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE) {
