@@ -45,4 +45,6 @@ void init_user_create(user_create *usr, const char *login, const char *nickname,
                       const unsigned char *pas_hash, const int role_id);
 unsigned char *get_password_hash(sqlite3 *db, const char *login);
 
+int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash);
+
 #endif //SQL_H
