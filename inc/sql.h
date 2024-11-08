@@ -47,5 +47,6 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login);
 
 int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash);
 int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname);
+int insert_private_message(sqlite3* db, int owner_id, int target_id, char* message, unsigned char* s_key);
 
 #endif //SQL_H

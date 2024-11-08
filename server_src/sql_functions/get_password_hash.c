@@ -36,6 +36,11 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login) {
     memset(hash, 0, 32);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         const unsigned char *password = sqlite3_column_blob(stmt, 0);
+        if (password == NULL) {
+            fprintf(stderr, "password hash is NULL user: %s\n", login);
+            free(hash);
+            return NULL;
+        }
         memcpy(hash, password, 32);
     } else {
         fprintf(stderr, "User not found: %s\n", sqlite3_errmsg(db));
