@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS messages
     targetUserId  INTEGER,
     targetGroupId INTEGER,
     message       TEXT,
+    readed        BOOLEAN DEFAULT FALSE,
+    sKey          BLOB,
     FOREIGN KEY (ownerId) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (targetUserId) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (targetGroupId) REFERENCES groups (id) ON DELETE CASCADE,
