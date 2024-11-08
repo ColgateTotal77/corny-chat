@@ -58,11 +58,13 @@ $(CLIENT_OBJ)/%.o: $(CLIENT_SRC)/%.c
 # Удаление всех файлов
 uninstall: clean
 	cd $(LIBRARYDIR) && make uninstall
+	cd $(JSON_C_DIR) && make uninstall
 	rm -f $(SERVER) $(CLIENT)
 
 # Очистка объектных файлов
 clean:
 	cd $(LIBRARYDIR) && make clean
+	cd $(JSON_C_DIR) && make clean
 	rm -rf $(SERVER_OBJ) $(CLIENT_OBJ)
 
 # Переустановка

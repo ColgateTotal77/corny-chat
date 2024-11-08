@@ -39,17 +39,18 @@ static void handle_valid_login(call_data_t *call_data, char *name) {
 int handle_login(char *str_json_name_password, call_data_t *call_data) {
     cJSON *json_name_password = cJSON_Parse(str_json_name_password);
 	cJSON *name = cJSON_GetObjectItemCaseSensitive(json_name_password, "name");
-    sqlite3 *db = call_data->general_data->db;
     int user_id = -1;
 
 	enum LoginValidationResult is_valid_login;
-	is_valid_login = find_or_create_user(db, json_name_password, &user_id);
+	is_valid_login = find_or_create_user(call_data, json_name_password, &user_id);
 
     int leave_flag = 0;
    
 	if (is_valid_login == INVALID_INPUT) {
         printf("Invalid Input\n");
         send_message_to_user(call_data, "Invalid login input\n");
+		free(call_data->client_data);
+		call_data->client_data = NULL;
 		leave_flag = 1;
 	}
 	else if (is_valid_login == NO_SUCH_USER) {

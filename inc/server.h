@@ -76,7 +76,7 @@ general_data_t *setup_general_data(bool *stop_server, int *online_count, int *ch
 void free_general_data(general_data_t *general_data);
 
 void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data);
-enum LoginValidationResult find_or_create_user(sqlite3* db, 
+enum LoginValidationResult find_or_create_user(call_data_t *call_data, 
                                                cJSON *json_name_password, int *user_id);
 int handle_login(char *str_json_name_password, call_data_t *call_data);
 

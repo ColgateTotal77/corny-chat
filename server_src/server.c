@@ -7,6 +7,23 @@
 bool stop_server;
 
 
+void free_client_data(call_data_t *call_data) {
+	general_data_t *general_data = call_data->general_data;
+	client_t *client_data = call_data->client_data;
+
+	if (client_data != NULL) {
+	    close(client_data->sockfd);
+	    client_data->sockfd = -1;
+	    client_data->address = NULL;
+		if (client_data->user_data != NULL) {
+            client_data->user_data->is_online = false;
+	    }
+	}
+	
+    *(general_data->online_count) = *(general_data->online_count) - 1;
+	free(call_data);
+}
+
 void *handle_client(void *arg) {
 	call_data_t *call_data = (call_data_t*)arg;
 	general_data_t *general_data = call_data->general_data;
@@ -15,34 +32,25 @@ void *handle_client(void *arg) {
 
 	char str_json_name_password[BUF_SIZE];
 	bzero(str_json_name_password, BUF_SIZE);
-	int leave_flag = 0;
 
 	recv(call_data->client_data->sockfd, str_json_name_password, BUF_SIZE, 0);
 	
     printf("%s\n", str_json_name_password);
 	fflush(stdout);
 
+    int leave_flag = 0;
 	leave_flag = handle_login(str_json_name_password, call_data);
 
-    client_t *client_data = call_data->client_data;
 	char buff_out[BUF_SIZE];
 	bzero(buff_out, BUF_SIZE);
 
 	while (!leave_flag) {
-		int bytes_received = recv(client_data->sockfd, buff_out, BUF_SIZE, 0);
+		int bytes_received = recv(call_data->client_data->sockfd, buff_out, BUF_SIZE, 0);
 		handle_user_msg(bytes_received, &leave_flag, buff_out, call_data);
 		bzero(buff_out, BUF_SIZE);
 	}
 	
-
-    close(client_data->sockfd);
-	client_data->sockfd = -1;
-	client_data->address = NULL;
-	if (client_data->user_data != NULL) {
-        client_data->user_data->is_online = false;
-	}
-    *(general_data->online_count) = *(general_data->online_count) - 1;
-	free(call_data);
+	free_client_data(call_data);
     pthread_detach(pthread_self());
 
 	return NULL;
@@ -112,11 +120,6 @@ int main(int argc, char * argv[]) {
 		call_data_t *call_data = (call_data_t*)malloc(sizeof(call_data_t));
 		call_data->client_data = client_data;
 		call_data->general_data = general_data;
-		
-
-        //if (user_data->user_id % 2 != 0) {
-        //    append_to_intarr(&odd_chat->users_id, &odd_chat->users_count, user_data->user_id);
-        //}
         
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
 
