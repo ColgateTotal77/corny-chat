@@ -18,4 +18,19 @@ void *ht_get(ht_t *hashtable, int key);
 void ht_del(ht_t *hashtable, int key);
 entry_t** ht_dump(ht_t *hashtable, int* count);
 
+typedef struct entry_str_t {
+    char* key;
+    int value;
+    struct entry_str_t *next;
+} entry_str_t;
+
+typedef struct {
+    entry_str_t **entries;
+} ht_str_t;
+
+ht_str_t *ht_str_create(void);
+void ht_str_set(ht_str_t *hashtable, char* key, int value);
+int ht_str_get(ht_str_t *hashtable, char* key);
+void ht_str_del(ht_str_t *hashtable, char* key);
+entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count);
 

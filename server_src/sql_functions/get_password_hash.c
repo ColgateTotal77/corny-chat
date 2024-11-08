@@ -10,7 +10,7 @@
  *
  * @param db opened Data Base connection
  * @param login user login
- * @return pointer to allocated unsigned char with hash 256 B len
+ * @return pointer to allocated unsigned char with hash 32 B len
  * @return NULL if something went wrong (look at error prints)
  */
 unsigned char *get_password_hash(sqlite3 *db, const char *login) {
@@ -28,15 +28,15 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login) {
     sqlite3_bind_text(stmt, 1, login, -1, SQLITE_STATIC);
     // Выполнение запроса и получение результатов
 
-    unsigned char *hash = malloc(sizeof(unsigned char) *256);
+    unsigned char *hash = malloc(sizeof(unsigned char) *32);
     if (hash == NULL) {
         fprintf(stderr, "Failed to allocate memory for hash\n");
         return NULL;
     }
-    memset(hash, 0, 256);
+    memset(hash, 0, 32);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         const unsigned char *password = sqlite3_column_blob(stmt, 0);
-        memcpy(hash, password, 256);
+        memcpy(hash, password, 32);
     } else {
         fprintf(stderr, "User not found: %s\n", sqlite3_errmsg(db));
         free(hash);

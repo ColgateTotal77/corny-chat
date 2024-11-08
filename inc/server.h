@@ -12,8 +12,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sqlite3.h>
+#include <stdbool.h>
 
 #include "hashTable.h"
+#include "cJSON.h"
 
 #define BUF_SIZE 256
 #define MAX_CLIENTS 100
@@ -32,30 +35,55 @@ typedef struct {
     int contacts_count;
     char name[32];
     int user_id;
+    bool is_online;
 } user_t;
 
 typedef struct {
-	struct sockaddr_in address;
+	struct sockaddr_in* address;
 	int sockfd;
 	user_t* user_data;
 } client_t;
 
 typedef struct {
-    client_t *client_data;
+    ht_str_t *login_to_id;
     ht_t *clients;
     ht_t *chats;
     pthread_mutex_t *clients_mutex;
     pthread_mutex_t *chats_mutex;
-    int *clients_count;
+    pthread_mutex_t *db_mutex;
+    int *online_count;
     int *chat_uid;
+    sqlite3* db;
+} general_data_t;
+
+typedef struct {
+    client_t *client_data;
+    general_data_t *general_data;
 } call_data_t;
 
 
+
+enum LoginValidationResult {
+    INVALID_INPUT,
+    NO_SUCH_USER,
+    VALID_LOGIN,
+};
+
+
+// server_maintanence
 int setup_server_socket(int port);
+general_data_t *setup_general_data(bool *stop_server, int *online_count, int *chat_uid);
+void free_general_data(general_data_t *general_data);
+
 void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data);
+enum LoginValidationResult find_or_create_user(sqlite3* db, 
+                                               cJSON *json_name_password, int *user_id);
+int handle_login(char *str_json_name_password, call_data_t *call_data);
 
+// utility_functions
+user_t* init_user_data(int id, char *name, bool is_online);
 
-
+// send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);
 void send_message_to_user(call_data_t *call_data, char *message);
 void send_message_to_another_ids(call_data_t *call_data, char *s);

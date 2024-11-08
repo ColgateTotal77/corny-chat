@@ -4,36 +4,33 @@
 #include <string.h>
 #include "hashTable.h"
 
-//unsigned int hash(const char *key) {
-//    unsigned long int value = 0;
-//    unsigned int i = 0;
-//    unsigned int key_len = strlen(key);
-//
-//    for (; i < key_len; ++i) {
-//        value = value * 37 + key[i];
-//    }
-//
-//    value = value % TABLE_SIZE;
-//
-//    return value;
-//}
+static unsigned int hash(const char *key) {
+    unsigned long int value = 0;
+    unsigned int i = 0;
+    unsigned int key_len = strlen(key);
 
-static int hash(int key) {
-    return key;
+    for (; i < key_len; ++i) {
+        value = value * 37 + key[i];
+    }
+
+    value = value % TABLE_SIZE;
+
+    return value;
 }
 
-entry_t *ht_pair(int key, void *value) {
-    entry_t *entry = malloc(sizeof(entry_t) * 1);
-    entry->key = key;
+entry_str_t *ht_str_pair(char* key, int value) {
+    entry_str_t *entry = malloc(sizeof(entry_str_t) * 1);
+    entry->key = (char*)malloc(strlen(key) + 1);
+    strcpy(entry->key, key);
     entry->value = value;
     entry->next = NULL;
 
     return entry;
 }
 
-ht_t *ht_create(void) {
-    ht_t *hashtable = malloc(sizeof(ht_t) * 1);
-    hashtable->entries = malloc(sizeof(entry_t*) * TABLE_SIZE);
+ht_str_t *ht_str_create(void) {
+    ht_str_t *hashtable = malloc(sizeof(ht_str_t) * 1);
+    hashtable->entries = malloc(sizeof(entry_str_t*) * TABLE_SIZE);
 
     for (int i = 0; i < TABLE_SIZE; ++i) {
         hashtable->entries[i] = NULL;
@@ -42,20 +39,20 @@ ht_t *ht_create(void) {
     return hashtable;
 }
 
-void ht_set(ht_t *hashtable, int key, void *value) {
+void ht_str_set(ht_str_t *hashtable, char *key, int value) {
     int slot = hash(key);
 
-    entry_t *entry = hashtable->entries[slot];
+    entry_str_t *entry = hashtable->entries[slot];
 
     if (entry == NULL) {
-        hashtable->entries[slot] = ht_pair(key, value);
+        hashtable->entries[slot] = ht_str_pair(key, value);
         return;
     }
 
-    entry_t *prev;
+    entry_str_t *prev;
 
     while (entry != NULL) {
-        if (entry->key == key) {
+        if (strcmp(entry->key, key) == 0) {
             entry->value = value;
             return;
         }
@@ -64,43 +61,43 @@ void ht_set(ht_t *hashtable, int key, void *value) {
         entry = prev->next;
     }
 
-    prev->next = ht_pair(key, value);
+    prev->next = ht_str_pair(key, value);
 }
 
-void *ht_get(ht_t *hashtable, int key) {
+int ht_str_get(ht_str_t *hashtable, char *key) {
     int slot = hash(key);
 
-    entry_t *entry = hashtable->entries[slot];
+    entry_str_t *entry = hashtable->entries[slot];
 
     if (entry == NULL) {
-        return NULL;
+        return -1;
     }
 
     while (entry != NULL) {
-        if (entry->key == key) {
+        if (strcmp(entry->key, key) == 0) {
             return entry->value;
         }
 
         entry = entry->next;
     }
 
-    return NULL;
+    return -1;
 }
 
-void ht_del(ht_t *hashtable, int key) {
+void ht_str_del(ht_str_t *hashtable, char *key) {
     int bucket = hash(key);
 
-    entry_t *entry = hashtable->entries[bucket];
+    entry_str_t *entry = hashtable->entries[bucket];
 
     if (entry == NULL) {
         return;
     }
 
-    entry_t *prev;
+    entry_str_t *prev;
     int idx = 0;
 
     while (entry != NULL) {
-        if (entry->key == key) {
+        if (strcmp(entry->key, key) == 0) {
             if (entry->next == NULL && idx == 0) {
                 hashtable->entries[bucket] = NULL;
             }
@@ -117,6 +114,7 @@ void ht_del(ht_t *hashtable, int key) {
                 prev->next = entry->next;
             }
 
+            free(entry->key);
             free(entry);
             return;
         }
@@ -128,18 +126,18 @@ void ht_del(ht_t *hashtable, int key) {
     }
 }
 
-entry_t** ht_dump(ht_t *hashtable, int* count) {
+entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count) {
     int size = 0;
-    entry_t** entries = malloc(0);
+    entry_str_t** entries = malloc(0);
     for (int i = 0; i < TABLE_SIZE; ++i) {
-        entry_t *entry = hashtable->entries[i];
-
+        entry_str_t *entry = hashtable->entries[i];
+        
         if (entry == NULL) {
             continue;
         }
 
         for(;;) {
-            entries = realloc(entries, sizeof(entry_t*) * (size + 1));
+            entries = realloc(entries, sizeof(entry_str_t*) * (size + 1));
             entries[size] = entry;
             size++;
 
