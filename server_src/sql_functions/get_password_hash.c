@@ -40,6 +40,7 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login) {
     } else {
         fprintf(stderr, "User not found: %s\n", sqlite3_errmsg(db));
         free(hash);
+        sqlite3_finalize(stmt);
         return NULL;
     }
 
