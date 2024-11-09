@@ -16,26 +16,23 @@ static void apply_css(GtkWidget *widget) {
     g_object_unref(css_provider);
 }
 
-// Scroll to the bottom of the chat area
+// Scroll to bottom function
 void scroll_to_bottom(GtkWidget *scrolled_window) {
     GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
     gtk_adjustment_set_value(adjustment, gtk_adjustment_get_upper(adjustment));
 }
 
-// Function to add a message with time
-void add_message(GtkWidget *container, const char *message_text, const char *time_text, gboolean is_sent) {
-    // Create a horizontal box for aligning message and time side-by-side
+// Function to add a message, appearing at the bottom
+void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent) {
+    // Create a horizontal box to contain message and time
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_widget_set_halign(message_box, is_sent ? GTK_ALIGN_END : GTK_ALIGN_START);
-
-    // Time and message labels
-    GtkWidget *time_label = gtk_label_new(time_text);
-    gtk_widget_add_css_class(time_label, "message-time");
 
     GtkWidget *message_label = gtk_label_new(message_text);
     gtk_widget_add_css_class(message_label, is_sent ? "sent-message-bubble" : "received-message-bubble");
 
-    // Add time and message to the message box based on message type
+    GtkWidget *time_label = gtk_label_new(time_text);
+    gtk_widget_add_css_class(time_label, "message-time");
+
     if (is_sent) {
         gtk_box_append(GTK_BOX(message_box), time_label);
         gtk_box_append(GTK_BOX(message_box), message_label);
@@ -44,8 +41,96 @@ void add_message(GtkWidget *container, const char *message_text, const char *tim
         gtk_box_append(GTK_BOX(message_box), time_label);
     }
 
-    // Add the message_box to the main container
-    gtk_box_append(GTK_BOX(container), message_box);
+    // Prepend message_box to the top of the container
+    gtk_box_prepend(GTK_BOX(messages_container), message_box);
+
+    // Scroll to the bottom so the latest message is visible
+    scroll_to_bottom(messages_container);
+}
+
+// Main setup for the message container
+GtkWidget* create_message_container() {
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    GtkWidget *messages_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), messages_container);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+    return scrolled_window;
+}
+
+GtkWidget* create_chat_item(const char *name, const char *message, const char *time, gboolean is_online, gboolean is_group) {
+    GtkWidget *grid = gtk_grid_new();
+    gtk_widget_add_css_class(grid, "chat-item");
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+
+    // Avatar
+    GtkWidget *avatar_circle = gtk_drawing_area_new();
+    gtk_widget_set_size_request(avatar_circle, 40, 40);
+    gtk_widget_add_css_class(avatar_circle, "avatar-circle");
+    gtk_grid_attach(GTK_GRID(grid), avatar_circle, 0, 0, 1, 2);
+
+    // Horizontal box to hold name label and status indicator
+    GtkWidget *name_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+    // Name label
+    GtkWidget *name_label = gtk_label_new(name);
+    gtk_widget_add_css_class(name_label, "chat-name");
+    gtk_widget_set_halign(name_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(name_box), name_label);
+
+    // Status indicator
+    if (!is_group) { // Only show status indicator if it's not a group
+        GtkWidget *status_indicator = gtk_drawing_area_new();
+        gtk_widget_set_size_request(status_indicator, 8, 8);
+        gtk_widget_add_css_class(status_indicator, is_online ? "status-online" : "status-offline");
+        gtk_box_append(GTK_BOX(name_box), status_indicator);
+    }
+
+    // Place name_box at (1, 0)
+    gtk_grid_attach(GTK_GRID(grid), name_box, 1, 0, 1, 1);
+
+    // Message preview label
+    GtkWidget *message_label = gtk_label_new(message);
+    gtk_widget_add_css_class(message_label, "message-preview");
+    gtk_widget_set_halign(message_label, GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), message_label, 1, 1, 1, 1);
+
+    // Time label
+    GtkWidget *time_label = gtk_label_new(time);
+    gtk_widget_add_css_class(time_label, "message-time");
+    gtk_widget_set_halign(time_label, GTK_ALIGN_END);
+    gtk_grid_attach(GTK_GRID(grid), time_label, 2, 0, 1, 2);
+
+    if (is_group) {
+        gtk_widget_add_css_class(grid, "group-chat"); // Apply a specific style for group chats
+    }
+
+    return grid;
+}
+
+// Function to create the contact sidebar
+GtkWidget* create_contact_sidebar() {
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    gtk_widget_set_vexpand(scrolled_window, TRUE);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+    GtkWidget *contact_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_add_css_class(contact_box, "contact-box");
+    gtk_widget_set_valign(contact_box, GTK_ALIGN_START); // Align contacts to the top
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), contact_box);
+
+    // Add chat items
+    GtkWidget *chat1 = create_chat_item("Vladyslav Zaplitnyi", "I love two things, one is...", "12:00", TRUE, FALSE);
+    GtkWidget *chat2 = create_chat_item("Vladyslav Nezapitnyi", "I love two things, one is...", "11:40", FALSE, FALSE);
+    GtkWidget *chat3 = create_chat_item("Group chat", "I love two things, one is...", "11:00", FALSE, TRUE);
+
+    gtk_box_append(GTK_BOX(contact_box), chat1);
+    gtk_box_append(GTK_BOX(contact_box), chat2);
+    gtk_box_append(GTK_BOX(contact_box), chat3);
+
+    return scrolled_window;
 }
 
 // Main application window setup
@@ -109,6 +194,19 @@ static void on_activate(GtkApplication *app) {
     gtk_widget_set_vexpand(spacer, TRUE);
     gtk_box_append(GTK_BOX(sidebar), spacer);
 
+    // chats and groups
+    GtkWidget *chat1 = create_chat_item("Vladyslav Zaplitnyi", "I love two things, one is...", "12:00", TRUE, FALSE);
+    gtk_box_append(GTK_BOX(sidebar), chat1);
+
+    GtkWidget *chat2 = create_chat_item("Vladyslav Nezapitnyi", "I love two things, one is...", "11:40", FALSE, FALSE);
+    gtk_box_append(GTK_BOX(sidebar), chat2);
+
+    GtkWidget *chat3 = create_chat_item("Group chat", "I love two things, one is...", "11:00", TRUE, TRUE);
+    gtk_widget_add_css_class(chat3, "group-chat"); // Add specific class for group chat if needed
+    gtk_box_append(GTK_BOX(sidebar), chat3);
+
+
+    // add new group button
     GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
     gtk_widget_add_css_class(add_group_button, "add-group-button");
     gtk_box_append(GTK_BOX(sidebar), add_group_button);
@@ -154,6 +252,10 @@ static void on_activate(GtkApplication *app) {
     // Sample messages
     add_message(messages_container, "Love you!!! <3 You mean everything for me dude!", "12:00", FALSE);
     add_message(messages_container, "Love you!!! <3", "12:00", TRUE);
+
+    add_message(messages_container, "Hello!", "10:00", FALSE);
+    add_message(messages_container, "How are you?", "10:05", TRUE);
+    add_message(messages_container, "I'm doing well, thanks!", "10:07", FALSE);
 
     // --- Message Input Area ---
     GtkWidget *input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
