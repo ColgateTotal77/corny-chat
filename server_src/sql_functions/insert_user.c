@@ -14,7 +14,7 @@
  *
  * @return created UserID or -1 if something went wrong
  */
-int insert_user(sqlite3 *db, user_create usr) {
+int create_user(sqlite3 *db, user_create usr) {
     const char *sql = "INSERT INTO users (login, password, nickname, roleId) VALUES (?, ?, ?, ?);";
     sqlite3_stmt *stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);

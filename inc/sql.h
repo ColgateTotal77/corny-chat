@@ -8,7 +8,7 @@
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include  <string.h>
+#include <string.h>
 
 
 typedef struct User_create {
@@ -27,7 +27,7 @@ typedef struct User {
     bool active;
 } s_user;
 
-int insert_user(sqlite3 *db, user_create usr);
+int create_user(sqlite3 *db, user_create usr);
 
 int sql_insert_msg(sqlite3 *db, int usr_id, char *msg);
 
@@ -47,5 +47,6 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login);
 
 int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash);
 int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname);
+int insert_private_message(sqlite3* db, int owner_id, int target_id, char* message, unsigned char* s_key);
 
 #endif //SQL_H

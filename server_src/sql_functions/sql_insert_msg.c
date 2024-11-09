@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-int sql_insert_msg(sqlite3 *db,int usr_id, char* msg){
+int sql_insert_msg(sqlite3 *db, int usr_id, char* msg){
 
   char *err_msg = NULL;  // error massage pointer
   char sql_buf[256];  // buffer SQL-query
@@ -20,6 +20,7 @@ int sql_insert_msg(sqlite3 *db,int usr_id, char* msg){
   }
 
   printf("message added successfuly\n");  // output success message
+
   return SQLITE_OK; //return success code
 
 }
