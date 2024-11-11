@@ -21,6 +21,60 @@ window {
 
 }
 
+
+
+.chat-item {
+    background-color: #dddddd;
+    padding: 15px;
+    border-radius: 25px;
+    margin-bottom: 5px;
+
+}
+
+.avatar-circle {
+    background-color: black;
+    border-radius: 50%;
+}
+
+.chat-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333333;
+}
+
+.message-preview {
+    font-size: 14px;
+    color: #666666;
+    
+}
+
+.message-time {
+    font-size: 12px;
+    color: #999999;
+}
+
+.group-chat {
+    background-color: #cce4ff;
+    border-radius: 25px;
+}
+
+/* done*/
+.status-online {
+    background-color: #00cc00;
+    border-radius: 50%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.status-offline {
+    background-color: #888888;
+    border-radius: 50%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+
+
 /* done*/
 button.settings-button {
     background-color: #D9D9D9; /* Initial background color */
