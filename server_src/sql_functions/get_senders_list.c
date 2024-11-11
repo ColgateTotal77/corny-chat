@@ -5,7 +5,7 @@
 #include "../../inc/sql.h"
 #include "../../libmx_konst/inc/libmx.h"
 
-void print_unread_message(const s_unread *message);
+void print_unread_message(const s_unread* message);
 void print_list(t_list* list);
 
 /**
@@ -18,7 +18,7 @@ void print_list(t_list* list);
  */
 s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num) {
 	char* sql = "SELECT m.ownerId, COUNT(*) num FROM messages m "
-			 "WHERE m.targetUserId = ? AND m.readed = FALSE GROUP BY m.ownerId;";
+		"WHERE m.targetUserId = ? AND m.readed = FALSE GROUP BY m.ownerId;";
 
 	sqlite3_stmt* stmt;
 	// Подготовка SQL-запроса
@@ -39,13 +39,13 @@ s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num) {
 	}
 	*senders_num = mx_list_size(list);
 
-	// printf("list _ len : %d\n", *senders_num);
-	s_unread* senders_list = malloc(*senders_num*sizeof(s_unread));
+	s_unread* senders_list = malloc(*senders_num * sizeof(s_unread));
 	int i = 0;
-	while (list != NULL) {
-		s_unread* unread = list->data;
+	t_list* cur_list = list;
+	while (cur_list != NULL) {
+		s_unread* unread = cur_list->data;
 		senders_list[i] = *unread;
-		list = list->next;
+		cur_list = cur_list->next;
 		i++;
 	}
 	mx_t_list_deep_free(list);
