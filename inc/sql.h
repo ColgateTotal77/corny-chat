@@ -43,7 +43,7 @@ typedef struct texting {
 	int user2_id;
 	int	unread_mes_qty;
 	int all_mes_qty;
-	s_message** messages;
+	s_message* messages;
 } s_texting;
 
 typedef struct unread_messages {
@@ -79,7 +79,8 @@ void init_message(s_message *msg, const int id, const char *created_at,
 int get_message_by_id(sqlite3* db, s_message *message, const int mes_id);
 s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty);
 s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num);
-
+s_texting* get_starting_messages(sqlite3* db, const int user_id, int* senders_qty);
+void free_texting(s_texting* textings, const int senders_qty);
 
 
 #endif //SQL_H
