@@ -6,6 +6,7 @@
 #define SQL_H
 #include <stdbool.h>
 #include <sqlite3.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,30 @@ typedef struct User {
     int role_id;
     bool active;
 } s_user;
+
+typedef struct message {
+	int id;
+	char createdAt[20];
+	int owner_id;
+	int target_id;
+	int target_group_id;
+	char message[512];
+	bool readed;
+} s_message;
+
+typedef struct texting {
+	int user1_id;
+	int user2_id;
+	int	unread_mes_qty;
+	int all_mes_qty;
+	s_message** messages;
+} s_texting;
+
+typedef struct unread_messages {
+	int sender_id;
+	int unread_mes_qty;
+} s_unread;
+
 
 int create_user(sqlite3 *db, user_create usr);
 
@@ -48,5 +73,13 @@ unsigned char *get_password_hash(sqlite3 *db, const char *login);
 int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash);
 int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname);
 int insert_private_message(sqlite3* db, int owner_id, int target_id, char* message, unsigned char* s_key);
+void init_message(s_message *msg, const int id, const char *created_at,
+			   const int owner_id, const int target_id, const int target_group_id,
+			   char message[512],const bool readed);
+int get_message_by_id(sqlite3* db, s_message *message, const int mes_id);
+s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty);
+s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num);
+
+
 
 #endif //SQL_H
