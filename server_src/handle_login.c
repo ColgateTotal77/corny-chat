@@ -8,6 +8,7 @@ static void handle_no_such_user(call_data_t *call_data, int user_id, char *name)
     
     user_t *user_data = init_user_data(user_id, name, true);
 	client_data->user_data = user_data;
+	client_data->ssl = call_data->ssl;
     ht_set(clients, user_data->user_id, (void*)client_data);
     ht_str_set(call_data->general_data->login_to_id, name, user_id);
 
@@ -25,7 +26,7 @@ static void handle_valid_login(call_data_t *call_data, char *name) {
     int user_id = ht_str_get(login_to_id, name);
 
 	client_t *cached_client_data = ht_get(clients, user_id);
-	cached_client_data->sockfd = client_data->sockfd;
+	cached_client_data->ssl = client_data->ssl;
 	cached_client_data->address = client_data->address;
 	cached_client_data->user_data->is_online = true;
 	free(client_data);

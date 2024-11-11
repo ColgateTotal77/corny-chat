@@ -16,7 +16,7 @@ void handle_send_to_user(call_data_t *call_data, cJSON *json) {
     }
 
     char buffer[BUF_SIZE];
-    sprintf(buffer, "%s (from private messages): %s",
+    sprintf(buffer, "%s (from private messages): %s\n",
             call_data->client_data->user_data->name,
             message_json->valuestring);
     send_message_to_id(call_data, buffer, contact_id);

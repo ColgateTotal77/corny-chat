@@ -17,6 +17,9 @@
 
 #include "hashTable.h"
 #include "cJSON.h"
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
 
 #define BUF_SIZE 256
 #define MAX_CLIENTS 100
@@ -41,6 +44,7 @@ typedef struct {
 typedef struct {
 	struct sockaddr_in* address;
 	int sockfd;
+    SSL *ssl;
 	user_t* user_data;
 } client_t;
 
@@ -59,6 +63,7 @@ typedef struct {
 typedef struct {
     client_t *client_data;
     general_data_t *general_data;
+    SSL *ssl;
 } call_data_t;
 
 

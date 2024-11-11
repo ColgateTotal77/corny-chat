@@ -8,6 +8,24 @@ void str_overwrite_stdout(void) {
     fflush(stdout);
 }
 
+SSL_CTX *init_ssl_context(void) {
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+    const SSL_METHOD *method = TLS_client_method();
+
+    SSL_CTX *ctx = SSL_CTX_new(method);
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(1);
+    }
+
+    // Set minimum TLS version
+    //SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
+    return ctx;
+}
+
 //void* handle_user_input(void* arg) {
 //    call_data_t* call_data = (call_data_t*)arg;
 //    char message[BUF_SIZE];
@@ -76,7 +94,7 @@ void* send_msg_handler(void* arg) {
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            send_to_chat(call_data->sockfd, chat_id, message);
+            send_to_chat(call_data->ssl, chat_id, message);  // Отправка через стандартный сокет
             break;
         case SEND_TO_USER:
             bzero(message, BUF_SIZE);
@@ -91,7 +109,7 @@ void* send_msg_handler(void* arg) {
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            send_to_user(call_data->sockfd, user_id, message);
+            send_to_user(call_data->ssl, user_id, message);  // Отправка через стандартный сокет
             break;
         case CREATE_CHAT:
             bzero(message, BUF_SIZE);
@@ -99,13 +117,13 @@ void* send_msg_handler(void* arg) {
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            create_chat(call_data->sockfd, message);
+            create_chat(call_data->ssl, message);
             break;
         case SEE_ALL_CHATS:
-            see_all_chats(call_data->sockfd);
+            see_all_chats(call_data->ssl);
             break;
         case SEE_ALL_USERS:
-            see_all_users(call_data->sockfd);
+            see_all_users(call_data->ssl);
             break;
         case ADD_CONTACT:
             bzero(message, BUF_SIZE);
@@ -115,10 +133,10 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             contact_id = atoi(message);
 
-            add_contact(call_data->sockfd, contact_id);
+            add_contact(call_data->ssl, contact_id);
             break;
         case SEE_MY_CONTACTS:
-            see_my_contacts(call_data->sockfd);
+            see_my_contacts(call_data->ssl);
             break;
         case JOIN_CHAT:
             bzero(message, BUF_SIZE);
@@ -128,7 +146,7 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             chat_id = atoi(message);
 
-            join_chat(call_data->sockfd, chat_id);
+            join_chat(call_data->ssl, chat_id);
             break;
         case ADD_CONTACT_TO_CHAT:
             bzero(message, BUF_SIZE);
@@ -144,10 +162,10 @@ void* send_msg_handler(void* arg) {
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
             chat_id = atoi(message);
-            add_contact_to_chat(call_data->sockfd, contact_id, chat_id);
+            add_contact_to_chat(call_data->ssl, contact_id, chat_id);
             break;
         case EXIT:
-            send_exit_command(call_data->sockfd);
+            send_exit_command(call_data->ssl);
             *(call_data->stop_flag) = true;
             break;
         default:
@@ -156,7 +174,6 @@ void* send_msg_handler(void* arg) {
             break;
         }
         
-
         bzero(message, BUF_SIZE);
         sleep(1);
        // bzero(buffer, BUF_SIZE + 32);
@@ -175,22 +192,30 @@ void* recv_msg_handler(void* arg) {
     char message[BUF_SIZE];
 
     while (!*(call_data->stop_flag)) {
-        int bytes_received = recv(call_data->sockfd, message, BUF_SIZE, 0);
-        
+        int bytes_received = SSL_read(call_data->ssl, message, BUF_SIZE);  // Используем SSL для чтения
 
         if (bytes_received > 0) {
             printf("%s", message);
             str_overwrite_stdout();
         }
         else if (bytes_received == 0) {
-        	break;
-        }
-        else {
-			printf("ERROR: -1\n");
+            printf("\nServer disconnected\n");
+            //*(call_data->stop_flag) = true;
             fflush(stdout);
-		}
+            break;
+        }
+        
+        else {
+            int err = SSL_get_error(call_data->ssl, bytes_received);
+            if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
+                continue;
+            }
+            fprintf(stderr, "SSL_read failed with error: %d\n", err);
+            //*(call_data->stop_flag) = true;
+            break;
+        }
 
-		memset(message, 0, sizeof(message));
+        memset(message, 0, sizeof(message));
     }
 
     pthread_detach(pthread_self());
@@ -217,6 +242,16 @@ int main(int argc, char * argv[]) {
 
     int sock = setup_client_socket(argv[1], port);
 
+    SSL_CTX *ctx = init_ssl_context();
+    SSL *ssl = SSL_new(ctx);  
+    SSL_set_fd(ssl, sock);    
+    if (SSL_connect(ssl) != 1) { 
+        fprintf(stderr, "SSL connect failed\n");
+        ERR_print_errors_fp(stderr);
+        close(sock);
+        exit(1);
+    }
+
     struct sigaction psa = {.sa_handler = catch_ctrl_c_and_exit};
     sigaction(SIGINT, &psa, NULL);
     stop_flag = false;
@@ -224,14 +259,15 @@ int main(int argc, char * argv[]) {
     char *str_json_name_password = cJSON_Print(json_name_and_password);
     cJSON_Minify(str_json_name_password);
 
-    send(sock, str_json_name_password, strlen(str_json_name_password), 0);
+    SSL_write(ssl, str_json_name_password, strlen(str_json_name_password));
 
     free(str_json_name_password);
 
     cJSON *name_json = cJSON_GetObjectItemCaseSensitive(json_name_and_password, "name");
     
     call_data_t *call_data = (call_data_t *)malloc(sizeof(call_data_t));
-    call_data->sockfd = sock;
+    call_data->sockfd = sock; 
+    call_data->ssl = ssl;
     call_data->stop_flag = &stop_flag;
     strcpy(call_data->name, name_json->valuestring);
 
@@ -241,26 +277,29 @@ int main(int argc, char * argv[]) {
     if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
         printf("ERROR: pthread\n");
         return EXIT_FAILURE;
-	}
+    }
 
     pthread_t recv_msg_thread;
     if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, (void*)call_data) != 0) {
-		printf("ERROR: pthread\n");
-		return EXIT_FAILURE;
-	}
+        printf("ERROR: pthread\n");
+        return EXIT_FAILURE;
+    }
 
     while (1) {
-		if (stop_flag) {
+        if (stop_flag) {
             pthread_join(send_msg_thread, NULL);
-			printf("\nBye\n");
-			break;
+            printf("\nBye\n");
+            // SSL_shutdown(ssl);//Закриття SSL з'єднання
+            SSL_free(ssl);
+            break;
         }
         sleep(1);
     }
 
     free(call_data);
     close(sock);
-    
+
+    SSL_CTX_free(ctx);
     return EXIT_SUCCESS;
 }
 

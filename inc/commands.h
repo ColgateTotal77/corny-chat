@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <openssl/ssl.h>
 #define SEND_TO_CHAT 0
 #define SEND_TO_USER 1
 #define CREATE_CHAT 2
@@ -14,18 +14,18 @@
 
 
 
-void send_to_chat(int socket, int chat_id, char *message);
-void send_to_user(int socket, int reciever_id, char *message);
-void see_all_chats(int socket);
-void see_all_users(int socket);
-void create_chat(int socket, char *new_chat_name);
-void send_exit_command(int socket);
-void add_contact_to_chat(int socket, int contact_id, int chat_id);
-void join_chat(int socket, int chat_id);
-void see_my_contacts(int socket);
-void add_contact(int socket, int new_contact_id);
+void send_to_chat(SSL *ssl, int chat_id, char *message);
+void send_to_user(SSL *ssl, int reciever_id, char *message);
+void see_all_chats(SSL *ssl);
+void see_all_users(SSL *ssl);
+void create_chat(SSL *ssl, char *new_chat_name);
+void send_exit_command(SSL *ssl);
+void add_contact_to_chat(SSL *ssl, int contact_id, int chat_id);
+void join_chat(SSL *ssl, int chat_id);
+void see_my_contacts(SSL *ssl);
+void add_contact(SSL *ssl, int new_contact_id);
 
 
 
-void send_and_delete_json(int socket, cJSON **json);
+void send_and_delete_json(SSL *ssl, cJSON **json);
 
