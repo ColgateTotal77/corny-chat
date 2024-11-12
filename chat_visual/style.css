@@ -257,33 +257,21 @@ button.add-group-button:active {
 }
 
 /* Left aligned message */
-.message-left {
+/* .message-left {
     margin-bottom: 5px;
-}
+} */
 
 /* Right aligned message */
-.message-right {
+/* .message-right {
     margin-bottom: 5px;
-}
+} */
 
 .messages-container {
     padding: 10px;
     background-color: #C9C9C9;
 }
 
-
-
-/* Received message bubble styling */
-.received-message-bubble {
-    background-color: #D9D9D9; /* Light background for the message */
-    border-radius: 20px;
-    padding: 10px 15px;
-    color: #333333; /* Text color */
-    font-size: 16px;
-}
-
-/* Sent message bubble styling */
-.sent-message-bubble {
+.message-bubble {
     background-color: #D9D9D9; /* Light background for the message */
     border-radius: 20px;
     padding: 10px 15px;
