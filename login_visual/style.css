@@ -63,11 +63,7 @@ entry {
 }
 
 /* Remember me checkbox and button styling */
-#remember-me-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+
 
 .remember-me-checkbox {
     color: #ffffff;
