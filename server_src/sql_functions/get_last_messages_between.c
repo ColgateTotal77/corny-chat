@@ -8,7 +8,9 @@
 
 /**
  * @brief message array can be NULL if users don't have texting yet.
- * it also can be seen in structure parameter <all_mes_qty>
+ * it also can be seen in structure parameter <all_mes_qty> = 00
+ * if before == 0 message array contains qty of last messages
+ * if before == message ID array contains qty of last messages before message ID
  * @warning function allocates memory. Use free_texting func with 1 as second parameter
  * @example
  * 	s_texting* texting = get_last_messages_between(db, 1,2,25);
@@ -18,18 +20,31 @@
  * @param usr1_id
  * @param usr2_id
  * @param qty max message's number that will be added to array
+ * @param before must be <0> or the earliest sent message_ID
  * @return pointer to structure s_texting with sorted message history between 2 users
  * or NULL if something went wrong
  */
-s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id, const int qty) {
-	const char* sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
-		"FROM (SELECT * "
-		"FROM messages m "
-		"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) "
-		"ORDER BY m.createdAt DESC "
-		"LIMIT ?) "
-		"ORDER BY createdAt;";
-
+s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id,
+                                     const int qty, const int before) {
+	const char* sql = NULL;
+	if (before <= 0) {
+		sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
+			"FROM (SELECT * "
+			"FROM messages m "
+			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) "
+			"ORDER BY m.createdAt DESC "
+			"LIMIT ?) "
+			"ORDER BY createdAt;";
+	}
+	else {
+		sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
+			"FROM (SELECT * "
+			"FROM messages m "
+			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) AND m.id < ?"
+			"ORDER BY m.createdAt DESC "
+			"LIMIT ?) "
+			"ORDER BY createdAt;";
+	}
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -42,7 +57,12 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 	sqlite3_bind_int(stmt, 2, usr2_id);
 	sqlite3_bind_int(stmt, 3, usr1_id);
 	sqlite3_bind_int(stmt, 4, usr2_id);
-	sqlite3_bind_int(stmt, 5, qty);
+	if (before <= 0) {
+		sqlite3_bind_int(stmt, 5, qty);
+	} else {
+		sqlite3_bind_int(stmt, 5, before);
+		sqlite3_bind_int(stmt, 6, qty);
+	}
 
 	t_list* list = NULL;
 	int unread_num = 0;

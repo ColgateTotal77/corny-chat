@@ -82,7 +82,7 @@ s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num);
 s_texting* get_starting_messages(sqlite3* db, const int user_id, int* senders_qty);
 void free_texting(s_texting* textings, const int senders_qty);
 int set_mes_read_status(sqlite3* db, int user_id, int sender_id);
-s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id, const int qty);
-
+s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id,
+									 const int qty, const int before);
 
 #endif //SQL_H
