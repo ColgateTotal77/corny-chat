@@ -79,7 +79,7 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 	// Сбрасываем состояние запроса для повторного использования
 	sqlite3_reset(stmt);
 	int i = 0;
-	while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		init_message(&messages[i],
 					 sqlite3_column_int(stmt, 0),
 					 (const char*)sqlite3_column_text(stmt, 1),

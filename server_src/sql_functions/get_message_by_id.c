@@ -31,7 +31,6 @@ int get_message_by_id(sqlite3* db, s_message *message, const int mes_id) {
 	if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
 		init_message(message,
 		             sqlite3_column_int(stmt, 0),
-
 		             (const char*)sqlite3_column_text(stmt, 1),
 		             sqlite3_column_int(stmt, 2),
 		             sqlite3_column_int(stmt, 3),

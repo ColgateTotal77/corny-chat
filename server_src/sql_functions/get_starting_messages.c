@@ -16,7 +16,7 @@
  * @param db
  * @param user_id
  * @param senders_qty this param saves array length
- * @return s_texting[senders_qty]
+ * @return s_texting[senders_qty] or NULL if user has no unread messages
  */
 s_texting* get_starting_messages(sqlite3* db, const int user_id, int* senders_qty) {
 	s_unread* senders = get_senders_list(db, user_id, senders_qty);
