@@ -92,3 +92,4 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 	sqlite3_finalize(stmt);
 	return messages;
 }
+

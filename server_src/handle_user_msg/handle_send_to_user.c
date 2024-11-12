@@ -1,6 +1,7 @@
 #include "server.h"
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
+#include "sql.h"
 
 
 
@@ -14,6 +15,10 @@ void handle_send_to_user(call_data_t *call_data, cJSON *json) {
         send_message_to_user(call_data, "No such contact\n");
         return;
     }
+
+    insert_private_message(call_data->general_data->db,
+                           call_data->client_data->user_data->user_id,
+                           contact_id, message_json->valuestring, NULL);
 
     char buffer[BUF_SIZE];
     sprintf(buffer, "%s (from private messages): %s",

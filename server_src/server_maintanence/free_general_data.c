@@ -24,6 +24,7 @@ static void free_clients_cache(ht_t *clients) {
 		entry_t *entry = clients_hash_slots[i];
         client_t *client_data = entry->value;
 		free(client_data->user_data->contacts_id);
+		free(client_data->user_data->groups_id);
 		free(client_data->user_data);
 		shutdown(client_data->sockfd, SHUT_RDWR);
 		free(client_data);

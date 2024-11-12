@@ -44,6 +44,9 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
         send_user_exit_msg(call_data);
         *leave_flag = 1;
         break;
+    case GET_MY_CONTACTS:
+        handle_get_my_contacts(call_data);
+        break;
     default:
         printf("Wrond command code was given!!!");
         fflush(stdout);

@@ -12,4 +12,5 @@ void handle_send_to_chat(call_data_t *call_data, cJSON *json);
 void handle_see_all_chats(call_data_t *call_data);
 void handle_see_all_users(call_data_t *call_data);
 void handle_see_my_contacts(call_data_t *call_data);
+void handle_get_my_contacts(call_data_t *call_data);
 

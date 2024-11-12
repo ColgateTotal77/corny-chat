@@ -11,6 +11,7 @@
 #define JOIN_CHAT 7
 #define ADD_CONTACT_TO_CHAT 8
 #define EXIT 9
+#define GET_MY_CONTACTS 10
 
 
 
@@ -24,6 +25,7 @@ void add_contact_to_chat(int socket, int contact_id, int chat_id);
 void join_chat(int socket, int chat_id);
 void see_my_contacts(int socket);
 void add_contact(int socket, int new_contact_id);
+void get_my_contacts(int socket);
 
 
 

@@ -5,6 +5,8 @@ user_t* init_user_data(int id, char *name, bool is_online) {
     user_data->user_id = id;
     user_data->contacts_count = 0;
 	user_data->contacts_id = malloc(0);
+	user_data->groups_count = 0;
+	user_data->groups_id = malloc(0);
 	if (name != NULL) { 
 		strcpy(user_data->name, name); 
 	}

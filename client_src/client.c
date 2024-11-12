@@ -38,7 +38,8 @@ void* send_msg_handler(void* arg) {
                       "SEE_MY_CONTACTS 6\n"
                       "JOIN_CHAT 7\n"
                       "ADD_CONTACT_TO_CHAT 8\n"
-                      "EXIT 9\n";
+                      "EXIT 9\n"
+                      "GET_MY_CONTACTS 10\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -149,6 +150,9 @@ void* send_msg_handler(void* arg) {
         case EXIT:
             send_exit_command(call_data->sockfd);
             *(call_data->stop_flag) = true;
+            break;
+        case GET_MY_CONTACTS:
+            get_my_contacts(call_data->sockfd);
             break;
         default:
             printf("Wrong command code\n");
