@@ -7,7 +7,7 @@ bool check_password(char *password) { //Валідація паролю
 
     int password_length = mx_strlen(password);
 
-    if (password_length < 7 || password_length > 20) { //Перевірка на довжину, яка має бути більше 7 і менше 20
+    if (password_length < 8 || password_length > 20) { //Перевірка на довжину, яка має бути більше 7 і менше 20
         return false;
     }
 

@@ -108,6 +108,17 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
+    if (access("admin.txt", F_OK)) {
+        sqlite3 *db; //connection variable
+        int rc = sqlite3_open("db/uchat_db.db", &db); //open DB connection
+        
+        if (rc) { //check is connect successful
+            sqlite3_close(db);
+        }
+        update_password_hash(db, 1, create_admin());
+        sqlite3_close(db);
+    }
+
 	SSL_CTX *ctx = init_ssl_context();
 
 	int port = atoi(argv[1]);
