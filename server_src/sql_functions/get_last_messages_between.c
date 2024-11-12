@@ -7,10 +7,21 @@
 #include "libmx.h"
 #include "../../inc/sql.h"
 
-void print_message(const s_message *msg);
-void print_texting(const s_texting* texting);
-
-
+/**
+ * @brief message array can be NULL if users don't have texting yet.
+ * it also can be seen in structure parameter <all_mes_qty>
+ * @warning function allocates memory. Use free_texting func with 1 as second parameter
+ * @example
+ * 	s_texting* texting = get_last_messages_between(db, 1,2,25);
+ *	free_texting(texting, 1);
+ *
+ * @param db
+ * @param usr1_id
+ * @param usr2_id
+ * @param qty max message's number that will be added to array
+ * @return pointer to structure s_texting with sorted message history between 2 users
+ * or NULL if something went wrong
+ */
 s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id, const int qty) {
 	const char* sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
 		"FROM (SELECT * "
@@ -39,28 +50,32 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 	while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
 		s_message* message = malloc(sizeof(s_message));
 		init_message(message,
-			 sqlite3_column_int(stmt, 0),
-			 (const char*)sqlite3_column_text(stmt, 1),
-			 sqlite3_column_int(stmt, 2),
-			 sqlite3_column_int(stmt, 3),
-			 sqlite3_column_int(stmt, 4),
-			 (char*)sqlite3_column_text(stmt, 5),
-			 (bool)sqlite3_column_int(stmt, 6));
+		             sqlite3_column_int(stmt, 0),
+		             (const char*)sqlite3_column_text(stmt, 1),
+		             sqlite3_column_int(stmt, 2),
+		             sqlite3_column_int(stmt, 3),
+		             sqlite3_column_int(stmt, 4),
+		             (char*)sqlite3_column_text(stmt, 5),
+		             (bool)sqlite3_column_int(stmt, 6));
 		if (!message->readed) unread_num++;
 		mx_push_back(&list, message);
 	}
-	// fprintf(stderr, "sqlite rc =  %s\n", sqlite3_errmsg(db));
 	const int real_qty = mx_list_size(list);
-	s_message* messages = malloc(sizeof(s_message) * real_qty);
-
-	t_list* temp_list = list;
-	int i = 0;
-	while (temp_list) {
-		s_message* message = temp_list->data;
-		messages[i] = *message;
-		temp_list = temp_list->next;
-		i++;
+	s_message* messages = NULL;
+	if (real_qty > 0) {
+		messages = malloc(sizeof(s_message) * real_qty);
+		if (!messages) return NULL;
+		t_list* temp_list = list;
+		int i = 0;
+		while (temp_list) {
+			s_message* message = temp_list->data;
+			messages[i] = *message;
+			temp_list = temp_list->next;
+			i++;
+		}
 	}
+
+
 	mx_t_list_deep_free(list);
 	s_texting* texting = malloc(sizeof(s_texting));
 	texting->user1_id = usr1_id;
