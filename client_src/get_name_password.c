@@ -1,5 +1,6 @@
-#include "client.h"
-#include "password.h"
+#include "../inc/client.h"
+#include "../inc/password.h"
+#include "../inc/visual.h"
 
 bool check_password(char *password) { //Валідація паролю
     if (password == NULL) { //Перевірка на порожній рядок
@@ -20,7 +21,7 @@ bool check_password(char *password) { //Валідація паролю
     return true;
 }
 
-static char* get_name(void) {
+char* get_name(void) {
     printf("Name must be less than 30 and more than 1 characters.\n");
     printf("Please enter your name: ");
     char name[32];
@@ -40,7 +41,7 @@ static char* get_name(void) {
     return name_buffer;
 }
 
-static char* get_password(void) {
+char* get_password(void) {
     printf("Password must be less than 20 and more than 8 characters. Also, only keyboard symbols are allowed, without spaces.\n");
     printf("Enter your password: ");
     char password[22];
