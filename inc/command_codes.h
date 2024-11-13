@@ -1,0 +1,24 @@
+#pragma once
+
+#define SEND_TO_CHAT 0
+#define SEND_TO_USER 1
+#define CREATE_CHAT 2
+#define SEE_ALL_CHATS 3
+#define SEE_ALL_USERS 4
+#define ADD_CONTACT 5
+#define SEE_MY_CONTACTS 6
+#define JOIN_CHAT 7
+#define ADD_CONTACT_TO_CHAT 8
+#define EXIT 9
+#define GET_MY_CONTACTS 10
+#define LOGIN 11
+#define GET_ALL_TALKS 12
+#define ERROR  13
+#define INCOMING_MESSAGE 14
+
+enum MESSAGE_TYPE {
+    PRIVATE_MESSAGE,
+    GROUP_MESSAGE,
+    SYSTEM_MESSAGE,
+};
+

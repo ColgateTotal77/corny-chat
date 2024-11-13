@@ -36,6 +36,8 @@ typedef struct {
 typedef struct {
     int* contacts_id;
     int contacts_count;
+    int* groups_id;
+    int groups_count;
     char name[32];
     int user_id;
     bool is_online;
@@ -87,6 +89,7 @@ int handle_login(char *str_json_name_password, call_data_t *call_data);
 
 // utility_functions
 user_t* init_user_data(int id, char *name, bool is_online);
+void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
 
 // send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);
@@ -95,4 +98,5 @@ void send_message_to_another_ids(call_data_t *call_data, char *s);
 void send_message_to_chat(call_data_t *call_data, char *message, int chat_id);
 void send_user_exit_msg(call_data_t *call_data);
 
+cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
 

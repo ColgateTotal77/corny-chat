@@ -2,7 +2,7 @@
 #include "libmx.h"
 
 int mx_list_size(t_list* list) {
-	if (!list)
+	if (!list || !list->next)
 		return 0;
 	int counter = 1;
 	t_list* current = list;
