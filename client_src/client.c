@@ -56,7 +56,9 @@ void* send_msg_handler(void* arg) {
                       "SEE_MY_CONTACTS 6\n"
                       "JOIN_CHAT 7\n"
                       "ADD_CONTACT_TO_CHAT 8\n"
-                      "EXIT 9\n";
+                      "EXIT 9\n"
+                      "GET_MY_CONTACTS 10\n"
+                      "GET_ALL_TALKS 12\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -168,6 +170,12 @@ void* send_msg_handler(void* arg) {
             send_exit_command(call_data->ssl);
             *(call_data->stop_flag) = true;
             break;
+        case GET_MY_CONTACTS:
+            get_my_contacts(call_data->ssl);
+            break;
+        case GET_ALL_TALKS:
+            get_all_talks(call_data->ssl);
+            break;
         default:
             printf("Wrong command code\n");
             fflush(stdout);
@@ -189,10 +197,10 @@ void* send_msg_handler(void* arg) {
 
 void* recv_msg_handler(void* arg) {
     call_data_t* call_data = (call_data_t*)arg;
-    char message[BUF_SIZE];
+    char message[1024];
 
     while (!*(call_data->stop_flag)) {
-        int bytes_received = SSL_read(call_data->ssl, message, BUF_SIZE);  // Используем SSL для чтения
+        int bytes_received = SSL_read(call_data->ssl, message, 1024);  // Используем SSL для чтения
 
         if (bytes_received > 0) {
             printf("%s", message);

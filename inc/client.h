@@ -32,4 +32,5 @@ typedef struct{
 int setup_client_socket(char *hostname, int port);
 cJSON* get_name_password(void);
 void str_del_newline(char* arr, int length);
+char *read_tls_socket(SSL *ssl);
 
