@@ -264,11 +264,6 @@ int main(int argc, char * argv[]) {
     }
 
 
-    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
-    start_login(app, ssl);
-
-    int status = g_application_run(G_APPLICATION(app), argc, argv);
-
     struct sigaction psa = {.sa_handler = catch_ctrl_c_and_exit};
     sigaction(SIGINT, &psa, NULL);
     stop_flag = false;
@@ -301,6 +296,11 @@ int main(int argc, char * argv[]) {
         printf("ERROR: pthread\n");
         return EXIT_FAILURE;
     }
+
+    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
+    start_login(app, ssl);
+
+    int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     while (1) {
         if (stop_flag) {
