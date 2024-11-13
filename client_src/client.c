@@ -1,5 +1,6 @@
 #include "client.h"
 #include "commands.h"
+#include "GTK.h"
 
 bool stop_flag;
 
@@ -192,7 +193,7 @@ void* recv_msg_handler(void* arg) {
     char message[BUF_SIZE];
 
     while (!*(call_data->stop_flag)) {
-        int bytes_received = SSL_read(call_data->ssl, message, BUF_SIZE);  // Используем SSL для чтения
+        int bytes_received = SSL_read(call_data->ssl, message, BUF_SIZE);
 
         if (bytes_received > 0) {
             printf("%s", message);
@@ -272,7 +273,7 @@ int main(int argc, char * argv[]) {
     strcpy(call_data->name, name_json->valuestring);
 
     cJSON_Delete(json_name_and_password);
-    
+
     pthread_t send_msg_thread;
     if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
         printf("ERROR: pthread\n");
@@ -284,6 +285,8 @@ int main(int argc, char * argv[]) {
         printf("ERROR: pthread\n");
         return EXIT_FAILURE;
     }
+
+    GTK_start(ssl);
 
     while (1) {
         if (stop_flag) {

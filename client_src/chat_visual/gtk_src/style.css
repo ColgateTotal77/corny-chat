@@ -1,0 +1,342 @@
+window {
+    background-color: #333333;
+}
+
+/* done*/
+.sidebar-background {
+    background-color: #D9D9D9; /* Adjust color as needed */
+    border-radius: 40px;
+    padding: 10px; /* Add padding to create spacing between background and sidebar */
+    margin-top: 20px; /* Add space above the sidebar */
+    margin-right: 20px;
+}
+
+/* done*/
+.sidebar {
+    background-color: #C9C9C9;
+    padding: 20px;
+    box-shadow: none; /* Remove any box shadow */
+    border: none; /* Remove any border if it's causing the shadow effect */
+    border-radius: 25px;
+
+}
+
+
+
+.chat-item {
+    background-color: #dddddd;
+    padding: 15px;
+    border-radius: 25px;
+    margin-bottom: 5px;
+
+}
+
+.avatar-circle {
+    background-color: black;
+    border-radius: 50%;
+}
+
+.chat-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333333;
+}
+
+.message-preview {
+    font-size: 14px;
+    color: #666666;
+    
+}
+
+.message-time {
+    font-size: 12px;
+    color: #999999;
+}
+
+.group-chat {
+    background-color: #cce4ff;
+    border-radius: 25px;
+}
+
+/* done*/
+.status-online {
+    background-color: #00cc00;
+    border-radius: 50%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.status-offline {
+    background-color: #888888;
+    border-radius: 50%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+
+
+/* done*/
+button.settings-button {
+    background-color: #D9D9D9; /* Initial background color */
+    background: #D9D9D9; /* Ensures background is set */
+    background-image: none; /* Remove any default background image */
+    color: #333333; /* Icon color */
+    border-radius: 50%; /* Circular shape */
+    min-width: 60px;
+    min-height: 60px;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 10px;
+}
+
+/* done*/
+/* Hover effect */
+button.settings-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* done*/
+/* Active (pressed) state */
+button.settings-button:active {
+    background-color: #A0A0A0; /* Darker shade to indicate press */
+    transform: scale(0.95); /* Slightly shrink for a pressed effect */
+}
+
+/* done*/
+.settings-button img {
+    min-width: 24px; /* Icon size */
+    min-height: 24px;
+}
+
+/* done*/
+.search-container {
+    background-color: #D9D9D9; /* Light gray background */
+    padding: 10px 15px; /* Adjust for padding around the icon and input */
+    border-radius: 40px; /* Rounded corners */
+    box-shadow: none; /* Remove any shadow */
+    border: none; /* Remove border */
+    min-width: 300px; /* Set the minimum width for the search bar */
+    margin-right: 20px;
+    margin-top: 10px;
+}
+
+/* done*/
+/* Search icon styling inside the container */
+.search-icon{
+    margin-right: 10px; /* Space between icon and text field */
+    min-width: 35px;
+    min-height: 35px;
+}
+
+
+
+/* Search bar input field */
+.search-bar {
+    background-color: transparent; /* Transparent to show container background */
+    border: none; /* Remove border */
+    outline: none; /* Remove outline */
+    font-size: 28px;
+    color: #555555; /* Text color */
+    min-width: 280px;
+    min-height: 30px;
+}
+
+.contact-button {
+    background-color: #555555;
+    color: white;
+    font-size: 16px;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+/* done*/
+.add-group-button {
+    background-color: #D9D9D9;
+    color: #666767;
+    background-image: none;
+    font-size: 16px;
+    padding-top: 10px; /* Adjust padding for vertical space */
+    padding-bottom: 10px; /* Adjust as needed */
+    min-height: 40px; /* Minimum height for the button */
+    min-width: 200px;
+    border-radius: 20px;
+    margin-top: 20px;
+    box-shadow: none; /* Remove any box shadow */
+    border: none; /* Remove any border if it's causing the shadow effect */
+}
+
+/* done*/
+button.add-group-button {
+    background-color: #D9D9D9; /* Initial background color */
+    background: #D9D9D9; /* Ensures background is set */
+    background-image: none; /* Remove any default background image */
+    color: #666767; /* Text color */
+    font-size: 25px;
+    padding: 15px;
+    border-radius: 40px;
+    min-width: 180px; /* Set desired button width */
+    min-height: 40px; /* Set desired button height */
+    margin-top: 20px;
+    border: none;
+    transition: background-color 0.3s ease; /* Smooth color transition */
+}
+
+/* done*/
+/* Hover effect */
+button.add-group-button:hover {
+    background-color: #BEBEBE ; /* Slightly darker color on hover */
+}
+
+/* done*/
+/* Active (pressed) state */
+button.add-group-button:active {
+    background-color: #A0A0A0 ; /* Darker color to indicate button press */
+    transform: scale(0.98); /* Slightly shrink for a pressed effect */
+}
+
+
+
+
+/* Header styling */
+.chat-header {
+    background-color: #dddddd;
+    padding: 15px;
+    border-radius: 48px;
+    color: #000000;
+    font-size: 30px;
+    min-height: 60px;
+}
+
+.avatar-circle {
+    background-color: #000000; /* Black color */
+    border-radius: 50%; /* Circular shape */
+
+}
+
+/* Adjust name label */
+.header-name {
+    font-size: 33px;
+    font-weight: bold;
+    color: #333333;
+    margin-left: 5px; /* Space between avatar and name */
+}
+
+/* Status container to align icon and text */
+.status-container {
+    margin-left: 820px;
+}
+
+/* Status indicator (green dot) */
+.status-indicator {
+    background-color: #00CC00;
+    border-radius: 50%;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+/* Status text styling */
+.status-text {
+    font-size: 25px;
+    color: #666666;
+}
+
+
+
+
+
+
+/* Chat area background */
+.chat-area-background {
+    background-color: #D9D9D9; /* Light gray */
+    border-radius: 20px;
+    padding: 15px;
+    margin: 10px;
+}
+
+/* Left aligned message */
+/* .message-left {
+    margin-bottom: 5px;
+} */
+
+/* Right aligned message */
+/* .message-right {
+    margin-bottom: 5px;
+} */
+
+.messages-container {
+    padding: 10px;
+    background-color: #C9C9C9;
+}
+
+.message-bubble {
+    background-color: #D9D9D9; /* Light background for the message */
+    border-radius: 20px;
+    padding: 10px 15px;
+    color: #333333; /* Text color */
+    font-size: 16px;
+}
+
+/* Time styling */
+.message-time {
+    font-size: 12px;
+    color: #666666; /* Lighter color for time */
+    margin-top: 3px; /* Space between message and time */
+}
+
+
+
+
+
+
+
+.input-box {
+    padding: 10px;
+}
+
+/* done*/
+.message-entry {
+    padding: 10px;
+    padding-left: 35px;
+    border: none;
+    font-size: 30px;
+    border-radius: 33px;
+    background-color: #D9D9D9;
+    color: #666767;
+    min-width: 200px; /* Set minimum width */
+    min-height: 40px;
+    margin-top: 10px;
+}
+
+/* done*/
+button.send-button {
+    background-color: #39A8C1; /* Force initial blue color */
+    background: #39A8C1 ; /* Ensures background is set */
+    background-image: none ; /* Remove any background image */
+    color: white ; /* Force text color to white */
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 25px;
+    min-width: 90px;
+    min-height: 40px;
+    margin-left: 10px;
+    margin-top: 10px;
+    border: none;
+    transition: background-color 0.3s ease; /* Smooth color transition */
+}
+
+/* done*/
+/* Hover effect */
+button.send-button:hover {
+    background-color: #37A0B8; /* Slightly darker blue on hover */
+}
+
+/* done*/
+/* Active (pressed) state */
+button.send-button:active {
+    background-color: #2A8094; /* Different color to indicate button press */
+    transform: scale(0.98); /* Slightly shrink for a pressed effect */
+}
+

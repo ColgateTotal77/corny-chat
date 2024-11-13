@@ -1,6 +1,6 @@
 # Удаление SQLite, libssl-dev и связанных пакетов
 echo "Удаляю SQLite, libssl-dev и связанные пакеты..."
-sudo apt remove --purge -y sqlite3 libsqlite3-dev libssl-dev
+sudo apt remove --purge -y sqlite3 libsqlite3-dev libssl-dev libgtk-4-dev
 
 # Дополнительные пакеты можно добавить здесь
 # echo "Удаляю другие пакеты..."

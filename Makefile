@@ -2,6 +2,9 @@
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
 LDFLAGS = -lssl -lcrypto
+GTK_CFLAGS = `pkg-config --cflags  gtk4 `
+GTK_LIBS = `pkg-config --libs gtk4`
+
 # Директории заголовков и библиотеки
 HEADERFILES = ./inc
 LIBRARYDIR = ./libmx
@@ -37,7 +40,7 @@ $(SERVER): $(LIBRARY) $(KONST_LIBRARY) $(JSON_C) $(SERVER_OBJFILES)
 	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) $(KONST_LIBRARY) $(JSON_C) $(LDFLAGS) -lsqlite3
 
 $(CLIENT): $(LIBRARY) $(JSON_C) $(CLIENT_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY) $(JSON_C) $(LDFLAGS)
+	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY) $(JSON_C) $(LDFLAGS) $(GTK_LIBS)
 
 
 # Компиляция библиотеки
@@ -52,13 +55,13 @@ $(JSON_C):
 
 # Правило для создания объектных файлов и нужных подкаталогов
 $(SERVER_OBJ)/%.o: $(SERVER_SRC)/%.c
-	@mkdir -p $(dir $@)   # Создает директорию для объекта, если ее нет
-	$(CC) $(CFLAGS) -o $@ -c $< -I $(HEADERFILES)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -I $(HEADERFILES)
 
 # Аналогичное правило для клиентских файлов
 $(CLIENT_OBJ)/%.o: $(CLIENT_SRC)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ -c $< -I $(HEADERFILES)
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -I $(HEADERFILES)
 
 # Удаление всех файлов
 uninstall: clean
