@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../inc/cJSON.h" // Ensure you have cJSON library installed and accessible
-#include "../inc/visual.h"
+#include "GTK.h"
 #include "../inc/password.h"
 #include "../inc/commands.h"
 
@@ -17,7 +17,7 @@ static void apply_css(GtkWidget *widget) {
     GtkCssProvider *css_provider = gtk_css_provider_new();
     GError *error = NULL;
     
-    GFile *file = g_file_new_for_path("../login_visual/style.css");
+    GFile *file = g_file_new_for_path("client_src/chat_visual/gtk_src/login.css");
     gtk_css_provider_load_from_file(css_provider, file);
     
     if (error) {
@@ -39,10 +39,28 @@ static void print_json_data(const char *login, const char *password, SSL *ssl) {
     cJSON_AddStringToObject(json, "name", login);
     cJSON_AddStringToObject(json, "password", password);
 
-    char *json_str = cJSON_Print(json);
-    printf("%s\n", json_str);
     send_and_delete_json(ssl, &json);
 }
+
+bool check_password(char *password) { //Валідація паролю
+    if (password == NULL) { //Перевірка на порожній рядок
+        return false;
+    }
+
+    int password_length = mx_strlen(password);
+
+    if (password_length < 8 || password_length > 20) { //Перевірка на довжину, яка має бути більше 7 і менше 20
+        return false;
+    }
+
+    for (int i = 0; i < password_length; i++) {
+        if (mx_check_space(password[i]) || password[i] < 33 || password[i] > 126) { //Перевірка пароля на невалідні символи по ASCII, тут дозволені від '!' до '~'
+            return false;
+        }
+    }
+    return true;
+}
+
 
 /* Callback function to handle the login button click */
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
@@ -161,7 +179,8 @@ void on_activate(GtkApplication *app, gpointer ssl) {
     gtk_window_present(GTK_WINDOW(window));
 }
 
-void start_login(GtkApplication *app, SSL *ssl) {
+void start_login(SSL *ssl) {
+    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), ssl);
     g_application_run(G_APPLICATION(app), 0, NULL);
 }

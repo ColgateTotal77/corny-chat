@@ -1,6 +1,6 @@
 #include "../inc/client.h"
 #include "../inc/password.h"
-#include "../inc/visual.h"
+
 
 // bool check_password(char *password) { //Валідація паролю
 //     if (password == NULL) { //Перевірка на порожній рядок
