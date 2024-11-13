@@ -1,6 +1,7 @@
 #include "client.h"
 #include "commands.h"
-#include "GTK.h"
+#include <gtk/gtk.h>
+#include "../inc/visual.h"  // Include the login visual functionality
 
 bool stop_flag;
 
@@ -245,7 +246,8 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    cJSON *json_name_and_password = get_name_password();
+
+    //cJSON *json_name_and_password = get_name_password();
     
     int port = atoi(argv[2]);
 
@@ -261,27 +263,28 @@ int main(int argc, char * argv[]) {
         exit(1);
     }
 
+
     struct sigaction psa = {.sa_handler = catch_ctrl_c_and_exit};
     sigaction(SIGINT, &psa, NULL);
     stop_flag = false;
 
-    char *str_json_name_password = cJSON_Print(json_name_and_password);
-    cJSON_Minify(str_json_name_password);
+    //char *str_json_name_password = cJSON_Print(json_name_and_password);
+    //cJSON_Minify(str_json_name_password);
 
-    SSL_write(ssl, str_json_name_password, strlen(str_json_name_password));
+    //SSL_write(ssl, str_json_name_password, strlen(str_json_name_password));
 
-    free(str_json_name_password);
+    //free(str_json_name_password);
 
-    cJSON *name_json = cJSON_GetObjectItemCaseSensitive(json_name_and_password, "name");
+    //cJSON *name_json = cJSON_GetObjectItemCaseSensitive(json_name_and_password, "name");
     
     call_data_t *call_data = (call_data_t *)malloc(sizeof(call_data_t));
     call_data->sockfd = sock; 
     call_data->ssl = ssl;
     call_data->stop_flag = &stop_flag;
-    strcpy(call_data->name, name_json->valuestring);
+    //strcpy(call_data->name, name_json->valuestring);
 
-    cJSON_Delete(json_name_and_password);
-
+    //cJSON_Delete(json_name_and_password);
+    
     pthread_t send_msg_thread;
     if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
         printf("ERROR: pthread\n");
@@ -294,7 +297,10 @@ int main(int argc, char * argv[]) {
         return EXIT_FAILURE;
     }
 
-    GTK_start(ssl);
+    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
+    start_login(app, ssl);
+
+    int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     while (1) {
         if (stop_flag) {
@@ -311,6 +317,7 @@ int main(int argc, char * argv[]) {
     close(sock);
 
     SSL_CTX_free(ctx);
+    return status;
     return EXIT_SUCCESS;
 }
 
