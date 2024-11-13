@@ -6,6 +6,31 @@
 
 bool stop_server;
 
+SSL_CTX *init_ssl_context(void) { 
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+    const SSL_METHOD *method = TLS_server_method();
+
+	SSL_CTX *ctx = SSL_CTX_new(method);
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(1); 
+    }
+
+    if (SSL_CTX_use_certificate_file(ctx, "server.crt", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(1);
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, "server.key", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(1);
+    }
+
+    return ctx;  
+}
 
 void free_client_data(call_data_t *call_data) {
 	general_data_t *general_data = call_data->general_data;
@@ -33,10 +58,16 @@ void *handle_client(void *arg) {
 	char str_json_name_password[BUF_SIZE];
 	bzero(str_json_name_password, BUF_SIZE);
 
-	recv(call_data->client_data->sockfd, str_json_name_password, BUF_SIZE, 0);
-	
+    int bytes = SSL_read(call_data->ssl, str_json_name_password, BUF_SIZE);
     printf("%s\n", str_json_name_password);
-	fflush(stdout);
+    if (bytes <= 0) {
+        int err = SSL_get_error(call_data->ssl, bytes);
+        fprintf(stderr, "SSL_read failed with error: %d\n", err);
+        ERR_print_errors_fp(stderr);
+        free_client_data(call_data);
+        return NULL;
+    }
+    fflush(stdout);
 
     int leave_flag = 0;
 	leave_flag = handle_login(str_json_name_password, call_data);
@@ -44,16 +75,26 @@ void *handle_client(void *arg) {
 	char buff_out[BUF_SIZE];
 	bzero(buff_out, BUF_SIZE);
 
-	while (!leave_flag) {
-		int bytes_received = recv(call_data->client_data->sockfd, buff_out, BUF_SIZE, 0);
-		handle_user_msg(bytes_received, &leave_flag, buff_out, call_data);
-		bzero(buff_out, BUF_SIZE);
-	}
-	
-	free_client_data(call_data);
+    while (!leave_flag) {
+        int bytes_received = SSL_read(call_data->ssl, buff_out, BUF_SIZE);
+        if (bytes_received <= 0) {
+            int err = SSL_get_error(call_data->ssl, bytes_received);
+            if (err == SSL_ERROR_ZERO_RETURN) {
+                break;
+            }
+            fprintf(stderr, "SSL_read failed with error: %d\n", err);
+            //break;
+        }
+        handle_user_msg(bytes_received, &leave_flag, buff_out, call_data);
+        bzero(buff_out, BUF_SIZE);
+    }
+    
+    SSL_shutdown(call_data->ssl); //Коректне завершення SSL-сесії
+    SSL_free(call_data->ssl);
+    free_client_data(call_data);
     pthread_detach(pthread_self());
 
-	return NULL;
+    return NULL;
 }
 
 void catch_ctrl_c_and_exit(int sig) {
@@ -66,6 +107,8 @@ int main(int argc, char * argv[]) {
         fprintf(stderr, "usage: %s <port_number>\n", argv[0]);
         return EXIT_FAILURE;
     }
+
+	SSL_CTX *ctx = init_ssl_context();
 
 	int port = atoi(argv[1]);
 	int sock = setup_server_socket(port);
@@ -111,16 +154,33 @@ int main(int argc, char * argv[]) {
             continue;
 		}
 
+        SSL *ssl = SSL_new(ctx);
+        if (!ssl) {
+            perror("Unable to create SSL structure");
+            close(connfd);
+            continue;
+        }
+
+        SSL_set_fd(ssl, connfd); //Прив'язка об'єкта SSL до сокету для TLS-з'єднання
+
+        if (SSL_accept(ssl) <= 0) { //Встановлення захисного з'єднання
+            ERR_print_errors_fp(stderr);
+            SSL_free(ssl);
+            close(connfd);
+            continue;
+        }
 
         client_t *client_data = (client_t*)malloc(sizeof(client_t));
 		client_data->address = &client_addr;
 		client_data->sockfd = connfd;
 		client_data->user_data = NULL;
-
-		call_data_t *call_data = (call_data_t*)malloc(sizeof(call_data_t));
-		call_data->client_data = client_data;
-		call_data->general_data = general_data;
+        client_data->ssl = ssl;
         
+		call_data_t *call_data = (call_data_t*)malloc(sizeof(call_data_t));
+        call_data->client_data = client_data;
+		call_data->general_data = general_data;    
+        call_data->ssl = ssl;
+
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
 
 		/* Reduce CPU usage */
@@ -131,7 +191,8 @@ int main(int argc, char * argv[]) {
 	fflush(stdout);
 
     free_general_data(general_data);
-    
+    SSL_CTX_free(ctx);  
+
     return EXIT_SUCCESS;
 }
 

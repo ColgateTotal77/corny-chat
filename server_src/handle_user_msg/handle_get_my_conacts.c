@@ -35,12 +35,11 @@ static void add_groups_to_json(call_data_t *call_data, cJSON *response_json) {
     }
 }
 
-void handle_get_my_contacts(call_data_t *call_data) {
+cJSON *handle_get_my_contacts(call_data_t *call_data) {
     cJSON *response_json = cJSON_CreateObject();
     
     add_contacts_to_json(call_data, response_json);
     add_groups_to_json(call_data, response_json);
 
-    send_to_user_and_delete_json(call_data, &response_json);
+    return response_json;
 }
-

@@ -2,11 +2,9 @@
 #include "commands.h"
 #include "client.h"
 
-void see_all_chats(SSL *ssl) {
+void get_all_talks(SSL *ssl) {
     cJSON *json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(json, "command_code", SEE_ALL_CHATS);
+    cJSON_AddNumberToObject(json, "command_code", GET_ALL_TALKS); 
 
     send_and_delete_json(ssl, &json);
 }
-
-

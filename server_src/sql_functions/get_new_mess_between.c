@@ -72,7 +72,9 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 		sqlite3_finalize(stmt);
 		return NULL;
 	}
-	printf("size = %d\n", *mes_qty);
+	// printf("user 1 id = %d\n ", user1_id);
+	// printf("user 2 id = %d\n ", user2_id);
+	// printf("size off messages array = %d\n\n", *mes_qty);
 
 	// Сбрасываем состояние запроса для повторного использования
 	sqlite3_reset(stmt);
@@ -92,4 +94,3 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 	sqlite3_finalize(stmt);
 	return messages;
 }
-

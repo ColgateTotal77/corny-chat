@@ -1,6 +1,7 @@
 #include "server.h"
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
+#include "create_json.h"
 
 static void add_and_notify_new_contact(call_data_t *call_data, client_t *contact_data) {
     int user_id = call_data->client_data->user_data->user_id;
@@ -37,7 +38,10 @@ static void add_contact_and_notify_user(call_data_t *call_data, client_t *contac
 }
 
 
-void handle_add_contact(call_data_t *call_data, cJSON *json) {
+cJSON *handle_add_contact(call_data_t *call_data, cJSON *json) {
+    if (!cJSON_HasObjectItem(json, "new_contact_id")) {
+        return create_error_json("Invalid json format\n");
+    }
     cJSON *contact_id_json = cJSON_GetObjectItemCaseSensitive(json, "new_contact_id");
     int contact_id = (int)cJSON_GetNumberValue(contact_id_json);
 
@@ -46,12 +50,16 @@ void handle_add_contact(call_data_t *call_data, cJSON *json) {
     if (contact_data == NULL) {
         char buffer[BUF_SIZE];
         sprintf(buffer, "No user with id %d was found\n", contact_id);
-        send_message_to_user(call_data, buffer);
-        return;
+        return create_error_json(buffer);
     }
 
     add_and_notify_new_contact(call_data, contact_data);
 
     add_contact_and_notify_user(call_data, contact_data);
+
+    cJSON *response_json = cJSON_CreateObject();
+    cJSON_AddBoolToObject(response_json, "success", true);
+
+    return response_json;
 }
 

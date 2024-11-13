@@ -1,6 +1,6 @@
 # Компилятор и флаги
 CC = clang
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE 
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
 LDFLAGS = -lssl -lcrypto
 # Директории заголовков и библиотеки
 HEADERFILES = ./inc
