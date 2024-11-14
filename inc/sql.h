@@ -51,6 +51,13 @@ typedef struct unread_messages {
 	int unread_mes_qty;
 } s_unread;
 
+typedef struct Chat_user {
+	int id;
+	char nickname[50];
+	bool active;
+	int unread_mes_qty;  // -1 if NO messaging
+} chat_user;
+
 
 int create_user(sqlite3 *db, user_create usr);
 
@@ -84,5 +91,10 @@ void free_texting(s_texting* textings, const int senders_qty);
 int set_mes_read_status(sqlite3* db, int user_id, int sender_id);
 s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id,
 									 const int qty, const int before);
+void init_chat_user(chat_user* usr, const int id, const char* nickname, const bool active,
+					const int unread_mes_qty);
+
+chat_user* get_clients_userslist(sqlite3* db, const int usr_id, bool show_unknown, int* usr_qty) ;
+
 
 #endif //SQL_H
