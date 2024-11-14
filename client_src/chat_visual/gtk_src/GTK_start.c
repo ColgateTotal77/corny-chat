@@ -45,8 +45,10 @@ static void scroll_to_bottom(GtkWidget *container) {
 // Convert milliseconds to seconds
 void sleep_ms(int milliseconds)
 {
-    (void)milliseconds;
-    sleep(1);
+    struct timespec req, rem;
+    req.tv_sec = 0;
+    req.tv_nsec = milliseconds * 1000000;
+    nanosleep(&req, &rem);
 }
 
 // Function to add a message, appearing at the bottom

@@ -1,13 +1,9 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include <unistd.h>
-#include <client.h>
-#include <commands.h>
-#include <gtk/gtk.h>
-#include <stdbool.h>
-#include "cJSON.h"  // Ensure cJSON is included for the cJSON* return type
 #include "client.h"
+#include <commands.h>
+#include <time.h>
 
 
 void GTK_start(SSL *ssl);
