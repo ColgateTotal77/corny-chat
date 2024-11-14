@@ -298,7 +298,7 @@ int main(int argc, char * argv[]) {
     }
 
 
-    //start_login(ssl);
+    start_login(ssl);
     //GTK_start(ssl);
 
 
