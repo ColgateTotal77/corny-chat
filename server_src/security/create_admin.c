@@ -8,6 +8,8 @@ unsigned char *create_admin(void) {
     fclose(file);
 
     printf("Ваш логін: \"FirstAdmin\"\nВаш пароль: \"%s\"\nТак само він знаходиться в директорії месенджера у файлі admin.txt", password);
-    return hash_password(password, "FirstAdmin");
+    unsigned char* new_password_hash = hash_password(password, "FirstAdmin");
+    free(password);
+    return new_password_hash;
 }
 

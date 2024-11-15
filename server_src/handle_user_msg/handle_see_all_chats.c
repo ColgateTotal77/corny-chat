@@ -20,7 +20,7 @@ cJSON *handle_see_all_chats(call_data_t *call_data) {
             cJSON *member_data_json = cJSON_CreateObject();
             client_t *member_data = ht_get(call_data->general_data->clients, chat_data->users_id[i]);
             cJSON_AddNumberToObject(member_data_json, "id", chat_data->users_id[i]);
-            cJSON_AddStringToObject(member_data_json, "login", member_data->user_data->name);
+            cJSON_AddStringToObject(member_data_json, "login", member_data->user_data->login);
             cJSON_AddItemToArray(chat_members, member_data_json);
         }
 

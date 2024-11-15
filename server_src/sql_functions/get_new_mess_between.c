@@ -62,7 +62,7 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 	sqlite3_bind_int(stmt, 17, num_of_readed);
 
 	int count = 0;
-	while (sqlite3_step(stmt) == SQLITE_ROW) {
+	while ((sqlite3_step(stmt)) == SQLITE_ROW) {
 		count++;
 	}
 	*mes_qty = count;

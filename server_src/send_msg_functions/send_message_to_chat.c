@@ -14,7 +14,7 @@ void send_message_to_chat(call_data_t *call_data, char *message, int chat_id) {
 
 	int count = chat_data->users_count;
     int sender_uid = call_data->client_data->user_data->user_id;
-    char *sender_name = call_data->client_data->user_data->name;
+    char *sender_name = call_data->client_data->user_data->login;
     
     char buffer[BUF_SIZE + 32];
     sprintf(buffer, "From %s to chat %s: %s", sender_name, chat_data->name, message);

@@ -14,4 +14,7 @@ cJSON *handle_see_all_users(call_data_t *call_data);
 cJSON *handle_see_my_contacts(call_data_t *call_data);
 cJSON *handle_get_my_contacts(call_data_t *call_data);
 cJSON* handle_get_all_talks(call_data_t *call_data);
+cJSON *handle_update_nickname(call_data_t *call_data, cJSON *json);
+cJSON *handle_change_password(call_data_t *call_data, cJSON *json);
+cJSON *handle_create_user(call_data_t *call_data, cJSON *json);
 

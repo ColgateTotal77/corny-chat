@@ -38,7 +38,8 @@ typedef struct {
     int contacts_count;
     int* groups_id;
     int groups_count;
-    char name[32];
+    char login[32];
+    char nickname[50];
     int user_id;
     bool is_online;
 } user_t;
@@ -81,6 +82,8 @@ enum LoginValidationResult {
 int setup_server_socket(int port);
 general_data_t *setup_general_data(bool *stop_server, int *online_count, int *chat_uid);
 void free_general_data(general_data_t *general_data);
+void add_offline_user_to_server_cache(ht_t *clients, ht_str_t *login_to_id,
+                                      int user_id, char *login, char *nickname);
 
 void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data);
 enum LoginValidationResult find_or_create_user(call_data_t *call_data, 
@@ -88,8 +91,9 @@ enum LoginValidationResult find_or_create_user(call_data_t *call_data,
 int handle_login(char *str_json_name_password, call_data_t *call_data);
 
 // utility_functions
-user_t* init_user_data(int id, char *name, bool is_online);
+user_t* init_user_data(int id, char *name, char *nickname, bool is_online);
 void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
+int create_new_user_and_return_id(call_data_t *call_data, char *login, unsigned char* password_hash);
 
 // send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);

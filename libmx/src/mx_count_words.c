@@ -1,26 +1,20 @@
-int mx_count_words(const char *str, char delimiter) {
-    int count;
-
-    if (*str == delimiter) {
-        count = 0;
-        str++;
-    }
-    else if (*str == '\0') {
-        return 0;
-    }
-    else {
-        count = 1;
-        str++;
-    }
-
-    while (*str != '\0') {
-        if (*(str - 1) == delimiter && *str != delimiter) {
-            count++;
-        }
-
-        str++;
-    }
-
-    return count;
+static void switcher(int* condition, int* count, int trigger) {
+	if (*condition == 0 && trigger == 1)
+		*condition = 1;
+	else if (*condition == 1 && trigger == 0) {
+		*condition = 0;
+		*count += 1;
+	}
 }
 
+int mx_count_words(const char* str, char c) {
+	if (!str || !c)
+		return -1;
+	int condition = 1;
+	int count = 0;
+
+	for (int i = 0; str[i] != '\0'; i++) {
+		switcher(&condition, &count, str[i] == c);
+	}
+	return count;
+}

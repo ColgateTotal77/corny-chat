@@ -1,14 +1,11 @@
-char *mx_strcpy(char *dst, const char *src) {
-    char *org_dst = dst;
+char* mx_strcpy(char* dst, const char* src) {
+	char* temp_dst = dst;
 
-    while (*src != '\0') {
-        *dst = *src;
-        dst++;
-        src++;
-    }
-
-    *dst = '\0';
-
-    return org_dst;
+	while (*src != '\0') {
+		*dst = *src;
+		dst++;
+		src++;
+	}
+	*dst = '\0';
+	return temp_dst;
 }
-

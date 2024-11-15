@@ -52,6 +52,15 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case GET_ALL_TALKS:
         response_json = handle_get_all_talks(call_data);
         break;
+    case UPDATE_NICKNAME:
+        response_json = handle_update_nickname(call_data, msg_json);
+        break;
+    case CHANGE_PASSWORD:
+        response_json = handle_change_password(call_data, msg_json);
+        break;
+    case CREATE_USER:
+        response_json = handle_create_user(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;

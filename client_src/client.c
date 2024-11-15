@@ -28,18 +28,45 @@ SSL_CTX *init_ssl_context(void) {
     return ctx;
 }
 
-//void* handle_user_input(void* arg) {
-//    call_data_t* call_data = (call_data_t*)arg;
-//    char message[BUF_SIZE];
-//
-//    while (1) {
-//
-//    }
-//
-//    *(call_data->stop_flag) = true;
-//    
-//    return NULL;
-//}
+static char* get_login_for_new_user(void) {
+    printf("Login must be less than 30 and more than 1 characters.\n");
+    printf("Please enter login: ");
+    char login[32];
+    fgets(login, 32, stdin);
+    str_del_newline(login, strlen(login));
+    int login_length = strlen(login);
+
+	if (login_length > 30 || login_length < 2) {
+		printf("Invalid input. Login must be less than 30 and more than 1 characters.\n");
+		return NULL;
+	}
+
+    char *login_buffer = (char*)malloc(login_length * sizeof(char) + 1);
+    login_buffer[login_length] = '\0';
+    strncpy(login_buffer, login, login_length);
+
+    return login_buffer;
+}
+
+static char* get_password_for_new_user(void) {
+    printf("Password must be less than 20 and more than 8 characters. Also, only keyboard symbols are allowed, without spaces.\n");
+    printf("Enter password: ");
+    char password[22];
+    fgets(password, 22, stdin);
+    str_del_newline(password, strlen(password));
+    int password_length = strlen(password);
+    if (password_length > 20 || password_length < 8) {
+		printf("Invalid input. Password is incorrest!.\n");
+		return NULL;
+	}
+
+    char *password_buffer = (char*)malloc(password_length * sizeof(char) + 1);
+    password_buffer[password_length] = '\0';
+    strncpy(password_buffer, password, password_length);
+
+    return password_buffer;
+}
+
 
 void* send_msg_handler(void* arg) {
     call_data_t* call_data = (call_data_t*)arg;
@@ -60,7 +87,11 @@ void* send_msg_handler(void* arg) {
                       "ADD_CONTACT_TO_CHAT 8\n"
                       "EXIT 9\n"
                       "GET_MY_CONTACTS 10\n"
-                      "GET_ALL_TALKS 12\n";
+                      "GET_ALL_TALKS 12\n"
+                      "INCOMING_MESSAGE 14\n"
+                      "UPDATE_NICKNAME 15\n"
+                      "CHANGE_PASSWORD 16\n"
+                      "CREATE_USER 17\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -83,6 +114,9 @@ void* send_msg_handler(void* arg) {
             bzero(message, BUF_SIZE);
             continue;
         }
+
+        char *login;
+        char *password;
 
         switch (command) {
         case SEND_TO_CHAT:
@@ -177,6 +211,46 @@ void* send_msg_handler(void* arg) {
             break;
         case GET_ALL_TALKS:
             get_all_talks(call_data->ssl);
+            break;
+        case UPDATE_NICKNAME:
+            bzero(message, BUF_SIZE);
+            printf("Enter new nickname: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            update_my_nickname(call_data->ssl, message);
+            break;
+        case CHANGE_PASSWORD:
+            bzero(message, BUF_SIZE);
+            printf("Enter old password: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            char old_password[20];
+            strcpy(old_password, message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter new password: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+
+            change_password(call_data->ssl, old_password, message);
+            break;
+        case CREATE_USER:
+            login = get_login_for_new_user();
+            if (login == NULL) {
+                break;
+            }
+            password = get_password_for_new_user();
+            if (password == NULL) {
+                free(login);
+                break;
+            }
+
+            create_new_user(call_data->ssl, login, password);
+            free(login);
+            free(password);
             break;
         default:
             printf("Wrong command code\n");

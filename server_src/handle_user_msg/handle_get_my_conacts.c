@@ -12,7 +12,8 @@ static void add_contacts_to_json(call_data_t *call_data, cJSON *response_json) {
         client_t *client_data = ht_get(call_data->general_data->clients, contacts_list[i]);
         cJSON *contact_data_json = cJSON_CreateObject();
         cJSON_AddNumberToObject(contact_data_json, "id", client_data->user_data->user_id);
-        cJSON_AddStringToObject(contact_data_json, "nickname", client_data->user_data->name);
+        cJSON_AddStringToObject(contact_data_json, "login", client_data->user_data->login);
+        cJSON_AddStringToObject(contact_data_json, "nickname", client_data->user_data->nickname);
         cJSON_AddNumberToObject(contact_data_json, "online", client_data->user_data->is_online);
         cJSON_AddItemToArray(contacts_array, contact_data_json);
     }

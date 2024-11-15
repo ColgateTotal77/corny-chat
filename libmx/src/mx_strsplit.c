@@ -1,58 +1,50 @@
 #include <stdlib.h>
-#include <stdbool.h>
-#include "libmx.h"
+
+int mx_count_words(const char* str, char c);
+void mx_printint(int n);
+char* mx_strndup(const char* s1, size_t n);
+int mx_strlen(const char* str);
+void mx_del_strarr(char*** arr);
 
 
-int find_word_length(const char *s, char delimiter) {
-    int len = 0;
+/**
+ * @brief Splits the string by splitter c and returns an array of string.
+ *
+ * The function returns a dynamically allocated array.
+ * The caller must free the allocated memory after use by mx_del_strarr.
+ *
+ * @param s The string to split.
+ * @param c The char - splitter.
+ * @return A pointer to the array of string or NULL if allocation fails or wrong param.
+ */
 
-    while(*s != '\0' && *s != delimiter) {
-        len++;
-        s++;
-    }
-
-    return len;
+char** mx_strsplit(const char* s, char c) {
+	if (!s)
+		return NULL;
+	const int len = mx_count_words(s, c);
+	char** result = malloc(sizeof(char*) * (len + 1));
+	if (!result)
+		return NULL;
+	for (int i = 0; i <= len; i++) {
+		result[i] = NULL;
+	}
+	int counter = 0;
+	const int s_len = mx_strlen(s);
+	for (int i = 0; i < s_len; i++) {
+		if (s[i] != c) {
+			const int start = i;
+			while (s[i] != c && s[i] != '\0') {
+				i++;
+			}
+			const int end = i;
+			result[counter] = mx_strndup(&s[start], end - start);
+			if (!result[counter]) {
+				mx_del_strarr(&result);
+				return NULL;
+			}
+			counter++;
+		}
+	}
+	result[counter] = NULL;
+	return result;
 }
-
-char **mx_strsplit(char const *s, char c) {
-    if (s == NULL) {
-        return NULL;
-    }
-
-    int words_count = mx_count_words(s, c);
-
-    char **words = (char**)malloc(sizeof(char*) * (words_count + 1));
-
-    if (words == NULL) {
-        return NULL;
-    }
-
-    int word_index = 0;
-
-    bool in_word = false;
-
-    while (*s != '\0') {
-        if (*s != c){
-            if (in_word == false) {
-                int word_length = find_word_length(s, c);
-                words[word_index] = mx_strnew(word_length);
-                mx_strncpy(words[word_index], s, word_length);
-                word_index++;
-                s += word_length;
-                in_word = true;
-            }
-            else {
-                s++;
-            }
-        }
-        else {
-            in_word = false;
-            s++;
-        }
-    }
-
-    words[word_index] = NULL;
-
-    return words;
-}
-
