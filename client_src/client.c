@@ -241,6 +241,9 @@ void catch_ctrl_c_and_exit(int sig) {
 }
 
 int main(int argc, char * argv[]) {
+    // Initialize GTK before creating threads
+    gtk_init();
+
     if (argc != 3) {
         fprintf(stderr, "usage: %s <hostname> <port_number>\n", argv[0]);
         return EXIT_FAILURE;
@@ -282,8 +285,10 @@ int main(int argc, char * argv[]) {
     call_data->ssl = ssl;
     call_data->stop_flag = &stop_flag;
     // strcpy(call_data->name, name_json->valuestring);
-
     // cJSON_Delete(json_name_and_password);
+
+    // Start login in the main thread
+    start_login(ssl);
     
     pthread_t send_msg_thread;
     if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
@@ -296,11 +301,6 @@ int main(int argc, char * argv[]) {
         printf("ERROR: pthread\n");
         return EXIT_FAILURE;
     }
-
-
-    start_login(ssl);
-    //GTK_start(ssl);
-
 
     while (1) {
         if (stop_flag) {

@@ -1,11 +1,4 @@
-#include <gtk/gtk.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include "../inc/cJSON.h" // Ensure you have cJSON library installed and accessible
 #include "GTK.h"
-#include "../inc/password.h"
-#include "../inc/commands.h"
 
 // Function prototypes
 char* get_name(void);
@@ -69,7 +62,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     const char *login_input = gtk_editable_get_text(GTK_EDITABLE(entries[0]));
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(entries[1]));
     GtkWidget *error_label = entries[2];
-    SSL *ssl = (SSL*)entries[3];
+    SSL *ssl = (SSL *)entries[3];
 
     // Check login validity: length 2-30 characters
     bool valid_login = login_input && strlen(login_input) >= 2 && strlen(login_input) <= 30;
@@ -90,6 +83,8 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     } else {
         // If validation passes, print JSON data
         print_json_data(login_input, password_input, ssl);
+        GtkWidget *window = entries[4];
+        gtk_window_close(GTK_WINDOW(window));
     }
 
     // Add red color style to the error label if there's an error
@@ -156,11 +151,12 @@ void on_activate(GtkApplication *app, gpointer ssl) {
     gtk_widget_add_css_class(login_button, "login-button");
 
     // Store login, password entries and error label for callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 3);
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 5);
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
     entries[3] = ssl;
+    entries[4] = window;
 
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_button_clicked), entries);
 
@@ -180,7 +176,19 @@ void on_activate(GtkApplication *app, gpointer ssl) {
 }
 
 void start_login(SSL *ssl) {
-    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect(app, "activate", G_CALLBACK(on_activate), ssl);
+    // Use a static variable to track the application instance
+    static GtkApplication *app = NULL;
+    
+    // If no app exists, create a new one
+    if (app == NULL) {
+        app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
+        g_signal_connect(app, "activate", G_CALLBACK(on_activate), ssl);
+    }
+    
+    // Activate the application
     g_application_run(G_APPLICATION(app), 0, NULL);
+    
+    // Optional: Uncomment if you want to reset the app after closing
+    // g_object_unref(app);
+    // app = NULL;
 }
