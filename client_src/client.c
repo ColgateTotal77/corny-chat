@@ -88,10 +88,9 @@ void* send_msg_handler(void* arg) {
                       "EXIT 9\n"
                       "GET_MY_CONTACTS 10\n"
                       "GET_ALL_TALKS 12\n"
-                      "INCOMING_MESSAGE 14\n"
-                      "UPDATE_NICKNAME 15\n"
-                      "CHANGE_PASSWORD 16\n"
-                      "CREATE_USER 17\n";
+                      "UPDATE_NICKNAME 14\n"
+                      "CHANGE_PASSWORD 15\n"
+                      "CREATE_USER 16\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);

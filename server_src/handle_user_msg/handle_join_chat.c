@@ -20,14 +20,10 @@ cJSON *handle_join_chat(call_data_t *call_data, cJSON *json) {
     append_to_intarr(&call_data->client_data->user_data->groups_id,
                      &call_data->client_data->user_data->groups_count, chat_id);
 
-    char buffer[BUF_SIZE];
-    sprintf(buffer, "Succesfully joined to chat %s\n", chat->name);
-    send_message_to_user(call_data, buffer);
-
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "chat_joined", chat_id);
-    cJSON_AddStringToObject(response_json, "system_message", buffer);
+    cJSON_AddStringToObject(response_json, "chat_name", chat->name);
 
     return response_json;
 }

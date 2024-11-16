@@ -373,7 +373,7 @@ static void on_activate(GtkApplication *app) {
 
 void GTK_start(SSL *ssl) {
     (void)ssl;
-    GtkApplication *app = gtk_application_new("com.example.ChatApp", G_APPLICATION_DEFAULT_FLAGS);
+    GtkApplication *app = gtk_application_new("com.example.ChatApp", 0);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
     g_application_run(G_APPLICATION(app), 0, NULL);
 }

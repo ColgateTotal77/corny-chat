@@ -93,6 +93,8 @@ int handle_login(char *str_json_name_password, call_data_t *call_data);
 // utility_functions
 user_t* init_user_data(int id, char *name, char *nickname, bool is_online);
 void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
+void send_to_id_and_delete_json(call_data_t *call_data, cJSON **json, int id_to_send);
+void send_to_chat_and_delete_json(call_data_t *call_data, cJSON **json, int chat_id);
 int create_new_user_and_return_id(call_data_t *call_data, char *login, unsigned char* password_hash);
 
 // send_msg_functions

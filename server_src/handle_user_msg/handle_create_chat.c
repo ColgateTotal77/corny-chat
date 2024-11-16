@@ -27,6 +27,7 @@ cJSON *handle_create_chat(call_data_t *call_data, cJSON *json) {
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "chat_id", new_chat->chat_id);
+    cJSON_AddStringToObject(response_json, "chat_name", new_chat_name_json->valuestring);
 
     return response_json;
 }

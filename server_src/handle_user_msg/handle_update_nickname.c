@@ -25,6 +25,7 @@ cJSON *handle_update_nickname(call_data_t *call_data, cJSON *json) {
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
+    cJSON_AddStringToObject(response_json, "new_nickname", new_nickname_json->valuestring);
 
     return response_json;
 }
