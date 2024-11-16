@@ -17,7 +17,7 @@ cJSON *json_get_unread_msgs_counts(call_data_t *call_data) {
 
         cJSON *msg_count_json = cJSON_CreateObject();
         cJSON_AddNumberToObject(msg_count_json, "sender_id", msg_count.sender_id);
-        cJSON_AddStringToObject(msg_count_json, "sender_login", sender_data->user_data->name);
+        cJSON_AddStringToObject(msg_count_json, "sender_login", sender_data->user_data->login);
         cJSON_AddNumberToObject(msg_count_json, "unread_msgs_qty", msg_count.unread_mes_qty);
 
         cJSON_AddItemToArray(unread_msgs_info, msg_count_json);

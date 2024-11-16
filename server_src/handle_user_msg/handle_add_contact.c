@@ -13,7 +13,7 @@ static void add_and_notify_new_contact(call_data_t *call_data, client_t *contact
     if (!num_inarray(*new_contact_contacts_list, *new_contact_contacts_count, user_id)) {
         append_to_intarr(new_contact_contacts_list, new_contact_contacts_count, user_id);
         char buffer[BUF_SIZE];
-        sprintf(buffer, "%s added you to contacts\n", call_data->client_data->user_data->name);
+        sprintf(buffer, "%s added you to contacts\n", call_data->client_data->user_data->login);
         send_message_to_id(call_data, buffer, contact_id);
     }
 }
@@ -27,12 +27,12 @@ static void add_contact_and_notify_user(call_data_t *call_data, client_t *contac
     if (!num_inarray(*user_contacts_list, *user_contacts_count, contact_id)) {
         append_to_intarr(user_contacts_list, user_contacts_count, contact_id);
         char buffer[BUF_SIZE];
-        sprintf(buffer, "You added %s to contacts\n", contact_data->user_data->name);
+        sprintf(buffer, "You added %s to contacts\n", contact_data->user_data->login);
         send_message_to_user(call_data, buffer);
     }
     else {
         char buffer[BUF_SIZE];
-        sprintf(buffer, "%s is already in your contacts\n", contact_data->user_data->name);
+        sprintf(buffer, "%s is already in your contacts\n", contact_data->user_data->login);
         send_message_to_user(call_data, buffer);
     }
 }

@@ -15,7 +15,8 @@ cJSON *handle_see_my_contacts(call_data_t *call_data) {
 
         cJSON *contact_data_json = cJSON_CreateObject();
         cJSON_AddNumberToObject(contact_data_json, "id", contacts_list[i]);
-        cJSON_AddStringToObject(contact_data_json, "name", client_data->user_data->name);
+        cJSON_AddStringToObject(contact_data_json, "login", client_data->user_data->login);
+        cJSON_AddStringToObject(contact_data_json, "nickname", client_data->user_data->nickname);
         cJSON_AddBoolToObject(contact_data_json, "online", client_data->user_data->is_online);
 
         cJSON_AddItemToArray(contacts_json_array, contact_data_json);

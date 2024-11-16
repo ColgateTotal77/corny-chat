@@ -1,16 +1,14 @@
-char *mx_strncpy(char *dst,
-                 const char *src,
-                 int len) {
-    int i;
+#include <stddef.h>
 
-    for (i = 0; i < len && src[i] != '\0'; i++) {
-        dst[i] = src[i];
-    }
-
-    for ( ; i < len; i++) {
-        dst[i] = '\0';
-    }
-
-    return dst;
+char* mx_strncpy(char* dst, const char* src, size_t n) {
+	char* temp_dst = dst;
+	size_t counter = 0;
+	while (counter < n && *src != '\0') {
+		*dst = *src;
+		dst++;
+		src++;
+		counter++;
+	}
+	// *dst = '\0';
+	return temp_dst;
 }
-

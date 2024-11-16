@@ -22,26 +22,16 @@ static ht_t *load_users_from_db_to_hash_table(sqlite3 *db, ht_str_t **login_to_i
     *(login_to_id) = ht_str_create();
 	ht_t *clients = ht_create();
 	s_user user_db_data;
-	client_t *client_data;
-	user_t *user_data;
 	
     int user_quantity = get_usr_qty(db);
 	s_user *users_db_info = select_all_users(db);
 
 	for (int i = 0; i < user_quantity; i++) {
 		user_db_data = users_db_info[i];
+
+        add_offline_user_to_server_cache(clients, *login_to_id,
+                                         user_db_data.id, user_db_data.login, user_db_data.nickname);
 		
-		user_data = init_user_data(user_db_data.id, user_db_data.login, false);
-        
-        client_data = (client_t*)malloc(sizeof(client_t));
-		client_data->address = NULL;
-		client_data->sockfd = -1;
-		client_data->user_data = user_data;
-
-        
-
-		ht_set(clients, user_data->user_id, (void*)client_data);
-		ht_str_set(*(login_to_id), user_data->name, user_data->user_id);
 	}
 	
 	free(users_db_info);

@@ -3,7 +3,7 @@
 //
 
 
-#include "../../libmx_konst/inc/libmx.h"
+#include "../../libmx/inc/libmx.h"
 #include "../../inc/sql.h"
 
 /**

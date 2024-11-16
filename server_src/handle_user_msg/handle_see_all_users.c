@@ -17,7 +17,8 @@ cJSON *handle_see_all_users(call_data_t *call_data) {
 
         cJSON *user_data_json = cJSON_CreateObject();
         cJSON_AddNumberToObject(user_data_json, "id", entry->key);
-        cJSON_AddStringToObject(user_data_json, "name", client_data->user_data->name);
+        cJSON_AddStringToObject(user_data_json, "login", client_data->user_data->login);
+        cJSON_AddStringToObject(user_data_json, "nickname", client_data->user_data->nickname);
         cJSON_AddBoolToObject(user_data_json, "online", client_data->user_data->is_online);
         cJSON_AddBoolToObject(user_data_json, "is_admin", true);
 

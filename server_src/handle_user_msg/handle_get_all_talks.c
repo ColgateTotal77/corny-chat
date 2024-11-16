@@ -9,7 +9,6 @@ cJSON* handle_get_all_talks(call_data_t *call_data) {
     cJSON *json = cJSON_CreateObject();
     cJSON_AddNumberToObject(json, "unreaded_chats_qty",  textings_num);
     cJSON *new_messages_json = cJSON_AddArrayToObject(json, "unread_chats_data");
-
     for (int i = 0; i < textings_num; i++) {
         s_texting texting = textings[i];
 
@@ -18,7 +17,7 @@ cJSON* handle_get_all_talks(call_data_t *call_data) {
         cJSON_AddNumberToObject(message_json, "sender", texting.user2_id);
         cJSON_AddNumberToObject(message_json, "unread_msgs_qty", texting.unread_mes_qty);
         cJSON_AddNumberToObject(message_json, "all_msgs_qty", texting.all_mes_qty);
-        add_db_messages_to_json(texting.messages, texting.unread_mes_qty,
+        add_db_messages_to_json(texting.messages, texting.all_mes_qty,
                                 &message_json, "last_messages");
 
         cJSON_AddItemToArray(new_messages_json, message_json);

@@ -25,7 +25,7 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
 
     if (num_inarray(chat->users_id, chat->users_count, contact_id)) {
         char buffer[BUF_SIZE];
-        sprintf(buffer, "%s already joined to chat %s\n", contact_data->user_data->name, chat->name);
+        sprintf(buffer, "%s already joined to chat %s\n", contact_data->user_data->login, chat->name);
         return create_error_json(buffer);
     }
 

@@ -3,7 +3,7 @@
 //
 
 #include "../../inc/sql.h"
-#include "../../libmx_konst/inc/libmx.h"
+#include "../../libmx/inc/libmx.h"
 
 void print_unread_message(const s_unread* message);
 void print_list(t_list* list);

@@ -14,7 +14,7 @@ cJSON* json_get_new_msgs_between(call_data_t *call_data, int collocutor_id) {
 
     cJSON *json = cJSON_CreateObject();
     cJSON_AddNumberToObject(json, "sender_id",  collocutor_id);
-    cJSON_AddStringToObject(json, "sender_login", sender_data->user_data->name);
+    cJSON_AddStringToObject(json, "sender_login", sender_data->user_data->login);
     cJSON_AddNumberToObject(json, "msgs_num",  msgs_num);
     
     add_db_messages_to_json(new_messages, msgs_num, &json, "new_messages");

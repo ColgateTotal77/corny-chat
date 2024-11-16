@@ -37,6 +37,9 @@ void free_client_data(call_data_t *call_data) {
 	client_t *client_data = call_data->client_data;
 
 	if (client_data != NULL) {
+        SSL_shutdown(call_data->ssl); //Коректне завершення SSL-сесії
+        SSL_free(call_data->ssl);
+        client_data->ssl = NULL;
 	    close(client_data->sockfd);
 	    client_data->sockfd = -1;
 	    client_data->address = NULL;
@@ -55,11 +58,11 @@ void *handle_client(void *arg) {
 	
 	*(general_data->online_count) = *(general_data->online_count) + 1;
 
-	char str_json_name_password[BUF_SIZE];
-	bzero(str_json_name_password, BUF_SIZE);
+	char str_json_login_password[BUF_SIZE];
+	bzero(str_json_login_password, BUF_SIZE);
 
-    int bytes = SSL_read(call_data->ssl, str_json_name_password, BUF_SIZE);
-    printf("%s\n", str_json_name_password);
+    int bytes = SSL_read(call_data->ssl, str_json_login_password, BUF_SIZE);
+    printf("%s\n", str_json_login_password);
     if (bytes <= 0) {
         int err = SSL_get_error(call_data->ssl, bytes);
         fprintf(stderr, "SSL_read failed with error: %d\n", err);
@@ -70,7 +73,7 @@ void *handle_client(void *arg) {
     fflush(stdout);
 
     int leave_flag = 0;
-	leave_flag = handle_login(str_json_name_password, call_data);
+	leave_flag = handle_login(str_json_login_password, call_data);
 
 	char buff_out[BUF_SIZE];
 	bzero(buff_out, BUF_SIZE);
@@ -89,8 +92,6 @@ void *handle_client(void *arg) {
         bzero(buff_out, BUF_SIZE);
     }
     
-    SSL_shutdown(call_data->ssl); //Коректне завершення SSL-сесії
-    SSL_free(call_data->ssl);
     free_client_data(call_data);
     pthread_detach(pthread_self());
 
@@ -115,7 +116,9 @@ int main(int argc, char * argv[]) {
         if (rc) { //check is connect successful
             sqlite3_close(db);
         }
-        update_password_hash(db, 1, create_admin());
+        unsigned char *new_password_hash = create_admin();
+        update_password_hash(db, 1, new_password_hash);
+        free(new_password_hash);
         sqlite3_close(db);
     }
 
