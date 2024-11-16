@@ -10,7 +10,7 @@ static void apply_css(GtkWidget *widget) {
     GtkCssProvider *css_provider = gtk_css_provider_new();
     GError *error = NULL;
     
-    GFile *file = g_file_new_for_path("client_src/chat_visual/gtk_src/login.css");
+    GFile *file = g_file_new_for_path("src/chat_visual/gtk_src/login.css");
     gtk_css_provider_load_from_file(css_provider, file);
     
     if (error) {

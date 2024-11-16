@@ -1,31 +1,14 @@
-# Компилятор и флаги
-CC = clang
-
-CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
-LDFLAGS = -lssl -lcrypto -lsqlite3
-GTK_CFLAGS = `pkg-config --cflags gtk4`
-GTK_LIBS = `pkg-config --libs gtk4`
-
 # Директории заголовков и библиотеки
-HEADERFILES = ./inc
 LIBRARYDIR = ./libmx
 JSON_C_DIR = ./json-c
 
 # Папки для серверных и клиентских файлов
-SERVER_OBJ = ./server_obj
-SERVER_SRC = ./server_src
-CLIENT_OBJ = ./client_obj
-CLIENT_SRC = ./client_src
+SERVER_DIR = ./server
+CLIENT_DIR = ./client
 
-# Список исходных файлов (ищет все .c файлы, включая вложенные)
-SERVER_SRCFILES := $(shell find $(SERVER_SRC) -type f -name '*.c')
-SERVER_OBJFILES := $(patsubst $(SERVER_SRC)/%.c, $(SERVER_OBJ)/%.o, $(SERVER_SRCFILES))
 
-CLIENT_SRCFILES := $(shell find $(CLIENT_SRC) -type f -name '*.c')
-CLIENT_OBJFILES := $(patsubst $(CLIENT_SRC)/%.c, $(CLIENT_OBJ)/%.o, $(CLIENT_SRCFILES))
-
-SERVER = server
-CLIENT = client
+SERVER = server/server
+CLIENT = client/client
 LIBRARY = libmx/libmx.a
 JSON_C = json-c/json-c.a
 
@@ -34,39 +17,33 @@ JSON_C = json-c/json-c.a
 # Компиляция серверного и клиентского приложений
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): $(LIBRARY) $(JSON_C) $(SERVER_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(SERVER_OBJFILES) -o $(SERVER) $(LIBRARY) $(JSON_C) $(LDFLAGS)
+$(SERVER): $(LIBRARY) $(JSON_C)
+	cd $(SERVER_DIR) && make
 
-$(CLIENT): $(LIBRARY) $(JSON_C) $(CLIENT_OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(CLIENT_OBJFILES) -o $(CLIENT) $(LIBRARY) $(JSON_C) $(LDFLAGS) $(GTK_LIBS)
+$(CLIENT): $(LIBRARY) $(JSON_C)
+	cd $(CLIENT_DIR) && make
 
-# Компиляция библиотеки
+# Компиляция библиотек
 $(LIBRARY):
 	cd $(LIBRARYDIR) && make
 
 $(JSON_C):
 	cd $(JSON_C_DIR) && make
 
-# Правило для создания объектных файлов и нужных подкаталогов
-$(SERVER_OBJ)/%.o: $(SERVER_SRC)/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -I $(HEADERFILES)
-
-$(CLIENT_OBJ)/%.o: $(CLIENT_SRC)/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -I $(HEADERFILES)
 
 # Удаление всех файлов
 uninstall: clean
 	cd $(LIBRARYDIR) && make uninstall
 	cd $(JSON_C_DIR) && make uninstall
-	rm -f $(SERVER) $(CLIENT)
+	cd $(SERVER_DIR) && make uninstall
+	cd $(CLIENT_DIR) && make uninstall
 
 # Очистка объектных файлов
 clean:
 	cd $(LIBRARYDIR) && make clean
 	cd $(JSON_C_DIR) && make clean
-	rm -rf $(SERVER_OBJ) $(CLIENT_OBJ)
+	cd $(SERVER_DIR) && make clean
+	cd $(CLIENT_DIR) && make clean
 
 # Переустановка
 reinstall: uninstall all

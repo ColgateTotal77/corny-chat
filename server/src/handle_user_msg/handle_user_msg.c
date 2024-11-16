@@ -1,10 +1,10 @@
 #include "server.h"
 #include "stdbool.h"
 #include "cJSON.h"
-#include "commands.h"
 #include "handlers.h"
 #include "sql.h"
 #include "create_json.h"
+#include "command_codes.h"
 
 static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t *call_data) {
     printf("%s\n", client_msg);
