@@ -180,7 +180,7 @@ void on_activate(GtkApplication *app, gpointer ssl) {
 }
 
 void start_login(SSL *ssl) {
-    GtkApplication *app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
+    GtkApplication *app = gtk_application_new("com.example.GtkApplication", 0);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), ssl);
     g_application_run(G_APPLICATION(app), 0, NULL);
 }
