@@ -5,6 +5,23 @@ GtkWidget *messages_container; // Define globally at the top of the file
 GtkWidget *message_entry; // Add this global variable for the entry widget
 GtkWidget *scrolled_window; // Add this global variable
 
+void on_send_clicked_wrapper(GtkWidget *widget, gpointer user_data) {
+    (void)widget;
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+
+    pthread_mutex_lock(&GTK_data->message_mutex);
+    char* message = on_send_clicked(messages_container, message_entry);
+    if (message != NULL) {
+        if (GTK_data->message != NULL) {
+            free(GTK_data->message);
+        }
+        GTK_data->message = mx_strdup(message);
+        free(message);
+    }
+    pthread_mutex_unlock(&GTK_data->message_mutex);
+}
+
+
 // Function to apply CSS styles
 static void apply_css(GtkWidget *widget) {
     (void)widget;
@@ -109,58 +126,73 @@ GtkWidget* create_contact_sidebar(void) {
 }
 
 // New callback function for send button
-void on_send_clicked(GtkWidget *button, gpointer user_data) {
-    (void)button;
-    (void)user_data;
-    const char *message_text = gtk_entry_buffer_get_text(
-        gtk_entry_get_buffer(GTK_ENTRY(message_entry))
-    );
+// void on_send_clicked (GtkWidget *messages_container, GtkWidget *message_entry) {
+//     const char *message_text = gtk_entry_buffer_get_text(
+//         gtk_entry_get_buffer(GTK_ENTRY(message_entry))
+//     );
     
-    // Only send if the message is not empty
-    if (message_text && strlen(message_text) > 0) {
-        // Get current time
-        GDateTime *now = g_date_time_new_now_local();
-        char *time_str = g_date_time_format(now, "%H:%M");
+//     // Only send if the message is not empty
+//     if (message_text && strlen(message_text) > 0) {
+//         // Get current time
+//         GDateTime *now = g_date_time_new_now_local();
+//         char *time_str = g_date_time_format(now, "%H:%M");
         
-        // Add the message
-        add_message(messages_container, message_text, time_str, TRUE);
-        // Clear the entry
-        gtk_entry_buffer_set_text(
-            gtk_entry_get_buffer(GTK_ENTRY(message_entry)),
-            "",
-            0
-        );
+//         // Add the message
+//         add_message(messages_container, message_text, time_str, TRUE);
         
-        // Free resources
-        g_free(time_str);
-        g_date_time_unref(now);
-    }
-}
+        //// call_data_t *call_data = (call_data_t*)user_data;
+        //// send_to_user(call_data->ssl, 3, (char *)message_text);
+
+//         // Clear the entry
+//         gtk_entry_buffer_set_text(
+//             gtk_entry_get_buffer(GTK_ENTRY(message_entry)),
+//             "",
+//             0
+//         );
+        
+//         // Free resources
+//         g_free(time_str);
+//         g_date_time_unref(now);
+//     }
+// }
 
 // Add this function after on_send_clicked, to send the message when you press enter
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
     (void)entry;
-    (void)user_data;
-    // Simulate send button click when Enter is pressed
-    on_send_clicked(NULL, NULL);
+
+    pthread_mutex_lock(&GTK_data->message_mutex);
+    char* message = on_send_clicked(messages_container, message_entry);
+    if (message != NULL) {
+        if (GTK_data->message != NULL) {
+            free(GTK_data->message);
+        }
+        GTK_data->message = mx_strdup(message);
+        free(message);
+    }
+    pthread_mutex_unlock(&GTK_data->message_mutex);
 }
 
-void* recv_msg_handler_wrapper(void* arg) {
-    call_data_t* call_data = (call_data_t*)arg;
-    recv_msg_handler(call_data, messages_container);  
+// void* recv_msg_handler_wrapper(void* arg) {
+//     call_data_t* call_data = (call_data_t*)arg;
+//     recv_msg_handler(call_data, messages_container);  
 
-    return NULL;
-}
+//     return NULL;
+// }
 
-void* send_msg_handler_wrapper(void* arg) {
-    call_data_t* call_data = (call_data_t*)arg;
-    send_msg_handler(call_data, messages_container);  
+// void* send_msg_handler_wrapper(void* arg) {
+//     GTK_data_t* GTK_data = (GTK_data_t*)arg;
+//     send_msg_handler(GTK_data);  
 
-    return NULL;
-}
+//     return NULL;
+// }
 
 // Main application window setup
 static void on_activate(GtkApplication *app, gpointer user_data) {
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+
+
+
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
@@ -301,9 +333,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_widget_add_css_class(send_button, "send-button");
     // Connect the callback to the send button
-    g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_clicked), NULL);
+    g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_clicked_wrapper), GTK_data);    
     // In the on_activate function, after creating message_entry, add:
-    g_signal_connect(message_entry, "activate", G_CALLBACK(on_entry_activated), NULL);
+    g_signal_connect(message_entry, "activate", G_CALLBACK(on_entry_activated), GTK_data);    
     gtk_box_append(GTK_BOX(input_box), send_button);
 
     // Layout setup
@@ -314,15 +346,16 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_child(GTK_WINDOW(window), main_grid);
     gtk_window_present(GTK_WINDOW(window));
 
-    call_data_t *call_data = (call_data_t*)user_data;
-    
+    GTK_data -> messages_container = messages_container;
+    GTK_data -> message_entry = message_entry;
+
     pthread_t send_msg_thread;
-    if (pthread_create(&send_msg_thread, NULL, &send_msg_handler_wrapper, (void*)call_data) != 0) {
+    if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
 
     pthread_t recv_msg_thread;
-    if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler_wrapper, (void*)call_data) != 0) {
+    if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
 }
@@ -331,8 +364,14 @@ void GTK_start(call_data_t *call_data) {
     static GtkApplication *app = NULL;
 
     if (app == NULL) {
+        GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
+        GTK_data->message = NULL;
+        GTK_data->call_data = call_data;
+
+        pthread_mutex_init(&GTK_data->message_mutex, NULL); 
+        
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
-        g_signal_connect(app, "activate", G_CALLBACK(on_activate), call_data);
+        g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
     }
 
     g_application_run(G_APPLICATION(app), 0, NULL);

@@ -322,7 +322,7 @@ int main(int argc, char * argv[]) {
     }
 
 
-    cJSON *json_name_and_password = get_name_password();
+    //cJSON *json_name_and_password = get_name_password(); //закоментить
     
     int port = atoi(argv[2]);
 
@@ -343,12 +343,12 @@ int main(int argc, char * argv[]) {
     sigaction(SIGINT, &psa, NULL);
     stop_flag = false;
 
-    char *str_json_name_password = cJSON_Print(json_name_and_password);
-    cJSON_Minify(str_json_name_password);
+    // char *str_json_name_password = cJSON_Print(json_name_and_password);//закоментить
+    // cJSON_Minify(str_json_name_password);//закоментить
 
-    SSL_write(ssl, str_json_name_password, strlen(str_json_name_password));
+    // SSL_write(ssl, str_json_name_password, strlen(str_json_name_password)); //закоментить
 
-    free(str_json_name_password);
+    //free(str_json_name_password); //закоментить
 
     //cJSON *name_json = cJSON_GetObjectItemCaseSensitive(json_name_and_password, "name");
     
@@ -360,7 +360,7 @@ int main(int argc, char * argv[]) {
     // cJSON_Delete(json_name_and_password);
 
     // Start login in the main thread
-    //start_login(ssl);
+    start_login(ssl);
     GTK_start(call_data);
     // pthread_t send_msg_thread;
     // if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
