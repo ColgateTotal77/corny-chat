@@ -5,8 +5,12 @@ void str_overwrite_stdout(void) {
     fflush(stdout);
 }
 
-void* recv_msg_handler(void* arg, GtkWidget *messages_container) {
-    call_data_t* call_data = (call_data_t*)arg;
+void* recv_msg_handler(void* arg) {
+
+    GTK_data_t *GTK_data = (GTK_data_t*)arg;
+    call_data_t *call_data = GTK_data -> call_data;
+    GtkWidget *messages_container = GTK_data -> messages_container;
+
     char message[1024];
 
     while (!*(call_data->stop_flag)) {

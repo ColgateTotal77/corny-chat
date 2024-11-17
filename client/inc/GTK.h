@@ -5,11 +5,20 @@
 #include "password.h"
 #include <time.h>
 
+typedef struct {
+    GtkWidget *messages_container;
+    GtkWidget *message_entry;
+    char *message; 
+    call_data_t *call_data;
+    pthread_mutex_t message_mutex;  
+} GTK_data_t;
+
 //extern GtkWidget *messages_container;
 void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
 void sleep_ms(int milliseconds);
 gboolean scroll_idle_callback(gpointer data);
 void scroll_to_bottom(GtkWidget *container);
+char *on_send_clicked (GtkWidget *messages_container, GtkWidget *message_entry);
 void GTK_start(call_data_t *call_data);
 // Function prototypes
 void start_login(SSL *ssl);

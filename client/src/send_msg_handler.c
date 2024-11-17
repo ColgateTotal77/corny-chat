@@ -39,8 +39,10 @@ static char* get_password_for_new_user(void) {
     return password_buffer;
 }
 
-void* send_msg_handler(void* arg, GtkWidget *messages_container) {
-    call_data_t* call_data = (call_data_t*)arg;
+void* send_msg_handler(void* arg) {
+    GTK_data_t *GTK_data = (GTK_data_t*)arg;
+    call_data_t *call_data = GTK_data->call_data;
+
     char message[BUF_SIZE];
     //char buffer[BUF_SIZE + 32];
     int chat_id;
@@ -67,6 +69,15 @@ void* send_msg_handler(void* arg, GtkWidget *messages_container) {
     fflush(stdout);
 
     while (!*(call_data->stop_flag)) {
+        
+        pthread_mutex_lock(&GTK_data->message_mutex);
+        if (GTK_data->message != NULL) {
+            send_to_user(call_data->ssl, 3, GTK_data->message);
+            free(GTK_data->message);  // Освобождаем память после отправки
+            GTK_data->message = NULL;
+        }
+        pthread_mutex_unlock(&GTK_data->message_mutex);
+
         //str_overwrite_stdout();
         fgets(message, BUF_SIZE, stdin);
         str_del_newline(message, BUF_SIZE);
@@ -118,7 +129,7 @@ void* send_msg_handler(void* arg, GtkWidget *messages_container) {
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
             send_to_user(call_data->ssl, user_id, message);
-            add_message(messages_container, message, "10:01", TRUE);
+            // add_message(messages_container, message, "10:01", TRUE);
             break;
         case CREATE_CHAT:
             bzero(message, BUF_SIZE);
@@ -222,9 +233,8 @@ void* send_msg_handler(void* arg, GtkWidget *messages_container) {
             fflush(stdout);
             break;
         }
-        
-        bzero(message, BUF_SIZE);
         sleep(1);
+        bzero(message, BUF_SIZE);
        // bzero(buffer, BUF_SIZE + 32);
     }
 
