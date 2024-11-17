@@ -16,6 +16,8 @@ SRC = ./src
 SRCFILES := $(shell find $(SRC) -type f -name '*.c')
 OBJFILES := $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCFILES))
 
+KEY = server.key
+CERT = server.crt
 
 SERVER = server
 LIBRARY = ../libmx/libmx.a
@@ -24,11 +26,20 @@ JSON_C = ../json-c/json-c.a
 .PHONY: all clean uninstall reinstall
 
 # Компиляция серверного и клиентского приложений
-all: $(SERVER) $(CLIENT)
+all: keys $(SERVER) #$(CLIENT)
+
+keys: $(KEY) $(CERT)
 
 $(SERVER): $(OBJFILES)
 	$(CC) $(CFLAGS) -pthread $(OBJFILES) -o $(SERVER) $(LIBRARY) $(JSON_C) $(LDFLAGS)
 
+$(KEY):
+	openssl genrsa -out $(KEY) 2048
+	@echo "Generated private key: $(KEY)"
+
+$(CERT): $(KEY)
+	openssl req -new -x509 -key $(KEY) -out $(CERT) -days 365 -subj "/CN=localhost"
+	@echo "Generated certificate: $(CERT)"
 
 # Правило для создания объектных файлов и нужных подкаталогов
 $(OBJ)/%.o: $(SRC)/%.c
@@ -37,7 +48,7 @@ $(OBJ)/%.o: $(SRC)/%.c
 
 # Удаление всех файлов
 uninstall: clean
-	rm -f $(SERVER)
+	rm -f $(SERVER) $(KEY) $(CERT)
 
 # Очистка объектных файлов
 clean:
