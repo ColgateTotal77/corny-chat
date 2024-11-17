@@ -20,7 +20,8 @@ gboolean scroll_idle_callback(gpointer data);
 void scroll_to_bottom(GtkWidget *container);
 char *on_send_clicked (GtkWidget *messages_container, GtkWidget *message_entry);
 void GTK_start(call_data_t *call_data);
-// Function prototypes
+void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
+void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
 void start_login(SSL *ssl);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);

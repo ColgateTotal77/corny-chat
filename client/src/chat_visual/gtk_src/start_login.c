@@ -54,7 +54,6 @@ bool check_password(char *password) { //Валідація паролю
     return true;
 }
 
-
 /* Callback function to handle the login button click */
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
@@ -84,6 +83,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         // If validation passes, print JSON data
         print_json_data(login_input, password_input, ssl);
         GtkWidget *window = entries[4];
+        check_remember_me(entries[5], login_input, password_input);
         gtk_window_close(GTK_WINDOW(window));
     }
 
@@ -147,16 +147,19 @@ void on_activate(GtkApplication *app, gpointer ssl) {
     gtk_widget_add_css_class(remember_me_check, "remember-me-checkbox");
     gtk_widget_set_hexpand(remember_me_check, TRUE);
 
+    input_saved_data(login_entry, password_entry, remember_me_check);
+
     GtkWidget *login_button = gtk_button_new_with_label("Login");
     gtk_widget_add_css_class(login_button, "login-button");
 
     // Store login, password entries and error label for callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 5);
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 6);
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
     entries[3] = ssl;
     entries[4] = window;
+    entries[5] = remember_me_check;
 
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_button_clicked), entries);
 
