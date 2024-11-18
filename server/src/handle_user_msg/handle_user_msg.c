@@ -61,6 +61,15 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case CREATE_USER:
         response_json = handle_create_user(call_data, msg_json);
         break;
+    case GET_ALL_CLIENTS_USERSLIST:
+        response_json = handle_get_all_clients_userslist(call_data);
+        break;
+    case MARK_CHAT_MSGS_AS_READED:
+        response_json = handle_mark_chat_msgs_as_readed(call_data, msg_json);
+        break;
+    case GET_MY_CLIENTS_USERSLIST:
+        response_json = handle_get_my_clients_userslist(call_data);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;

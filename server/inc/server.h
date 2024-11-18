@@ -96,6 +96,7 @@ void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
 void send_to_id_and_delete_json(call_data_t *call_data, cJSON **json, int id_to_send);
 void send_to_chat_and_delete_json(call_data_t *call_data, cJSON **json, int chat_id);
 int create_new_user_and_return_id(call_data_t *call_data, char *login, unsigned char* password_hash);
+char* get_string_time(void);
 
 // send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);

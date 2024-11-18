@@ -63,7 +63,10 @@ void* send_msg_handler(void* arg) {
                       "GET_ALL_TALKS 12\n"
                       "UPDATE_NICKNAME 14\n"
                       "CHANGE_PASSWORD 15\n"
-                      "CREATE_USER 16\n";
+                      "CREATE_USER 16\n"
+                      "GET_ALL_CLIENTS_USERSLIST 17\n"
+                      "MARK_CHAT_MSGS_AS_READED 18\n"
+                      "GET_MY_CLIENTS_USERSLIST 19\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -227,6 +230,22 @@ void* send_msg_handler(void* arg) {
             create_new_user(call_data->ssl, login, password);
             free(login);
             free(password);
+            break;
+        case GET_ALL_CLIENTS_USERSLIST:
+            get_all_clients_userslist(call_data->ssl);
+            break;
+        case MARK_CHAT_MSGS_AS_READED:
+            bzero(message, BUF_SIZE);
+            printf("Enter sender id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            contact_id = atoi(message);
+
+            mark_chat_msgs_as_readed(call_data->ssl, contact_id);
+            break;
+        case GET_MY_CLIENTS_USERSLIST:
+            get_my_clients_userslist(call_data->ssl);
             break;
         default:
             printf("Wrong command code\n");

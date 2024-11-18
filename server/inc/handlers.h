@@ -17,4 +17,7 @@ cJSON* handle_get_all_talks(call_data_t *call_data);
 cJSON *handle_update_nickname(call_data_t *call_data, cJSON *json);
 cJSON *handle_change_password(call_data_t *call_data, cJSON *json);
 cJSON *handle_create_user(call_data_t *call_data, cJSON *json);
+cJSON* handle_get_all_clients_userslist(call_data_t *call_data);
+cJSON *handle_mark_chat_msgs_as_readed(call_data_t *call_data, cJSON *json);
+cJSON* handle_get_my_clients_userslist(call_data_t *call_data);
 
