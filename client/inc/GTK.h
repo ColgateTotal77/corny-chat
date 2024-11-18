@@ -6,10 +6,26 @@
 #include <time.h>
 
 typedef struct {
+    char *contact_name;
+    int contact_id;
     GtkWidget *messages_container;
+    GtkWidget *messages_container_wrapper;
+} chat_data_t;
+
+typedef struct {
+    GHashTable *chats; 
+    chat_data_t *active_chat; 
+    GtkWidget *chat_area_background;
+    GtkWidget *chat_user_label;
+} chat_manager_t;
+
+typedef struct {
+    //GtkWidget *messages_container;
     GtkWidget *message_entry;
+    GtkWidget *sidebar;
     char *message; 
     call_data_t *call_data;
+    chat_manager_t *chat_manager;
     pthread_mutex_t message_mutex;  
 } GTK_data_t;
 
@@ -18,7 +34,11 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
 void sleep_ms(int milliseconds);
 gboolean scroll_idle_callback(gpointer data);
 void scroll_to_bottom(GtkWidget *container);
-char *on_send_clicked (GtkWidget *messages_container, GtkWidget *message_entry);
+void on_send_clicked (GtkWidget *widget, gpointer user_data);
+GtkWidget* create_message_container(chat_data_t *chat_data);
+GtkWidget* create_chat_item(const char *name, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager);
+chat_data_t* create_chat_data(const char *contact_name, int contact_id);
+void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager);
 void GTK_start(call_data_t *call_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);

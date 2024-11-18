@@ -21,7 +21,18 @@ window {
 
 }
 
+.sidebar scrollbar {
+    background-color: transparent;
+}
 
+.sidebar scrollbar slider {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+.sidebar scrollbar slider:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
 
 .chat-item {
     background-color: #dddddd;

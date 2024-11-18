@@ -48,7 +48,8 @@ void* send_msg_handler(void* arg) {
     int chat_id;
     int contact_id;
     int user_id;
-
+    char temp_nick[32];
+    
     char *help_info = "SEND_TO_CHAT 0\n"
                       "SEND_TO_USER 1\n"
                       "CREATE_CHAT 2\n"
@@ -63,23 +64,12 @@ void* send_msg_handler(void* arg) {
                       "GET_ALL_TALKS 12\n"
                       "UPDATE_NICKNAME 14\n"
                       "CHANGE_PASSWORD 15\n"
-                      "CREATE_USER 16\n"
-                      "GET_ALL_CLIENTS_USERSLIST 17\n"
-                      "MARK_CHAT_MSGS_AS_READED 18\n"
-                      "GET_MY_CLIENTS_USERSLIST 19\n";
+                      "CREATE_USER 16\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
 
     while (!*(call_data->stop_flag)) {
-        
-        pthread_mutex_lock(&GTK_data->message_mutex);
-        if (GTK_data->message != NULL) {
-            send_to_user(call_data->ssl, 3, GTK_data->message);
-            free(GTK_data->message);  // Освобождаем память после отправки
-            GTK_data->message = NULL;
-        }
-        pthread_mutex_unlock(&GTK_data->message_mutex);
 
         //str_overwrite_stdout();
         fgets(message, BUF_SIZE, stdin);
@@ -156,6 +146,31 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             contact_id = atoi(message);
 
+            sprintf(temp_nick, "Nomer: %d", contact_id);
+
+            // Створюємо нові дані чату
+            chat_data_t *new_chat = create_chat_data(temp_nick, contact_id);
+            g_hash_table_insert(GTK_data->chat_manager->chats, g_strdup(temp_nick), new_chat);
+
+            // Створюємо новий елемент чату
+            GtkWidget *new_chat_item = create_chat_item(temp_nick, "None", "12:00", TRUE, FALSE, GTK_data->chat_manager);
+
+            GtkWidget *child = gtk_widget_get_first_child(GTK_data->sidebar);
+            gboolean added = FALSE;
+            
+            while (child != NULL) {
+                if (GTK_IS_BUTTON(child) &&
+                    g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
+                    gtk_box_insert_child_after(GTK_BOX(GTK_data->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+                    added = TRUE;
+                    break;
+                }
+                child = gtk_widget_get_next_sibling(child);
+            }
+
+            if (!added) {
+                gtk_box_append(GTK_BOX(GTK_data->sidebar), new_chat_item);
+            }
             add_contact(call_data->ssl, contact_id);
             break;
         case SEE_MY_CONTACTS:
@@ -231,22 +246,6 @@ void* send_msg_handler(void* arg) {
             free(login);
             free(password);
             break;
-        case GET_ALL_CLIENTS_USERSLIST:
-            get_all_clients_userslist(call_data->ssl);
-            break;
-        case MARK_CHAT_MSGS_AS_READED:
-            bzero(message, BUF_SIZE);
-            printf("Enter sender id: ");
-            fflush(stdout);
-            fgets(message, BUF_SIZE, stdin);
-            str_del_newline(message, BUF_SIZE);
-            contact_id = atoi(message);
-
-            mark_chat_msgs_as_readed(call_data->ssl, contact_id);
-            break;
-        case GET_MY_CLIENTS_USERSLIST:
-            get_my_clients_userslist(call_data->ssl);
-            break;
         default:
             printf("Wrong command code\n");
             fflush(stdout);
@@ -264,4 +263,3 @@ void* send_msg_handler(void* arg) {
 
     return NULL;
 }
-
