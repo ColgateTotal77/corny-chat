@@ -1,6 +1,7 @@
 //
 // Created by konstantin on 05.11.24.
 //
+#include <sqlite3.h>
 #include "../../inc/sql.h"
 
 /**
