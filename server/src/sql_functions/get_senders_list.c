@@ -5,8 +5,6 @@
 #include "../../inc/sql.h"
 #include "../../libmx/inc/libmx.h"
 
-void print_unread_message(const s_unread* message);
-void print_list(t_list* list);
 
 /**
  * @brief returns array of structures that contain number of unread messages and sender id

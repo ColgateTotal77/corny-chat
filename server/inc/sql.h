@@ -95,6 +95,6 @@ void init_chat_user(chat_user* usr, const int id, const char* nickname, const bo
 					const int unread_mes_qty);
 
 chat_user* get_clients_userslist(sqlite3* db, const int usr_id, bool show_unknown, int* usr_qty) ;
-
+bool get_usr_status(sqlite3* db, const char *login);
 
 #endif //SQL_H
