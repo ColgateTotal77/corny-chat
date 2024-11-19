@@ -48,7 +48,6 @@ void* send_msg_handler(void* arg) {
     int chat_id;
     int contact_id;
     int user_id;
-    char temp_nick[32];
     
     char *help_info = "SEND_TO_CHAT 0\n"
                       "SEND_TO_USER 1\n"
@@ -149,31 +148,6 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             contact_id = atoi(message);
 
-            sprintf(temp_nick, "Nomer: %d", contact_id);
-
-            // Створюємо нові дані чату
-            chat_data_t *new_chat = create_chat_data(temp_nick, contact_id);
-            g_hash_table_insert(GTK_data->chat_manager->chats, g_strdup(temp_nick), new_chat);
-
-            // Створюємо новий елемент чату
-            GtkWidget *new_chat_item = create_chat_item(temp_nick, "None", "12:00", TRUE, FALSE, GTK_data->chat_manager);
-
-            GtkWidget *child = gtk_widget_get_first_child(GTK_data->sidebar);
-            gboolean added = FALSE;
-            
-            while (child != NULL) {
-                if (GTK_IS_BUTTON(child) &&
-                    g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-                    gtk_box_insert_child_after(GTK_BOX(GTK_data->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
-                    added = TRUE;
-                    break;
-                }
-                child = gtk_widget_get_next_sibling(child);
-            }
-
-            if (!added) {
-                gtk_box_append(GTK_BOX(GTK_data->sidebar), new_chat_item);
-            }
             add_contact(call_data->ssl, contact_id);
             break;
         case SEE_MY_CONTACTS:
