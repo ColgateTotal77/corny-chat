@@ -1,6 +1,6 @@
 #include "GTK.h"
 
-GtkWidget* create_chat_item(const char *name, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager) {
+GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager) {
     GtkWidget *button = gtk_button_new();
     gtk_widget_add_css_class(button, "chat-item-button");
     
@@ -52,6 +52,8 @@ GtkWidget* create_chat_item(const char *name, const char *message, const char *t
     }
 
     gtk_button_set_child(GTK_BUTTON(button), grid);
+
+    g_object_set_data(G_OBJECT(button), "chat_id", GINT_TO_POINTER(chat_id));
     g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), chat_manager);
     
     return button;

@@ -15,8 +15,10 @@ void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager) {
     
     const char *contact_name = gtk_label_get_text(GTK_LABEL(name_label));
     
+    gpointer chat_id_ptr = g_object_get_data(G_OBJECT(widget), "chat_id");
+    int chat_id = GPOINTER_TO_INT(chat_id_ptr);
     // Look up the chat data for this contact
-    chat_data_t *new_chat = g_hash_table_lookup(chat_manager->chats, contact_name);
+    chat_data_t *new_chat = g_hash_table_lookup(chat_manager->chats, GINT_TO_POINTER(chat_id));
     if (new_chat == NULL || new_chat == chat_manager->active_chat) {
         return;
     }

@@ -286,11 +286,19 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     
     // Создаем менеджер чатов
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
-    chat_manager->chats = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+    chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
     chat_manager->chat_user_label = chat_user_label;
     chat_manager->chat_area_background = chat_area_background;
     
+    GTK_data->user_list = create_user_list();
+    
+    create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
+    create_user(GTK_data->user_list, "Jane Smith", 2, false, "See you later", "11:45");
+    create_user(GTK_data->user_list, "Team Alpha", 3, true, "Meeting at 2 PM", "10:15");
+    create_user(GTK_data->user_list, "Bob Wilson", 4, true, "Thanks!", "09:30");
+    create_user(GTK_data->user_list, "Project Beta", 5, true, "Updates ready", "08:45");
+
     //Створюємо перший чат за замовчуванням
     char *contacts[] = {
         "Notes"
@@ -299,13 +307,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     int contact_id[] = {0};
 
     chat_data_t *chat_data = create_chat_data(contacts[0], contact_id[0]);
-    g_hash_table_insert(chat_manager->chats, g_strdup(contacts[0]), chat_data);
+    g_hash_table_insert(chat_manager->chats, GINT_TO_POINTER(contact_id[0]), chat_data);
 
-    GtkWidget *chat_item = create_chat_item(contacts[0], "None", "12:00", true, false, chat_manager);
+    GtkWidget *chat_item = create_chat_item(contacts[0], contact_id[0], "None", "12:00", true, false, chat_manager);
     gtk_box_append(GTK_BOX(sidebar), chat_item);
-    
+
     //Перший чат за замовчуванням
-    chat_data_t *first_chat = g_hash_table_lookup(chat_manager->chats, contacts[0]);
+    chat_data_t *first_chat = g_hash_table_lookup(chat_manager->chats, GINT_TO_POINTER(contact_id[0]));
     if (first_chat != NULL) {
         gtk_box_append(GTK_BOX(chat_area_background), first_chat->messages_container_wrapper);
         chat_manager->active_chat = first_chat;
@@ -344,6 +352,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
+
+    if (!GTK_data->in_start) {
+        cJSON *command17 = cJSON_CreateObject();
+        cJSON_AddNumberToObject(command17, "command_code", 17);
+        send_and_delete_json(GTK_data->call_data->ssl, &command17);
+        GTK_data->in_start = true;
+    }
 }
 
 void GTK_start(call_data_t *call_data) {
@@ -354,6 +369,7 @@ void GTK_start(call_data_t *call_data) {
         GTK_data->message = NULL;
         GTK_data->call_data = call_data;
         GTK_data->message_entry = NULL;
+        GTK_data->in_start = false;
         pthread_mutex_init(&GTK_data->message_mutex, NULL); 
         
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
