@@ -362,6 +362,7 @@ int main(int argc, char * argv[]) {
     // Start login in the main thread
     start_login(ssl);
     GTK_start(call_data);
+    //profile_start(ssl);
     // pthread_t send_msg_thread;
     // if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)call_data) != 0) {
     //     printf("ERROR: pthread\n");

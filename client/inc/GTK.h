@@ -43,6 +43,7 @@ void GTK_start(call_data_t *call_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
 void start_login(SSL *ssl);
+void profile_start(SSL *ssl);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);
 
