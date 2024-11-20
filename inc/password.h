@@ -10,3 +10,4 @@ unsigned char *create_admin(void);
 bool check_login(char *login);
 bool check_password(char *password);
 
+char *generate_long_salt(void);

@@ -152,3 +152,17 @@ entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count) {
     return entries;
 }
 
+void delete_str_table(ht_str_t **hashtable) {
+    int count = 0;
+	entry_str_t **hash_slots = ht_str_dump(*hashtable, &count);
+
+	for (int i = 0; i < count; i++) {
+		entry_str_t *entry = hash_slots[i];
+        free(entry->key);
+		free(entry);
+	}
+    free(hash_slots);
+	free((*hashtable)->entries);
+	free(*hashtable);
+    *hashtable = NULL;
+}

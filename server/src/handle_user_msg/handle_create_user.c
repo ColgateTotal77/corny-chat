@@ -30,7 +30,8 @@ cJSON *handle_create_user(call_data_t *call_data, cJSON *json) {
     int user_id = create_new_user_and_return_id(call_data, login_json->valuestring, input_hash);
     free(input_hash);
 
-    add_offline_user_to_server_cache(call_data->general_data->clients,
+    add_offline_user_to_server_cache(call_data->general_data->db,
+                                     call_data->general_data->clients,
                                      call_data->general_data->login_to_id,
                                      user_id, login_json->valuestring, NULL);
 
