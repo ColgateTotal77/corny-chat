@@ -21,6 +21,24 @@ static cJSON *create_incoming_private_message_json(char *message, int message_id
     return message_json;
 }
 
+static void update_reciever_and_user_contact_lists(client_t *reciever_data, 
+                                                   client_t *client_data) {
+    int user_id = client_data->user_data->user_id;
+    int **user_list = &client_data->user_data->contacts_id;
+    int *user_count = &client_data->user_data->contacts_count;
+    int reciever_id = reciever_data->user_data->user_id;
+    int **reciever_list = &reciever_data->user_data->contacts_id;
+    int *reciever_count = &reciever_data->user_data->contacts_count;
+
+    if (!num_inarray(*reciever_list, *reciever_count, user_id)) {
+        append_to_intarr(reciever_list, reciever_count, user_id);
+    }
+
+    if (!num_inarray(*user_list, *user_count, reciever_id)) {
+        append_to_intarr(user_list, user_count, reciever_id);
+    }
+}
+
 cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
     if (!cJSON_HasObjectItem(json, "reciever_id")
         || !cJSON_HasObjectItem(json, "message")) {
@@ -30,14 +48,17 @@ cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
     cJSON *message_json = cJSON_GetObjectItemCaseSensitive(json, "message");
     int contact_id = (int)cJSON_GetNumberValue(contact_id_json);
 
-    if (!num_inarray(call_data->client_data->user_data->contacts_id, 
-                     call_data->client_data->user_data->contacts_count, contact_id)) {
-        return create_error_json("No such contact\n");
+    client_t *reciever_data = ht_get(call_data->general_data->clients, contact_id);
+
+    if (reciever_data == NULL) {
+        return create_error_json("No such user\n");
     }
 
     int message_id = insert_private_message(call_data->general_data->db,
                            call_data->client_data->user_data->user_id,
                            contact_id, message_json->valuestring, NULL);
+    
+    update_reciever_and_user_contact_lists(reciever_data, call_data->client_data);
 
     char *time_string = get_string_time();
 

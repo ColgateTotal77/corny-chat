@@ -184,6 +184,24 @@ static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
 //     return NULL;
 // }
 
+// In GTK_start.c, add this callback function:
+static void on_settings_clicked(GtkButton *button, gpointer user_data) {
+    (void)button;
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    
+    // Get the current window
+    GtkWidget *current_window = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_WINDOW);
+    
+    // Hide the current window using the new API
+    gtk_widget_set_visible(current_window, FALSE);
+    
+    // Start profile form
+    profile_start(GTK_data);
+    
+    // Show the main window again using gtk_window_present since it's a GtkWindow
+    gtk_window_present(GTK_WINDOW(current_window));
+}
+
 // Main application window setup
 static void on_activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
@@ -192,7 +210,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
-
+    GTK_data->window = window;
     // Apply CSS to window
     apply_css(window);
 
@@ -223,6 +241,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *settings_icon = gtk_image_new_from_file("src/chat_visual/images/settings.svg");
     gtk_button_set_child(GTK_BUTTON(settings_button), settings_icon);
+
+    // Add this line to connect the callback:
+    g_signal_connect(settings_button, "clicked", G_CALLBACK(on_settings_clicked), GTK_data);
 
     // Search bar setup
     GtkWidget *search_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);

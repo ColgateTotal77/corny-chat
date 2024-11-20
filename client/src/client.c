@@ -312,7 +312,7 @@ void catch_ctrl_c_and_exit(int sig) {
     fflush(stdout);
 }
 
-int main(int argc, char * argv[]) {
+int main(int argc, char* argv[]) {
     // Initialize GTK before creating threads
     gtk_init();
 
@@ -356,6 +356,8 @@ int main(int argc, char * argv[]) {
     call_data->sockfd = sock; 
     call_data->ssl = ssl;
     call_data->stop_flag = &stop_flag;
+    call_data->host = argv[1];
+    call_data->port = atoi(argv[2]);
     // strcpy(call_data->name, name_json->valuestring);
     // cJSON_Delete(json_name_and_password);
 

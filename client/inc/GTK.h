@@ -43,6 +43,8 @@ typedef struct {
     user_list_t *user_list;
     bool in_start;
     pthread_mutex_t message_mutex;  
+    GtkWidget *window;
+    GtkWidget *profile_window;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
@@ -62,7 +64,8 @@ void GTK_start(call_data_t *call_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
 void start_login(SSL *ssl);
-void profile_start(SSL *ssl);
+void profile_start(GTK_data_t *GTK_data);
+void profile_css(GtkWidget *widget);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);
 

@@ -33,4 +33,5 @@ void ht_str_set(ht_str_t *hashtable, char* key, int value);
 int ht_str_get(ht_str_t *hashtable, char* key);
 void ht_str_del(ht_str_t *hashtable, char* key);
 entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count);
+void delete_str_table(ht_str_t **hashtable);
 
