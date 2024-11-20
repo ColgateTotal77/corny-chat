@@ -17,83 +17,6 @@ static void on_eye_button_clicked(GtkToggleButton *button, gpointer user_data) {
     }
 }
 
-void fetch_and_populate_users(SSL *ssl, GtkListBox *login_list) {
-    // Send the request to fetch users
-    see_all_users(ssl);
-
-    // Buffer to receive the response
-    char buffer[4096];
-    int bytes_received = SSL_read(ssl, buffer, sizeof(buffer) - 1);
-
-    if (bytes_received <= 0) {
-        fprintf(stderr, "Error: Failed to receive response from server.\n");
-        return;
-    }
-
-    // Null-terminate the buffer
-    buffer[bytes_received] = '\0';
-
-    // Debug: Print the raw server response
-    printf("Raw server response: %s\n", buffer);
-
-
-
-    // Parse the JSON response
-    cJSON *response = cJSON_Parse(buffer);
-    if (!response) {
-        fprintf(stderr, "Error: Failed to parse server response. Raw: %s\n", buffer);
-        return;
-    }
-
-    // Check for "success" key
-    cJSON *success = cJSON_GetObjectItem(response, "success");
-    if (!cJSON_IsBool(success) || !cJSON_IsTrue(success)) {
-        fprintf(stderr, "Error: Operation failed. 'success' is not true.\n");
-        cJSON_Delete(response);
-        return;
-    }
-
-    // Extract the `users` array
-    cJSON *users_array = cJSON_GetObjectItem(response, "users");
-
-
-    // Clear the existing `login_list`
-    GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(login_list));
-    while (child != NULL) {
-        GtkWidget *next_child = gtk_widget_get_next_sibling(child);
-        gtk_widget_unparent(child);
-        child = next_child;
-    }
-
-    // Populate the `login_list` with user logins
-    cJSON *user = NULL;
-    cJSON_ArrayForEach(user, users_array) {
-        // Extract the `login` field
-        cJSON *login = cJSON_GetObjectItem(user, "login");
-        if (!cJSON_IsString(login)) {
-            continue; // Skip invalid entries
-        }
-
-        // Create a new row for the login
-        GtkWidget *row_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-        gtk_widget_set_hexpand(row_box, TRUE);
-
-        GtkWidget *email_label = gtk_label_new(cJSON_GetStringValue(login));
-        gtk_widget_set_halign(email_label, GTK_ALIGN_START);
-        gtk_widget_set_valign(email_label, GTK_ALIGN_CENTER);
-        gtk_widget_set_hexpand(email_label, TRUE);
-        gtk_box_append(GTK_BOX(row_box), email_label);
-
-        GtkWidget *row_widget = gtk_list_box_row_new();
-        gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row_widget), row_box);
-
-        gtk_list_box_append(GTK_LIST_BOX(login_list), row_widget);
-    }
-
-    // Free the JSON object
-    cJSON_Delete(response);
-
-}
 
 
 
@@ -167,7 +90,8 @@ static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     GtkWidget *password_entry = GTK_WIDGET(entries[1]);
     GtkWidget *error_label = GTK_WIDGET(entries[2]);
     GtkWidget *success_label = GTK_WIDGET(entries[5]);
-    SSL *ssl = (SSL *)entries[3];
+    GTK_data_t *GTK_data = (GTK_data_t*)entries[3];
+    SSL *ssl = GTK_data->call_data->ssl;
 
     // Validate individual widgets
     if (!GTK_IS_WIDGET(login_entry) || !GTK_IS_WIDGET(password_entry) || 
@@ -226,14 +150,28 @@ static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     }
 }
 
+static void gtk_window_close_wrapper(gpointer user_data) {
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    // Apply the CSS styling
+    profile_css(GTK_data->window);
 
-static void activate(GtkApplication *app, gpointer ssl) {
+    // Close the window
+    gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
+}
 
+
+static void activate(GtkApplication *app, gpointer user_data) {
+
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    //SSL *ssl = GTK_data->call_data->ssl;
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Profile Form");
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
+
+    GTK_data->profile_window = window;
+    
 
     // Main box
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
@@ -250,6 +188,8 @@ static void activate(GtkApplication *app, gpointer ssl) {
     // Load SVG icon
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
     gtk_button_set_child(GTK_BUTTON(back_button), back_icon);
+
+    g_signal_connect_swapped(back_button, "clicked", G_CALLBACK(gtk_window_close_wrapper), GTK_data);
 
     GtkWidget *name_label = gtk_label_new("Vladyslav Zaplitnyi");
     gtk_widget_add_css_class(name_label, "header-label");
@@ -305,7 +245,7 @@ static void activate(GtkApplication *app, gpointer ssl) {
     // Connect signal for row selection
     g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
 
-    fetch_and_populate_users((SSL *)ssl, GTK_LIST_BOX(login_list));
+
 
 
     gtk_box_append(GTK_BOX(login_list_background), scroll_container);
@@ -390,7 +330,7 @@ static void activate(GtkApplication *app, gpointer ssl) {
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
-    entries[3] = ssl;
+    entries[3] = user_data;
     entries[4] = window;
     entries[5] = success_label;
     entries[6] = delete_entry;
@@ -435,21 +375,11 @@ static void activate(GtkApplication *app, gpointer ssl) {
     gtk_window_present(GTK_WINDOW(window));
 }
 
-void profile_start(SSL *ssl) {
-  // Use a static variable to track the application instance
-    static GtkApplication *app = NULL;
-    
-    // If no app exists, create a new one
-    if (app == NULL) {
-        app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
-        g_signal_connect(app, "activate", G_CALLBACK(activate), ssl);
-    }
-    
-    // Activate the application
+void profile_start(GTK_data_t *GTK_data) {
+    GtkApplication *app = gtk_application_new("com.example.ProfileForm", G_APPLICATION_NON_UNIQUE);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), GTK_data);
     g_application_run(G_APPLICATION(app), 0, NULL);
-    
-    // Optional: Uncomment if you want to reset the app after closing
-    // g_object_unref(app);
-    // app = NULL;
+    g_object_unref(app);
 }
+
 
