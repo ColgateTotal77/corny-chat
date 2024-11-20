@@ -38,8 +38,10 @@ CREATE TABLE IF NOT EXISTS 'group_users'
 (
     groupId INTEGER NOT NULL,
     userId  INTEGER NOT NULL,
-    FOREIGN KEY (groupId) REFERENCES groups (id),
-    FOREIGN KEY (userId) REFERENCES users (id)
+    unreadNum INTEGER DEFAULT 0,
+    FOREIGN KEY (groupId) REFERENCES groups (id) ON DELETE CASCADE ,
+    FOREIGN KEY (userId) REFERENCES users (id),
+    UNIQUE (groupId, userId)
     );
 
 CREATE TABLE IF NOT EXISTS messages
@@ -56,5 +58,4 @@ CREATE TABLE IF NOT EXISTS messages
     FOREIGN KEY (targetUserId) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (targetGroupId) REFERENCES groups (id) ON DELETE CASCADE,
     CHECK (targetUserId IS NOT NULL OR targetGroupId IS NOT NULL)
-
     );

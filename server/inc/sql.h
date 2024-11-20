@@ -96,5 +96,8 @@ void init_chat_user(chat_user* usr, const int id, const char* nickname, const bo
 
 chat_user* get_clients_userslist(sqlite3* db, const int usr_id, bool show_unknown, int* usr_qty) ;
 bool get_usr_status(sqlite3* db, const char *login);
+int add_users_to_group(sqlite3* db, int group_id, const int* users_list, const int list_len);
+int create_group(sqlite3* db, const int owner_id, char* name, const int* users_list,
+				 const int list_len);
 
 #endif //SQL_H
