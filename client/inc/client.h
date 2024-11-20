@@ -35,3 +35,5 @@ void str_del_newline(char* arr, int length);
 char *read_tls_socket(SSL *ssl);
 void* recv_msg_handler(void* arg);
 void* send_msg_handler(void* arg);
+int recieve_next_response(SSL *ssl, char **buffer);
+SSL *try_to_reconnect(char *session_id, char *host, int port);

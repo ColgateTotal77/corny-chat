@@ -190,6 +190,12 @@ void* send_msg_handler(void* arg) {
             join_chat(call_data->ssl, chat_id);
             break;
         case ADD_CONTACT_TO_CHAT:
+            bzero(message, BUF_SIZE);
+            printf("Enter new contact id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            contact_id = atoi(message);
 
             bzero(message, BUF_SIZE);
             printf("Enter chat id to add contact to:");

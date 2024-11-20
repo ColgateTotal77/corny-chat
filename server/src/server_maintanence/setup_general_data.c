@@ -29,7 +29,7 @@ static ht_t *load_users_from_db_to_hash_table(sqlite3 *db, ht_str_t **login_to_i
 	for (int i = 0; i < user_quantity; i++) {
 		user_db_data = users_db_info[i];
 
-        add_offline_user_to_server_cache(clients, *login_to_id,
+        add_offline_user_to_server_cache(db, clients, *login_to_id,
                                          user_db_data.id, user_db_data.login, user_db_data.nickname);
 		
 	}
@@ -54,10 +54,12 @@ static ht_t *initialize_chats_hashMap_and_set_up_default_chats(int *chat_uid) {
     return chats;
 }
 
+
 general_data_t *setup_general_data(bool *stop_server, int *online_count, int *chat_uid) {
     general_data_t *general_data = (general_data_t*)malloc(sizeof(general_data_t));
     general_data->db = open_db_connection(stop_server);
     general_data->login_to_id = NULL;
+    general_data->session_id_to_id = ht_str_create();
     general_data->clients = load_users_from_db_to_hash_table(general_data->db,
                                                              &general_data->login_to_id);
     general_data->chat_uid = chat_uid;

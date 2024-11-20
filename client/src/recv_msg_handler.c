@@ -14,6 +14,7 @@ void* recv_msg_handler(void* arg) {
     char temp_nick[32];
 
     while (!*(call_data->stop_flag)) {
+        bzero(message, 1024);
         int bytes_received = SSL_read(call_data->ssl, message, sizeof(message)); 
         if (bytes_received > 0) {
             parsed_json = cJSON_Parse(message);

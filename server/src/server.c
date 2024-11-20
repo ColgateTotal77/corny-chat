@@ -37,12 +37,11 @@ void free_client_data(call_data_t *call_data) {
 	client_t *client_data = call_data->client_data;
 
 	if (client_data != NULL) {
-        SSL_shutdown(call_data->ssl); //Коректне завершення SSL-сесії
-        SSL_free(call_data->ssl);
+        SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
+        SSL_free(call_data->client_data->ssl);
         client_data->ssl = NULL;
-	    close(client_data->sockfd);
-	    client_data->sockfd = -1;
-	    client_data->address = NULL;
+	    //close(client_data->sockfd);
+	    //client_data->sockfd = -1;
 		if (client_data->user_data != NULL) {
             client_data->user_data->is_online = false;
 	    }
@@ -61,16 +60,18 @@ void *handle_client(void *arg) {
 	char str_json_login_password[BUF_SIZE];
 	bzero(str_json_login_password, BUF_SIZE);
 
-    int bytes = SSL_read(call_data->ssl, str_json_login_password, BUF_SIZE);
+    int bytes = SSL_read(call_data->client_data->ssl, str_json_login_password, BUF_SIZE);
     printf("%s\n", str_json_login_password);
+    fflush(stdout);
     if (bytes <= 0) {
-        int err = SSL_get_error(call_data->ssl, bytes);
+        int err = SSL_get_error(call_data->client_data->ssl, bytes);
         fprintf(stderr, "SSL_read failed with error: %d\n", err);
         ERR_print_errors_fp(stderr);
         free_client_data(call_data);
+        pthread_detach(pthread_self());
         return NULL;
     }
-    fflush(stdout);
+    
 
     int leave_flag = 0;
 	leave_flag = handle_login(str_json_login_password, call_data);
@@ -79,9 +80,9 @@ void *handle_client(void *arg) {
 	bzero(buff_out, BUF_SIZE);
 
     while (!leave_flag) {
-        int bytes_received = SSL_read(call_data->ssl, buff_out, BUF_SIZE);
+        int bytes_received = SSL_read(call_data->client_data->ssl, buff_out, BUF_SIZE);
         if (bytes_received <= 0) {
-            int err = SSL_get_error(call_data->ssl, bytes_received);
+            int err = SSL_get_error(call_data->client_data->ssl, bytes_received);
             if (err == SSL_ERROR_ZERO_RETURN) {
                 break;
             }
@@ -147,15 +148,11 @@ int main(int argc, char * argv[]) {
 	//general_data->general_data_mutex = general_data_mutex;
 	
     pthread_t new_thread_id;
-    struct sockaddr_in client_addr;
-    socklen_t client_data_len;
     int connfd = 0;
 
 
     while (!stop_server) {
-        client_data_len = sizeof(client_addr);
-
-        connfd = accept(sock, (struct sockaddr*)&client_addr, &client_data_len);
+        connfd = accept(sock, NULL, NULL);
 
         if (connfd < 0) {
             fprintf(stderr, "accept() failed\n");
@@ -185,15 +182,14 @@ int main(int argc, char * argv[]) {
         }
 
         client_t *client_data = (client_t*)malloc(sizeof(client_t));
-		client_data->address = &client_addr;
-		client_data->sockfd = connfd;
+		//client_data->sockfd = connfd;
 		client_data->user_data = NULL;
         client_data->ssl = ssl;
         
 		call_data_t *call_data = (call_data_t*)malloc(sizeof(call_data_t));
         call_data->client_data = client_data;
 		call_data->general_data = general_data;    
-        call_data->ssl = ssl;
+        call_data->client_data->ssl = ssl;
 
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
 

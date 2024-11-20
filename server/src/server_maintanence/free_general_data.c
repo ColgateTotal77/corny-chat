@@ -26,7 +26,11 @@ static void free_clients_cache(ht_t *clients) {
 		free(client_data->user_data->contacts_id);
 		free(client_data->user_data->groups_id);
 		free(client_data->user_data);
-		shutdown(client_data->sockfd, SHUT_RDWR);
+		if (client_data->ssl) {
+			SSL_shutdown(client_data->ssl);
+            SSL_free(client_data->ssl);
+	    }
+		//shutdown(client_data->sockfd, SHUT_RDWR);
 		free(client_data);
 		free(entry);
 	}
@@ -56,6 +60,7 @@ void free_general_data(general_data_t *general_data) {
 	free_chats_cache(general_data->chats);
 	free_clients_cache(general_data->clients);
     free_logins_cache(general_data->login_to_id);
+	delete_str_table(&(general_data->session_id_to_id));
 
     free(general_data);
 }
