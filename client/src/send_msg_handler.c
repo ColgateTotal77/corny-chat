@@ -207,7 +207,9 @@ void* send_msg_handler(void* arg) {
             break;
         case EXIT:
             send_exit_command(call_data->ssl);
-            *(call_data->stop_flag) = true;
+            // *(call_data->stop_flag) = true;
+            //SSL_free(call_data->ssl);
+            call_data->ssl = NULL;
             break;
         case GET_MY_CONTACTS:
             get_my_contacts(call_data->ssl);

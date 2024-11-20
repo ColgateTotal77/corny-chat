@@ -10,16 +10,26 @@ void* recv_msg_handler(void* arg) {
     call_data_t *call_data = GTK_data->call_data;
 
     cJSON *parsed_json;
-    char message[1024];
+    // char message[1024];
     char temp_nick[32];
+    char* session_id;
 
     while (!*(call_data->stop_flag)) {
-        bzero(message, 1024);
-        int bytes_received = SSL_read(call_data->ssl, message, sizeof(message)); 
+        //bzero(message, 1024);
+        char* message = NULL;
+        int bytes_received = recieve_next_response(call_data->ssl, &message); 
         if (bytes_received > 0) {
-            parsed_json = cJSON_Parse(message);
-            if (!parsed_json) continue;
             printf("message = %s\n",message);
+            parsed_json = cJSON_Parse(message);
+            if (!parsed_json) {
+                continue;
+            }
+
+            cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
+
+            if ((command_code_json)->valueint == 11) {
+                session_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id")->valuestring;
+            }
 
             cJSON *event_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "event_code");
             if (!event_code_json || !cJSON_IsNumber(event_code_json)) {
@@ -75,10 +85,16 @@ void* recv_msg_handler(void* arg) {
                 }
             }
             cJSON_Delete(parsed_json);
+            free(message);
         } 
-        else if (bytes_received == 0) {
-            printf("\nServer disconnected\n");
-            break;
+        else if (bytes_received == 0) { 
+            call_data->ssl = try_to_reconnect(session_id, call_data->host, call_data->port);
+            if(!call_data->ssl) {
+                printf("SSL = NULL\nServer disconnected!\n");
+                break;
+            }
+            printf("\nConnection recover!\n");
+            continue;
         } 
         else {
             int err = SSL_get_error(call_data->ssl, bytes_received);
@@ -86,7 +102,7 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
         }
-        memset(message, 0, sizeof(message));
+        //memset(message, 0, sizeof(message));
     }
     pthread_detach(pthread_self());
     return NULL;

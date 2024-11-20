@@ -26,6 +26,8 @@ typedef struct{
 	SSL *ssl;
 	bool *stop_flag;
 	char name[32];
+	char *host;
+	int port;
 } call_data_t;
 
 
