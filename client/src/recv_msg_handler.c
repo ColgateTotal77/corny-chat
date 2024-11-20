@@ -12,12 +12,13 @@ void* recv_msg_handler(void* arg) {
     cJSON *parsed_json;
     // char message[1024];
     char temp_nick[32];
-    char* session_id;
+    char *session_id = NULL;
 
     while (!*(call_data->stop_flag)) {
         //bzero(message, 1024);
         char* message = NULL;
         int bytes_received = recieve_next_response(call_data->ssl, &message); 
+
         if (bytes_received > 0) {
             printf("message = %s\n",message);
             parsed_json = cJSON_Parse(message);
@@ -28,7 +29,9 @@ void* recv_msg_handler(void* arg) {
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
 
             if ((command_code_json)->valueint == 11) {
-                session_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id")->valuestring;
+                cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
+                session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
+                strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
             }
 
             cJSON *event_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "event_code");
@@ -87,13 +90,25 @@ void* recv_msg_handler(void* arg) {
             cJSON_Delete(parsed_json);
             free(message);
         } 
-        else if (bytes_received == 0) { 
-            call_data->ssl = try_to_reconnect(session_id, call_data->host, call_data->port);
-            if(!call_data->ssl) {
+        else if (bytes_received == 0) {
+            if (*(call_data->stop_flag)) {
                 printf("SSL = NULL\nServer disconnected!\n");
+                free(session_id);
+                session_id = NULL;
+                break;
+            }
+            SSL* new_ssl = try_to_reconnect(session_id, call_data->host, call_data->port);
+
+            if (new_ssl == NULL) {
+                printf("SSL = NULL\nServer disconnected!\n");
+                free(session_id);
+                session_id = NULL;
+                *(call_data->stop_flag) = true;
                 break;
             }
             printf("\nConnection recover!\n");
+            SSL_free(call_data->ssl);
+            call_data->ssl = new_ssl;
             continue;
         } 
         else {
@@ -104,6 +119,7 @@ void* recv_msg_handler(void* arg) {
         }
         //memset(message, 0, sizeof(message));
     }
+    free(session_id);
     pthread_detach(pthread_self());
     return NULL;
 }
