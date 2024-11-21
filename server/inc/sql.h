@@ -99,5 +99,15 @@ bool get_usr_status(sqlite3* db, const char *login);
 int add_users_to_group(sqlite3* db, int group_id, const int* users_list, const int list_len);
 int create_group(sqlite3* db, const int owner_id, char* name, const int* users_list,
 				 const int list_len);
+int delete_usr_from_group(sqlite3* db, const int user_id, const int group_id);
+int delete_group(sqlite3 *db, const int group_id);
+
+
+
+
+
+
+
+
 
 #endif //SQL_H

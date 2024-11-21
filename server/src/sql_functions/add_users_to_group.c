@@ -33,6 +33,7 @@ static char* six_var_strbuilder(char* s1, char* s2, char* s3, char* s4, char* s5
 
 /**
  * @brief adds users to the group
+ * @warning this func must be allowed only for group owner
  *
  * @param db
  * @param group_id
