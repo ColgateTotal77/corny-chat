@@ -21,6 +21,7 @@ static void handle_valid_login_via_session_id(call_data_t *call_data, cJSON *jso
                                session_id->valuestring);
 
     update_server_client_data(call_data, client_id);
+	send_user_returned_msg(call_data);
 }
 
 static void create_and_send_succesfull_login_data(call_data_t *call_data, int user_id, char* login,
@@ -56,7 +57,6 @@ static char *set_session_id_data(call_data_t *call_data, int user_id) {
 }
 
 static void handle_valid_login(call_data_t *call_data, char *login) {
-    char buff_out[BUF_SIZE];
 	ht_str_t *login_to_id = call_data->general_data->login_to_id;
 
 	int user_id = ht_str_get(login_to_id, login);
@@ -66,9 +66,7 @@ static void handle_valid_login(call_data_t *call_data, char *login) {
 	create_and_send_succesfull_login_data(call_data, user_id, login, client_session_id);
 	free(client_session_id);
 
-	sprintf(buff_out, "%s has returned\n", login);
-	printf("%s", buff_out);
-	send_message_to_another_ids(call_data, buff_out);
+	send_user_returned_msg(call_data);
 }
 
 int handle_login(char *str_json_login_password, call_data_t *call_data) {

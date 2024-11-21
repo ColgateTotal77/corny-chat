@@ -96,16 +96,19 @@ user_t* init_user_data(sqlite3 *db, int id, char *name, char *nickname, bool is_
 void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
 void send_to_id_and_delete_json(call_data_t *call_data, cJSON **json, int id_to_send);
 void send_to_chat_and_delete_json(call_data_t *call_data, cJSON **json, int chat_id);
+void send_to_another_ids_and_delete_json(call_data_t *call_data, cJSON **json);
 int create_new_user_and_return_id(call_data_t *call_data, char *login, unsigned char* password_hash);
 char* get_string_time(void);
 char *add_length_to_string(char *str);
+void send_user_returned_msg(call_data_t *call_data);
+void send_user_exit_msg(call_data_t *call_data);
 
 // send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);
 void send_message_to_user(call_data_t *call_data, char *message);
 void send_message_to_another_ids(call_data_t *call_data, char *s);
 void send_message_to_chat(call_data_t *call_data, char *message, int chat_id);
-void send_user_exit_msg(call_data_t *call_data);
+
 
 cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
 
