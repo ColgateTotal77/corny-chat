@@ -313,17 +313,20 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     gtk_widget_add_css_class(create_button, "create-button");
 
+    // Container for labels (error and success messages)
+    GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
     // Error label for displaying login/password issues
     GtkWidget *error_label = gtk_label_new("");
     gtk_widget_add_css_class(error_label, "error-label");
     gtk_widget_set_halign(error_label, GTK_ALIGN_START);
-    gtk_box_append(GTK_BOX(create_button), error_label);
+    gtk_box_append(GTK_BOX(message_box), error_label);
 
-    // Error label for displaying login/password issues
+    // Success label for displaying successful account creation
     GtkWidget *success_label = gtk_label_new("");
     gtk_widget_add_css_class(success_label, "success-label");
     gtk_widget_set_halign(success_label, GTK_ALIGN_START);
-    gtk_box_append(GTK_BOX(create_button), success_label);
+    gtk_box_append(GTK_BOX(message_box), success_label);
 
     // Prepare data for the callback
     GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 7);
@@ -345,7 +348,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(right_form), password_label);
     gtk_box_append(GTK_BOX(right_form), password_box);
     gtk_box_append(GTK_BOX(right_form), bottom_box);
-    gtk_box_append(GTK_BOX(right_form), error_label);
+    gtk_box_append(GTK_BOX(right_form), message_box);
 
     // Layout construction
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
@@ -381,5 +384,3 @@ void profile_start(GTK_data_t *GTK_data) {
     g_application_run(G_APPLICATION(app), 0, NULL);
     g_object_unref(app);
 }
-
-
