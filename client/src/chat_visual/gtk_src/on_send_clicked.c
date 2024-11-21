@@ -6,12 +6,12 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
 
     // Check if message_entry is valid
-    if (GTK_data->message_entry == NULL) {
+    if (GTK_data->chat_manager->message_entry == NULL) {
         printf("message_entry is NULL!\n");
         return;
     }
 
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(GTK_data->message_entry));
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(GTK_data->chat_manager->message_entry));
     const char *message_text = gtk_entry_buffer_get_text(buffer);
     
     // Only send if the message is not empty
@@ -21,8 +21,9 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
         
         send_to_user(GTK_data->call_data->ssl, GTK_data->chat_manager->active_chat->contact_id, (char *)message_text);
         add_message(GTK_data->chat_manager->active_chat->messages_container, message_text, time_str, TRUE);
-        
-        gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_data->message_entry)), "", 0);
+        change_sidebar_chat_info(GTK_data->chat_manager->active_chat, (char *)message_text, time_str);
+
+        gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_data->chat_manager->message_entry)), "", 0);
         g_free(time_str);
         g_date_time_unref(now);
     }

@@ -1,6 +1,8 @@
 #include "GTK.h"
 
 GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager) {
+    chat_data_t *chat = g_hash_table_lookup(chat_manager->chats, GINT_TO_POINTER(chat_id));
+    
     GtkWidget *button = gtk_button_new();
     gtk_widget_add_css_class(button, "chat-item-button");
     
@@ -30,6 +32,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
         gtk_widget_set_size_request(status_indicator, 8, 8);
         gtk_widget_add_css_class(status_indicator, is_online ? "status-online" : "status-offline");
         gtk_box_append(GTK_BOX(name_box), status_indicator);
+        chat->status_indicator = status_indicator;
     }
 
     // Place name_box at (1, 0)
@@ -40,13 +43,13 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_add_css_class(message_label, "message-preview");
     gtk_widget_set_halign(message_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(grid), message_label, 1, 1, 1, 1);
-
+    chat->message_label = message_label;
     // Time label
     GtkWidget *time_label = gtk_label_new(time);
     gtk_widget_add_css_class(time_label, "message-time");
     gtk_widget_set_halign(time_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(grid), time_label, 2, 0, 1, 2);
-
+    chat->time_label = time_label;
     if (is_group) {
         gtk_widget_add_css_class(grid, "group-chat"); // Apply a specific style for group chats
     }

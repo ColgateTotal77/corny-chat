@@ -289,10 +289,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
-    GtkWidget *chat_user_label = gtk_label_new("Vladyslav Zaplitnyi");
-    gtk_widget_add_css_class(chat_user_label, "header-name");
-    gtk_box_append(GTK_BOX(chat_header), chat_user_label);
-
     GtkWidget *input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_margin_top(input_box, 10);
     gtk_widget_add_css_class(input_box, "input-box");
@@ -303,15 +299,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_hexpand(message_entry, TRUE);
     gtk_widget_add_css_class(message_entry, "message-entry");
     gtk_box_append(GTK_BOX(input_box), message_entry);
-    GTK_data->message_entry = message_entry;
     
     // Создаем менеджер чатов
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
-    chat_manager->chat_user_label = chat_user_label;
     chat_manager->chat_area_background = chat_area_background;
-    
+    chat_manager->message_entry = message_entry;
+    chat_manager->sidebar = sidebar;
     GTK_data->user_list = create_user_list();
     
     create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
@@ -338,9 +333,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     if (first_chat != NULL) {
         gtk_box_append(GTK_BOX(chat_area_background), first_chat->messages_container_wrapper);
         chat_manager->active_chat = first_chat;
+
+        GtkWidget *chat_user_label = gtk_label_new(contacts[0]);
+        gtk_widget_add_css_class(chat_user_label, "header-name");
+        gtk_box_append(GTK_BOX(chat_header), chat_user_label);
+        chat_manager->chat_user_label = chat_user_label;
     }
 
-    GTK_data->sidebar = sidebar;
     GTK_data->chat_manager = chat_manager;
 
     // Add new group button
@@ -374,12 +373,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
         printf("ERROR: pthread\n");
     }
 
-    if (!GTK_data->in_start) {
-        cJSON *command17 = cJSON_CreateObject();
-        cJSON_AddNumberToObject(command17, "command_code", 17);
-        send_and_delete_json(GTK_data->call_data->ssl, &command17);
-        GTK_data->in_start = true;
-    }
 }
 
 void GTK_start(call_data_t *call_data) {
@@ -389,9 +382,6 @@ void GTK_start(call_data_t *call_data) {
         GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->message = NULL;
         GTK_data->call_data = call_data;
-        GTK_data->message_entry = NULL;
-        GTK_data->in_start = false;
-        pthread_mutex_init(&GTK_data->message_mutex, NULL); 
         
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
         g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
