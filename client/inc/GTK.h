@@ -30,6 +30,11 @@ typedef struct {
 } chat_data_t;
 
 typedef struct {
+    chat_data_t *chat;
+    SSL* ssl;
+} scroll_data_t;
+
+typedef struct {
     GHashTable *chats; 
     chat_data_t *active_chat; 
     GtkWidget *chat_area_background;
@@ -57,10 +62,11 @@ void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);
 GtkWidget* create_message_container(chat_data_t *chat_data);
 GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager);
-chat_data_t* create_chat_data(const char *contact_name, int contact_id);
+chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_data_t *scroll_data);
 void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager);
 void change_sidebar_chat_info(chat_data_t *chat, char *message, char *time);
 void change_status_sidebar_chat(chat_data_t *chat, bool is_online);
+void on_scroll_changed(GtkAdjustment *adjustment, gpointer user_data);
 
 user_list_t* create_user_list(void);
 void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);

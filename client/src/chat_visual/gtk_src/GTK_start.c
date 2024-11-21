@@ -121,15 +121,6 @@ GtkWidget* create_contact_sidebar(void) {
     gtk_widget_set_valign(contact_box, GTK_ALIGN_START); // Align contacts to the top
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), contact_box);
 
-    //Add chat items
-    // GtkWidget *chat1 = create_chat_item("Vladyslav Zaplitnyi", "I love two things, one is...", "12:00", TRUE, FALSE);
-    // GtkWidget *chat2 = create_chat_item("Vladyslav Nezapitnyi", "I love two things, one is...", "11:40", FALSE, FALSE);
-    // GtkWidget *chat3 = create_chat_item("Group chat", "I love two things, one is...", "11:00", FALSE, TRUE);
-
-    // gtk_box_append(GTK_BOX(contact_box), chat1);
-    // gtk_box_append(GTK_BOX(contact_box), chat2);
-    // gtk_box_append(GTK_BOX(contact_box), chat3);
-
     return scrolled_window;
 }
 
@@ -322,7 +313,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     
     int contact_id[] = {0};
 
-    chat_data_t *chat_data = create_chat_data(contacts[0], contact_id[0]);
+    chat_data_t *chat_data = create_chat_data(contacts[0], contact_id[0], NULL);
     g_hash_table_insert(chat_manager->chats, GINT_TO_POINTER(contact_id[0]), chat_data);
 
     GtkWidget *chat_item = create_chat_item(contacts[0], contact_id[0], "None", "12:00", true, false, chat_manager);

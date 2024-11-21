@@ -37,6 +37,8 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
     // Sleep for 500 milliseconds = 0.5 seconds
     sleep_ms(500);
     // Scroll to the bottom after adding the message
-    scroll_to_bottom(messages_container);
+    if(is_sent) {
+        scroll_to_bottom(messages_container);
+    }
 }
 

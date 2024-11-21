@@ -11,10 +11,15 @@ void* recv_msg_handler(void* arg) {
 
     cJSON *parsed_json;
     char *session_id = NULL;
+    bool stop_flag = true;
 
     cJSON *command17 = cJSON_CreateObject();
     cJSON_AddNumberToObject(command17, "command_code", 17);
     send_and_delete_json(GTK_data->call_data->ssl, &command17);
+
+    cJSON *command18 = cJSON_CreateObject();
+    cJSON_AddNumberToObject(command18, "command_code", 18);
+    send_and_delete_json(GTK_data->call_data->ssl, &command18);
 
     while (!*(call_data->stop_flag)) {
         //bzero(message, 1024);
@@ -36,39 +41,79 @@ void* recv_msg_handler(void* arg) {
                     strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
                     continue;
                 }
+                if (stop_flag) {
+                    if (command_code_json->valueint == 17) {
+                        cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
 
-                if (command_code_json->valueint == 17) {
-                    cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        int number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                        for (int i = 0; i < number_of_users; i++) {
+                            cJSON *user = cJSON_GetArrayItem(users, i);
+                            
+                            int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
+                            const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                            bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
+                            scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
+                            scroll_data->ssl = call_data->ssl;
+                            chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
+                            g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
 
-                    int number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
-                    for (int i = 0; i < number_of_users; i++) {
-                        cJSON *user = cJSON_GetArrayItem(users, i);
-                        
-                        int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
-                        const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
-                        bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
-                        chat_data_t *new_chat = create_chat_data(nickname, user_id);
-                        g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
+                            GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "12:00", is_online, FALSE, GTK_data->chat_manager);
 
-                        GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "12:00", is_online, FALSE, GTK_data->chat_manager);
-
-                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
-                        gboolean added = FALSE;
-                        
-                        while (child != NULL) {
-                            if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
-                                added = TRUE;
-                                break;
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
+                            gboolean added = FALSE;
+                            
+                            while (child != NULL) {
+                                if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
+                                    gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+                                    added = TRUE;
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
                             }
-                            child = gtk_widget_get_next_sibling(child);
-                        }
 
-                        if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+                            if (!added) {
+                                gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+                            }
                         }
+                        stop_flag = false;
+                        continue;
                     }
-                    continue;
+                    if (command_code_json->valueint == 18) { 
+                        cJSON *unread_chats_data = cJSON_GetObjectItemCaseSensitive(parsed_json, "unread_chats_data");
+
+                        int number_of_chat = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                        for (int i = 0; i < number_of_chat; i++) {
+                            cJSON *user = cJSON_GetArrayItem(unread_chats_data, i);
+                            
+                            int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
+                            const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                            bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
+                            scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
+                            scroll_data->ssl = call_data->ssl;
+                            chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
+                            g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
+
+                            GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "12:00", is_online, FALSE, GTK_data->chat_manager);
+
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
+                            gboolean added = FALSE;
+                            
+                            while (child != NULL) {
+                                if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
+                                    gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+                                    added = TRUE;
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+
+                            if (!added) {
+                                gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+                            }
+                        }
+                        stop_flag = false;
+                        continue;
+                    }
                 }
             }
             cJSON *event_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "event_code");
