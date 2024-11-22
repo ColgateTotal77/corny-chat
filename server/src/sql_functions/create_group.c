@@ -33,7 +33,7 @@ static int create_new_group(sqlite3* db, const int owner_id, char* name) {
 	}
 	int group_id = (int)sqlite3_last_insert_rowid(db);
 	sqlite3_finalize(stmt);
-	printf("message '%s' created successfully.\n", name);
+	printf("group '%s' created successfully.\n", name);
 	return group_id;
 }
 
