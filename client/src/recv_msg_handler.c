@@ -43,9 +43,10 @@ void* recv_msg_handler(void* arg) {
                 }
                 if (stop_flag) {
                     if (command_code_json->valueint == 17) {
+                        // First update the chat list
                         cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
-
                         int number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                        
                         for (int i = 0; i < number_of_users; i++) {
                             cJSON *user = cJSON_GetArrayItem(users, i);
                             
@@ -75,9 +76,16 @@ void* recv_msg_handler(void* arg) {
                                 gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
                             }
                         }
+
+                        // Then update the login list if it exists
+                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                            update_login_list(GTK_data->profile_data->login_list, parsed_json);
+                        }
+
                         stop_flag = false;
                         continue;
                     }
+                                    
                     if (command_code_json->valueint == 18) { 
                         cJSON *unread_chats_data = cJSON_GetObjectItemCaseSensitive(parsed_json, "unread_chats_data");
 

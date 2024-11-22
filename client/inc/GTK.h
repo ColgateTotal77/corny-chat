@@ -44,12 +44,16 @@ typedef struct {
 } chat_manager_t;
 
 typedef struct {
+    GtkListBox *login_list;
+} profile_data_t;
+
+typedef struct {
     //GtkWidget *messages_container;
     char *message; 
     call_data_t *call_data;
     chat_manager_t *chat_manager;
     user_list_t *user_list;
-
+    profile_data_t *profile_data;
     GtkWidget *window;
     GtkWidget *profile_window;
 } GTK_data_t;
@@ -76,6 +80,7 @@ void check_remember_me(GtkWidget *remember_me_check, const char *login, const ch
 void start_login(SSL *ssl);
 void profile_start(GTK_data_t *GTK_data);
 void profile_css(GtkWidget *widget);
+void update_login_list(GtkListBox *login_list, cJSON *parsed_json);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);
 

@@ -179,17 +179,19 @@ static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
 static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    if (!GTK_data) return;
     
     // Get the current window
     GtkWidget *current_window = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_WINDOW);
+    if (!current_window) return;
     
-    // Hide the current window using the new API
+    // Hide the current window
     gtk_widget_set_visible(current_window, FALSE);
-    
+
     // Start profile form
     profile_start(GTK_data);
     
-    // Show the main window again using gtk_window_present since it's a GtkWindow
+    // Show the main window again
     gtk_window_present(GTK_WINDOW(current_window));
 }
 
@@ -374,6 +376,8 @@ void GTK_start(call_data_t *call_data) {
         GTK_data->message = NULL;
         GTK_data->call_data = call_data;
         
+        GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
+        GTK_data->profile_data->login_list = NULL;
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
         g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
     }

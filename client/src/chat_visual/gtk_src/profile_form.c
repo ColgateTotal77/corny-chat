@@ -1,6 +1,5 @@
 #include "GTK.h"
 
-
 // Callback to toggle password visibility
 static void on_eye_button_clicked(GtkToggleButton *button, gpointer user_data) {
     GtkEntry *password_entry = GTK_ENTRY(user_data);
@@ -17,44 +16,57 @@ static void on_eye_button_clicked(GtkToggleButton *button, gpointer user_data) {
     }
 }
 
-
-
-
 // Find the most similar email based on the prefix
 static const char *find_similar_email(const char *input, GtkListBox *list_box) {
+    if (!input || !list_box) {
+        return NULL;
+    }
+
     GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(list_box));
-    const char *email = NULL;
+    const char *best_match = NULL;
 
     while (child) {
-        GtkWidget *row_child = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
-        GtkWidget *box_child = gtk_widget_get_first_child(row_child);
-        const char *row_text = gtk_label_get_text(GTK_LABEL(box_child));
-
-        if (g_str_has_prefix(row_text, input)) {
-            email = row_text;
-            break;
+        if (GTK_IS_LIST_BOX_ROW(child)) {
+            GtkWidget *row_child = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
+            if (GTK_IS_LABEL(row_child)) {  // Check if it's directly a label
+                const char *row_text = gtk_label_get_text(GTK_LABEL(row_child));
+                
+                // If the input is a prefix of the current row text
+                if (row_text && g_str_has_prefix(row_text, input)) {
+                    best_match = row_text;
+                    break;  // Found a match, exit loop
+                }
+            }
         }
-
         child = gtk_widget_get_next_sibling(child);
     }
 
-    return email;
+    return best_match;
 }
 
 // Key pressed callback for autocomplete
 static void on_key_pressed(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer user_data) {
-    (void)keycode;  // Suppress unused parameter warning
-    (void)state;    // Suppress unused parameter warning
-
-    GtkEntry *delete_entry = GTK_ENTRY(user_data);
-    GtkListBox *login_list = GTK_LIST_BOX(g_object_get_data(G_OBJECT(controller), "list-box"));
+    (void)keycode;
+    (void)state;
 
     if (keyval == GDK_KEY_Tab) {
-        const char *current_text = gtk_editable_get_text(GTK_EDITABLE(delete_entry));
-        const char *suggested_email = find_similar_email(current_text, login_list);
+        GtkEntry *entry = GTK_ENTRY(user_data);
+        GtkListBox *list_box = GTK_LIST_BOX(g_object_get_data(G_OBJECT(controller), "list-box"));
+        
+        if (!entry || !list_box) {
+            return;
+        }
 
-        if (suggested_email) {
-            gtk_editable_set_text(GTK_EDITABLE(delete_entry), suggested_email);
+        const char *current_text = gtk_editable_get_text(GTK_EDITABLE(entry));
+        if (!current_text) {
+            return;
+        }
+
+        const char *suggested_text = find_similar_email(current_text, list_box);
+        if (suggested_text) {
+            gtk_editable_set_text(GTK_EDITABLE(entry), suggested_text);
+            // Set cursor to end of text
+            gtk_editable_set_position(GTK_EDITABLE(entry), -1);
         }
     }
 }
@@ -63,17 +75,17 @@ static void on_key_pressed(GtkEventControllerKey *controller, guint keyval, guin
 static void on_login_row_selected(GtkListBox *list_box, GtkListBoxRow *row, gpointer user_data) {
     (void)list_box; // Suppress unused parameter warning
 
+    // Use delete_entry instead of login_entry
     GtkEntry *delete_entry = GTK_ENTRY(user_data);
 
     if (row) {
         GtkWidget *child = gtk_list_box_row_get_child(row);
-        GtkWidget *box_child = gtk_widget_get_first_child(child);
-        const char *email = gtk_label_get_text(GTK_LABEL(box_child));
-
-        gtk_editable_set_text(GTK_EDITABLE(delete_entry), email);
+        if (GTK_IS_LABEL(child)) {
+            const char *login_text = gtk_label_get_text(GTK_LABEL(child));
+            gtk_editable_set_text(GTK_EDITABLE(delete_entry), login_text);
+        }
     }
 }
-
 
 static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
@@ -150,6 +162,197 @@ static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     }
 }
 
+// static void on_delete_button_clicked(GtkButton *button, gpointer user_data) {
+//     (void)button;
+
+//     // Validate user_data
+//     if (!user_data) {
+//         fprintf(stderr, "Error: user_data is NULL.\n");
+//         return;
+//     }
+
+//     // Unpack entries
+//     gpointer *entries = (gpointer *)user_data;
+//     GtkWidget *delete_entry = GTK_WIDGET(entries[6]);
+//     GtkWidget *error_label = GTK_WIDGET(entries[2]);
+//     GtkWidget *success_label = GTK_WIDGET(entries[5]);
+//     GTK_data_t *GTK_data = (GTK_data_t*)entries[3];
+//     SSL *ssl = GTK_data->call_data->ssl;
+
+//     // Validate individual widgets
+//     if (!GTK_IS_WIDGET(delete_entry) || !GTK_IS_WIDGET(error_label) || !GTK_IS_WIDGET(success_label)) {
+//         fprintf(stderr, "Error: One or more widgets are invalid.\n");
+//         return;
+//     }
+
+//     // Get text from delete input field
+//     const char *delete_input = gtk_editable_get_text(GTK_EDITABLE(delete_entry));
+
+//     if (!delete_input || !*delete_input) {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: Login to delete cannot be empty.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//         return;
+//     }
+
+//     // Clear error label
+//     gtk_label_set_text(GTK_LABEL(error_label), "");
+//     gtk_widget_remove_css_class(error_label, "error-label");
+
+//     // Send data to server to delete user
+//     delete_user(ssl, (char *)delete_input);
+
+//     // Simulated response handling (replace this with actual response logic)
+//     bool user_deleted_successfully = true; // Replace with actual server response check
+
+//     if (user_deleted_successfully) {
+//         // Success message
+//         gtk_label_set_text(GTK_LABEL(success_label), "Account successfully deleted!");
+//         gtk_widget_add_css_class(success_label, "success-label");
+
+//         // Clear input field
+//         gtk_editable_set_text(GTK_EDITABLE(delete_entry), "");
+//     } else {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: Account deletion failed.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//     }
+// }
+
+// Callback for changing password
+// static void on_change_password_button_clicked(GtkButton *button, gpointer user_data) {
+//     (void)button;
+
+//     // Validate user_data
+//     if (!user_data) {
+//         fprintf(stderr, "Error: user_data is NULL.\n");
+//         return;
+//     }
+
+//     // Unpack entries
+//     gpointer *entries = (gpointer *)user_data;
+//     GtkWidget *old_password_entry = GTK_WIDGET(entries[7]);
+//     GtkWidget *new_password_entry_1 = GTK_WIDGET(entries[8]);
+//     GtkWidget *new_password_entry_2 = GTK_WIDGET(entries[9]);
+//     GtkWidget *error_label = GTK_WIDGET(entries[2]);
+//     GtkWidget *success_label = GTK_WIDGET(entries[5]);
+//     GTK_data_t *GTK_data = (GTK_data_t*)entries[3];
+//     SSL *ssl = GTK_data->call_data->ssl;
+
+//     // Validate individual widgets
+//     if (!GTK_IS_WIDGET(old_password_entry) || !GTK_IS_WIDGET(new_password_entry_1) || !GTK_IS_WIDGET(new_password_entry_2) ||
+//         !GTK_IS_WIDGET(error_label) || !GTK_IS_WIDGET(success_label)) {
+//         fprintf(stderr, "Error: One or more widgets are invalid.\n");
+//         return;
+//     }
+
+//     // Get text from input fields
+//     const char *old_password_input = gtk_editable_get_text(GTK_EDITABLE(old_password_entry));
+//     const char *new_password_input_1 = gtk_editable_get_text(GTK_EDITABLE(new_password_entry_1));
+//     const char *new_password_input_2 = gtk_editable_get_text(GTK_EDITABLE(new_password_entry_2));
+
+//     // Check if fields are empty
+//     if (!old_password_input || !*old_password_input || !new_password_input_1 || !*new_password_input_1 || !new_password_input_2 || !*new_password_input_2) {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: All password fields must be filled.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//         return;
+//     }
+
+//     // Check if new passwords match
+//     if (strcmp(new_password_input_1, new_password_input_2) != 0) {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: New passwords do not match.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//         return;
+//     }
+
+//     // Check if old password matches the one in the database
+//     if (!is_valid_password(GTK_data->call_data->general_data->db, GTK_data->call_data->client_data->user_data->login, (char *)old_password_input)) {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: Old password is incorrect.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//         return;
+//     }
+
+//     // Update password in the database
+//     cJSON *json = handle_change_password(GTK_data->call_data, cJSON_CreateString(new_password_input_1));
+
+//     bool password_changed_successfully = cJSON_IsBool(cJSON_GetObjectItem(json, "success")) && cJSON_IsTrue(cJSON_GetObjectItem(json, "success"));
+//     cJSON_Delete(json);
+
+//     if (password_changed_successfully) {
+//         // Success message
+//         gtk_label_set_text(GTK_LABEL(success_label), "Password successfully changed!");
+//         gtk_widget_add_css_class(success_label, "success-label");
+
+//         // Clear input fields
+//         gtk_editable_set_text(GTK_EDITABLE(old_password_entry), "");
+//         gtk_editable_set_text(GTK_EDITABLE(new_password_entry_1), "");
+//         gtk_editable_set_text(GTK_EDITABLE(new_password_entry_2), "");
+//     } else {
+//         gtk_label_set_text(GTK_LABEL(error_label), "Error: Password change failed.");
+//         gtk_widget_add_css_class(error_label, "error-label");
+//         gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
+//     }
+// }
+
+// Update the login list with users from the server
+// static void update_login_list(GtkListBox *login_list, SSL *ssl) {
+//     // Clear existing list items
+//     GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(login_list));
+//     while (child) {
+//         GtkWidget *next = gtk_widget_get_next_sibling(child);
+//         gtk_list_box_remove(GTK_LIST_BOX(login_list), child);
+//         child = next;
+//     }
+
+//     // Request all users from the server
+//     get_all_clients_userslist(ssl);
+
+//     // Simulated response for example purposes
+//     const char *response = "{\"success\":true,\"number_of_users\":1,\"users\":[{\"id\":1,\"active\":true,\"unread_messages\":-1,\"nickname\":\"FirstAdmin\",\"online\":false}],\"command_code\":17}";
+
+//     // Parse the JSON response
+//     cJSON *json = cJSON_Parse(response);
+//     if (json == NULL) {
+//         fprintf(stderr, "Error: Failed to parse JSON response.\n");
+//         return;
+//     }
+
+//     // Check if the response indicates success
+//     cJSON *success = cJSON_GetObjectItem(json, "success");
+//     if (!cJSON_IsBool(success) || !cJSON_IsTrue(success)) {
+//         cJSON_Delete(json);
+//         fprintf(stderr, "Error: Server response indicates failure.\n");
+//         return;
+//     }
+
+//     // Get the users array
+//     cJSON *users = cJSON_GetObjectItem(json, "users");
+//     if (!cJSON_IsArray(users)) {
+//         cJSON_Delete(json);
+//         fprintf(stderr, "Error: Users list is not an array.\n");
+//         return;
+//     }
+
+//     // Iterate over the users and add them to the login list
+//     cJSON *user = NULL;
+//     cJSON_ArrayForEach(user, users) {
+//         cJSON *active = cJSON_GetObjectItem(user, "active");
+//         cJSON *nickname = cJSON_GetObjectItem(user, "nickname");
+
+//         if (cJSON_IsBool(active) && cJSON_IsTrue(active) && cJSON_IsString(nickname)) {
+//             GtkWidget *row = gtk_list_box_row_new();
+//             GtkWidget *label = gtk_label_new(nickname->valuestring);
+//             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+//             gtk_list_box_append(login_list, row);
+//         }
+//     }
+
+//     cJSON_Delete(json);
+// }
+
 static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
     // Apply the CSS styling
@@ -159,11 +362,10 @@ static void gtk_window_close_wrapper(gpointer user_data) {
     gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
 }
 
-
 static void activate(GtkApplication *app, gpointer user_data) {
+    GTK_data_t *GTK_data = (GTK_data_t *)user_data; 
+    SSL *ssl = GTK_data->call_data->ssl;            
 
-    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
-    //SSL *ssl = GTK_data->call_data->ssl;
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Profile Form");
@@ -172,7 +374,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GTK_data->profile_window = window;
     
-
     // Main box
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
     gtk_widget_set_margin_start(main_box, 30);
@@ -213,53 +414,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(nickname_box), nickname_label);
     gtk_box_append(GTK_BOX(nickname_box), nickname_input_box);
 
-    // Login delete section
-    GtkWidget *delete_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    GtkWidget *delete_input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    GtkWidget *delete_label = gtk_label_new("Enter login to delete:");
-    gtk_widget_set_halign(delete_label, GTK_ALIGN_START);
-    GtkWidget *delete_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
-    GtkWidget *delete_button = gtk_button_new_with_label("Delete");
-    gtk_widget_add_css_class(delete_button, "delete-button");
-
-    gtk_box_append(GTK_BOX(delete_input_box), delete_entry);
-    gtk_box_append(GTK_BOX(delete_input_box), delete_button);
-    gtk_box_append(GTK_BOX(delete_box), delete_label);
-    gtk_box_append(GTK_BOX(delete_box), delete_input_box);
-
-    // Login list background container
-    GtkWidget *login_list_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-
-    // Scrollable login list container
-    GtkWidget *scroll_container = gtk_scrolled_window_new();
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_container), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    gtk_widget_set_size_request(scroll_container, -1, 200);
-    gtk_widget_add_css_class(scroll_container, "login-list-background");
-
-    // Login list
-    GtkWidget *login_list = gtk_list_box_new();
-    gtk_widget_add_css_class(login_list, "login-list");
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_container), login_list);
-
-    // Connect signal for row selection
-    g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
-
-
-
-
-    gtk_box_append(GTK_BOX(login_list_background), scroll_container);
-
-    // Attach key controller to delete entry
-    GtkEventControllerKey *key_controller = GTK_EVENT_CONTROLLER_KEY(gtk_event_controller_key_new());
-    g_object_set_data(G_OBJECT(key_controller), "list-box", login_list);
-    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_pressed), delete_entry);
-    gtk_widget_add_controller(delete_entry, GTK_EVENT_CONTROLLER(key_controller));
-
     // Right side form
     GtkWidget *right_form = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_set_margin_start(right_form, 50);
-
 
     // Login input
     GtkWidget *login_label = gtk_label_new("Login:");
@@ -305,13 +462,89 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_valign(eye_button, GTK_ALIGN_CENTER);
     gtk_widget_set_margin_end(eye_button, 10);
 
-
     // Admin checkbox and create button
     GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     GtkWidget *admin_check = gtk_check_button_new_with_label("Admin");
     gtk_widget_add_css_class(admin_check, "admin-checkbox");
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     gtk_widget_add_css_class(create_button, "create-button");
+
+    // Delete user section
+    GtkWidget *delete_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    GtkWidget *delete_input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    GtkWidget *delete_label = gtk_label_new("Enter login to delete:");
+    gtk_widget_set_halign(delete_label, GTK_ALIGN_START);
+    GtkWidget *delete_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
+    GtkWidget *delete_button = gtk_button_new_with_label("Delete");
+    gtk_widget_add_css_class(delete_button, "delete-button");
+
+    gtk_box_append(GTK_BOX(delete_input_box), delete_entry);
+    gtk_box_append(GTK_BOX(delete_input_box), delete_button);
+    gtk_box_append(GTK_BOX(delete_box), delete_label);
+    gtk_box_append(GTK_BOX(delete_box), delete_input_box);
+
+    // Login list background container
+    GtkWidget *login_list_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    // Scrollable login list container
+    GtkWidget *scroll_container = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_container), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_size_request(scroll_container, -1, 200);
+    gtk_widget_add_css_class(scroll_container, "login-list-background");
+
+   // Login list
+    GtkWidget *login_list = gtk_list_box_new();
+    gtk_widget_set_visible(login_list, TRUE);  // Make sure it's visible
+    gtk_widget_set_vexpand(login_list, TRUE);  // Allow vertical expansion
+    gtk_widget_set_hexpand(login_list, TRUE);  // Allow horizontal expansion
+    gtk_widget_add_css_class(login_list, "login-list");
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_container), login_list);
+    GTK_data->profile_data->login_list = GTK_LIST_BOX(login_list);
+
+    // Connect signal for row selection to delete_entry only
+    g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
+
+    gtk_box_append(GTK_BOX(login_list_background), scroll_container);
+
+    // Attach key controller to login entry
+    GtkEventController *key_controller = gtk_event_controller_key_new();
+    g_object_set_data(G_OBJECT(key_controller), "list-box", login_list);
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_pressed), delete_entry);
+    gtk_widget_add_controller(delete_entry, key_controller);
+
+    // Update the login list with users from the server
+    //update_login_list(GTK_LIST_BOX(login_list), ssl);
+
+    // Send command to get users list
+    cJSON *command = cJSON_CreateObject();
+    cJSON_AddNumberToObject(command, "command_code", 17);
+    send_and_delete_json(ssl, &command);
+
+    // Get response and parse it
+    char *response = NULL;
+    int bytes_received = recieve_next_response(ssl, &response);
+    if (bytes_received > 0) {
+        cJSON *parsed_json = cJSON_Parse(response);
+        if (parsed_json) {
+            update_login_list(GTK_LIST_BOX(login_list), parsed_json);
+            // Note: Don't delete parsed_json here as it's deleted in update_login_list
+        }
+        free(response);
+    }
+
+    gtk_box_append(GTK_BOX(bottom_box), admin_check);
+    gtk_box_append(GTK_BOX(bottom_box), create_button);
+
+    // Pack right side
+    gtk_box_append(GTK_BOX(right_form), login_label);
+    gtk_box_append(GTK_BOX(right_form), login_entry);
+    gtk_box_append(GTK_BOX(right_form), password_label);
+    gtk_box_append(GTK_BOX(right_form), password_box);
+    gtk_box_append(GTK_BOX(right_form), bottom_box);
+    gtk_box_append(GTK_BOX(right_form), delete_box);
+    gtk_box_append(GTK_BOX(right_form), login_list_background);
 
     // Container for labels (error and success messages)
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -328,41 +561,38 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_halign(success_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(message_box), success_label);
 
-    // Prepare data for the callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 7);
+
+    // Prepare data for the callbacks
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 10);
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
     entries[3] = user_data;
     entries[4] = window;
     entries[5] = success_label;
-    entries[6] = delete_entry;
+    // entries[6] = delete_entry;
+    // entries[7] = old_password_entry;
+    // entries[8] = new_password_entry_1;
+    // entries[9] = new_password_entry_2;
     g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_button_clicked), entries);
-
-    gtk_box_append(GTK_BOX(bottom_box), admin_check);
-    gtk_box_append(GTK_BOX(bottom_box), create_button);
-
-    // Pack right side
-    gtk_box_append(GTK_BOX(right_form), login_label);
-    gtk_box_append(GTK_BOX(right_form), login_entry);
-    gtk_box_append(GTK_BOX(right_form), password_label);
-    gtk_box_append(GTK_BOX(right_form), password_box);
-    gtk_box_append(GTK_BOX(right_form), bottom_box);
-    gtk_box_append(GTK_BOX(right_form), message_box);
+    //g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), entries);
+    //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), entries);
+    g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
 
     // Layout construction
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
 
     gtk_box_append(GTK_BOX(left_box), nickname_box);
-    gtk_box_append(GTK_BOX(left_box), delete_box);
-    gtk_box_append(GTK_BOX(left_box), login_list_background);
 
     gtk_box_append(GTK_BOX(content_box), left_box);
     gtk_box_append(GTK_BOX(content_box), right_form);
 
     gtk_box_append(GTK_BOX(main_box), header_box);
     gtk_box_append(GTK_BOX(main_box), content_box);
+    gtk_box_append(GTK_BOX(main_box), message_box);
+    
+    //get_all_clients_userslist(ssl);
 
     gtk_window_set_child(GTK_WINDOW(window), main_box);
 
