@@ -13,6 +13,13 @@ void* recv_msg_handler(void* arg) {
     char *session_id = NULL;
     bool stop_flag = true;
 
+    time_t now = time(NULL);
+    struct tm *local_time = localtime(&now);
+    int time_zone = local_time->__tm_gmtoff;
+    struct tm message_time = {0};
+    char time_to_send[12];
+    struct tm *adjusted_time;
+
     get_all_clients_userslist(call_data->ssl);
 
     while (!*(call_data->stop_flag)) {
@@ -91,10 +98,26 @@ void* recv_msg_handler(void* arg) {
                                 cJSON *last_messages_array = cJSON_GetObjectItemCaseSensitive(unread_chat, "last_messages");                                
                                 for (int j = 0; j < all_msgs_qty; j++) {
                                     cJSON *last_message = cJSON_GetArrayItem(last_messages_array, j);
+
                                     char *created_at = cJSON_GetObjectItemCaseSensitive(last_message, "created_at")->valuestring;
+                                    strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                                    time_t time_value = mktime(&message_time);
+                                    time_value += time_zone; 
+                                    adjusted_time = localtime(&time_value);
+                                    strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                                     int owner_id = cJSON_GetObjectItemCaseSensitive(last_message, "owner_id")->valueint;
                                     char *message = cJSON_GetObjectItemCaseSensitive(last_message, "message")->valuestring;
-                                    add_message(chat->messages_container, message, created_at, sender_id != owner_id);
+                                    add_message(chat->messages_container, message, time_to_send, sender_id != owner_id);
+                                    if(i == unreaded_chats_qty - 1) {
+                                        if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                            strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
+                                            change_sidebar_chat_info(chat, message, time_to_send);
+                                        }
+                                        else {
+                                            strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                                            change_sidebar_chat_info(chat, message, time_to_send);
+                                        }
+                                    }
                                 }   
                             }   
                         } 
@@ -115,10 +138,8 @@ void* recv_msg_handler(void* arg) {
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
                     if (chat) {
                         char *msg = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(parsed_json, "message"));
-                        time_t now = time(NULL);
-                        struct tm *t = localtime(&now);
                         char time_str[6];
-                        strftime(time_str, sizeof(time_str), "%H:%M", t);
+                        strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         add_message(chat->messages_container, msg, time_str, false);
                         change_sidebar_chat_info(chat, msg, time_str);
                     }
