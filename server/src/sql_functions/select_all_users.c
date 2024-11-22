@@ -8,7 +8,7 @@
 /**
  *
  * @brief gets all users from DB and adds to appropriate structures
- * WARRING uses allocated memory, use <free>
+ * @WARRING uses allocated memory, use <free>
  *
  * @param db active DB connection
  * @return array of all users (allocated)

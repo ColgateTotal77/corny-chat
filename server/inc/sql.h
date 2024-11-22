@@ -101,6 +101,7 @@ int create_group(sqlite3* db, const int owner_id, char* name, const int* users_l
 				 const int list_len);
 int delete_usr_from_group(sqlite3* db, const int user_id, const int group_id);
 int delete_group(sqlite3 *db, const int group_id);
+s_user* get_group_users(sqlite3* db, int group_id, int* usr_qty);
 
 
 
