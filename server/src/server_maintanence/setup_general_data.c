@@ -15,6 +15,14 @@ static sqlite3 *open_db_connection(bool *stop_server) {
 	    printf("connection to db opened\n");
 	}
 
+	char* errmsg = NULL;
+	sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, &errmsg);
+	if (errmsg) {
+		fprintf(stderr, "Error: %s\n", errmsg);
+		sqlite3_free(errmsg);  // Освобождение памяти
+		sqlite3_close(db);
+	}
+
     return db;
 }
 
