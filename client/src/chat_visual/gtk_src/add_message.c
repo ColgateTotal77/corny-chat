@@ -34,8 +34,8 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
     // Prepend message_box to the top of the container
     gtk_box_append(GTK_BOX(messages_container), alignment_box);
     
-    // Sleep for 500 milliseconds = 0.5 seconds
-    sleep_ms(500);
+    // // Sleep for 500 milliseconds = 0.5 seconds
+    // sleep_ms(500);
     // Scroll to the bottom after adding the message
     if(is_sent) {
         scroll_to_bottom(messages_container);
