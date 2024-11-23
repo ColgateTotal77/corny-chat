@@ -13,6 +13,13 @@ void* recv_msg_handler(void* arg) {
     char *session_id = NULL;
     bool stop_flag = true;
 
+    time_t now = time(NULL);
+    struct tm *local_time = localtime(&now);
+    int time_zone = local_time->__tm_gmtoff;
+    struct tm message_time = {0};
+    char time_to_send[12];
+    struct tm *adjusted_time;
+
     get_all_clients_userslist(call_data->ssl);
 
     while (!*(call_data->stop_flag)) {
@@ -28,18 +35,23 @@ void* recv_msg_handler(void* arg) {
             }
 
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
-            if(command_code_json) {
-                if ((command_code_json)->valueint == 11) {
+            if (command_code_json) {
+                if ((command_code_json)->valueint == 11 && cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
                     cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
                     session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
                     strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
                     continue;
                 }
                 if (stop_flag) {
-                    if (command_code_json->valueint == 17) {
-                        // First update the chat list
-                        cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
-                        int number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                    switch (command_code_json->valueint)
+                    {
+                        cJSON *users;
+                        int number_of_users;
+                        int unreaded_chats_qty;
+
+                    case 17:
+                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
                         
                         for (int i = 0; i < number_of_users; i++) {
                             cJSON *user = cJSON_GetArrayItem(users, i);
@@ -70,17 +82,15 @@ void* recv_msg_handler(void* arg) {
                                 gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
                             }
                         }
-
-                        // Then update the login list if it exists
-                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                            update_login_list(GTK_data->profile_data->login_list, parsed_json);
-                        }
-
+                        // // Then update the login list if it exists
+                        // if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                        //     update_login_list(GTK_data->profile_data->login_list, parsed_json);
+                        // }
                         get_all_talks(call_data->ssl);
-                        continue;
-                    }
-                    if (command_code_json->valueint == 12) { 
-                        int unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
+                        break;
+                    
+                    case 12:
+                        unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
                         if (unreaded_chats_qty) {
                             cJSON *unread_chats_array = cJSON_GetObjectItemCaseSensitive(parsed_json, "unread_chats_data");
                             for (int i = 0; i < unreaded_chats_qty; i++) {
@@ -91,18 +101,50 @@ void* recv_msg_handler(void* arg) {
                                 cJSON *last_messages_array = cJSON_GetObjectItemCaseSensitive(unread_chat, "last_messages");                                
                                 for (int j = 0; j < all_msgs_qty; j++) {
                                     cJSON *last_message = cJSON_GetArrayItem(last_messages_array, j);
+
                                     char *created_at = cJSON_GetObjectItemCaseSensitive(last_message, "created_at")->valuestring;
+                                    strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                                    time_t time_value = mktime(&message_time);
+                                    time_value += time_zone; 
+                                    adjusted_time = localtime(&time_value);
+                                    strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                                     int owner_id = cJSON_GetObjectItemCaseSensitive(last_message, "owner_id")->valueint;
                                     char *message = cJSON_GetObjectItemCaseSensitive(last_message, "message")->valuestring;
-                                    add_message(chat->messages_container, message, created_at, sender_id != owner_id);
+                                    add_message(chat->messages_container, message, time_to_send, sender_id != owner_id);
+                                    if(i == unreaded_chats_qty - 1) {
+                                        if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                            strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
+                                            change_sidebar_chat_info(chat, message, time_to_send);
+                                        }
+                                        else {
+                                            strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                                            change_sidebar_chat_info(chat, message, time_to_send);
+                                        }
+                                    }
                                 }   
                             }   
                         } 
                         stop_flag = false;
-                        continue;
+                        break;
+                    default:
+                        break;
                     }
+                    continue;
                 }
+
+                switch (command_code_json->valueint)
+                {
+                case 17:
+                    //Код Деніса
+                    break;
+                
+                default:
+
+                    break;
+                }
+                continue;
             }
+
             cJSON *event_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "event_code");
             if (!event_code_json || !cJSON_IsNumber(event_code_json)) {
                 cJSON_Delete(parsed_json);
@@ -115,10 +157,8 @@ void* recv_msg_handler(void* arg) {
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
                     if (chat) {
                         char *msg = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(parsed_json, "message"));
-                        time_t now = time(NULL);
-                        struct tm *t = localtime(&now);
                         char time_str[6];
-                        strftime(time_str, sizeof(time_str), "%H:%M", t);
+                        strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         add_message(chat->messages_container, msg, time_str, false);
                         change_sidebar_chat_info(chat, msg, time_str);
                     }

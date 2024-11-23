@@ -1,5 +1,7 @@
 #pragma once
 
+#define _XOPEN_SOURCE
+
 #include "client.h"
 #include "commands.h"
 #include "password.h"

@@ -522,17 +522,17 @@ static void activate(GtkApplication *app, gpointer user_data) {
     cJSON_AddNumberToObject(command, "command_code", 17);
     send_and_delete_json(ssl, &command);
 
-    // Get response and parse it
-    char *response = NULL;
-    int bytes_received = recieve_next_response(ssl, &response);
-    if (bytes_received > 0) {
-        cJSON *parsed_json = cJSON_Parse(response);
-        if (parsed_json) {
-            update_login_list(GTK_LIST_BOX(login_list), parsed_json);
-            // Note: Don't delete parsed_json here as it's deleted in update_login_list
-        }
-        free(response);
-    }
+    // // Get response and parse it
+    // char *response = NULL;
+    // int bytes_received = recieve_next_response(ssl, &response);
+    // if (bytes_received > 0) {
+    //     cJSON *parsed_json = cJSON_Parse(response);
+    //     if (parsed_json) {
+    //         update_login_list(GTK_LIST_BOX(login_list), parsed_json);
+    //         // Note: Don't delete parsed_json here as it's deleted in update_login_list
+    //     }
+    //     free(response);
+    // }
 
     gtk_box_append(GTK_BOX(bottom_box), admin_check);
     gtk_box_append(GTK_BOX(bottom_box), create_button);
