@@ -77,6 +77,8 @@ int get_usr_qty(sqlite3 *db);
 
 s_user *select_all_users(sqlite3 *db);
 
+int create_user(sqlite3 *db, user_create usr);
+
 void init_user_create(user_create *usr, const char *login, const char *nickname,
                       const unsigned char *pas_hash, const int role_id);
 
