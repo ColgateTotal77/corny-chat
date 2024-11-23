@@ -25,6 +25,16 @@ cJSON *handle_delete_user_from_group(call_data_t *call_data, cJSON *json) {
     cJSON *chat_id_json = cJSON_GetObjectItemCaseSensitive(json, "chat_id");
     int chat_id = (int)cJSON_GetNumberValue(chat_id_json);
 
+    chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
+
+    if (chat == NULL 
+        || !group_has_such_user(chat, call_data->client_data->user_data->user_id)) {
+        cJSON *error_response = create_error_json("No such group\n");
+        cJSON_AddNumberToObject(error_response, "user_id", user_to_delete_id);
+        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
+        return error_response;
+    }
+
     if (!is_user_group_owner(call_data, chat_id)) {
         return create_error_json("You have to rights\n");
     }
@@ -33,16 +43,6 @@ cJSON *handle_delete_user_from_group(call_data_t *call_data, cJSON *json) {
 
     if (contact_data == NULL) {
         cJSON *error_response = create_error_json("No such user exists\n");
-        cJSON_AddNumberToObject(error_response, "user_id", user_to_delete_id);
-        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
-        return error_response;
-    }
-
-    chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
-
-    if (chat == NULL 
-        || !group_has_such_user(chat, call_data->client_data->user_data->user_id)) {
-        cJSON *error_response = create_error_json("No such group\n");
         cJSON_AddNumberToObject(error_response, "user_id", user_to_delete_id);
         cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
         return error_response;

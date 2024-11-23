@@ -70,7 +70,7 @@ void* send_msg_handler(void* arg) {
                       "DELETE_USER_FROM_GROUP 20\n"
                       "ADD_MANY_USERS_TO_GROUP 21\n"
                       "DELETE_GROUP 22\n"
-                      "ADMIN_CHANGE_PASSWORD 23\n";
+                      "ADMIN_CHANGE_PASSWORD 23\n"
                       "GET_NUM_OF_MSGS_BETWEEN 24\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
