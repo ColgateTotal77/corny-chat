@@ -35,18 +35,23 @@ void* recv_msg_handler(void* arg) {
             }
 
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
-            if(command_code_json) {
-                if ((command_code_json)->valueint == 11) {
+            if (command_code_json) {
+                if ((command_code_json)->valueint == 11 && cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
                     cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
                     session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
                     strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
                     continue;
                 }
                 if (stop_flag) {
-                    if (command_code_json->valueint == 17) {
-                        // First update the chat list
-                        cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
-                        int number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                    switch (command_code_json->valueint)
+                    {
+                        cJSON *users;
+                        int number_of_users;
+                        int unreaded_chats_qty;
+
+                    case 17:
+                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
                         
                         for (int i = 0; i < number_of_users; i++) {
                             cJSON *user = cJSON_GetArrayItem(users, i);
@@ -77,17 +82,15 @@ void* recv_msg_handler(void* arg) {
                                 gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
                             }
                         }
-
-                        // Then update the login list if it exists
-                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                            update_login_list(GTK_data->profile_data->login_list, parsed_json);
-                        }
-
+                        // // Then update the login list if it exists
+                        // if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                        //     update_login_list(GTK_data->profile_data->login_list, parsed_json);
+                        // }
                         get_all_talks(call_data->ssl);
-                        continue;
-                    }
-                    if (command_code_json->valueint == 12) { 
-                        int unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
+                        break;
+                    
+                    case 12:
+                        unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
                         if (unreaded_chats_qty) {
                             cJSON *unread_chats_array = cJSON_GetObjectItemCaseSensitive(parsed_json, "unread_chats_data");
                             for (int i = 0; i < unreaded_chats_qty; i++) {
@@ -122,10 +125,26 @@ void* recv_msg_handler(void* arg) {
                             }   
                         } 
                         stop_flag = false;
-                        continue;
+                        break;
+                    default:
+                        break;
                     }
+                    continue;
                 }
+
+                switch (command_code_json->valueint)
+                {
+                case 17:
+                    //Код Деніса
+                    break;
+                
+                default:
+
+                    break;
+                }
+                continue;
             }
+
             cJSON *event_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "event_code");
             if (!event_code_json || !cJSON_IsNumber(event_code_json)) {
                 cJSON_Delete(parsed_json);

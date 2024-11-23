@@ -36,7 +36,7 @@ static void apply_css(GtkWidget *widget) {
     GtkCssProvider *css_provider = gtk_css_provider_new();
 
     // Load CSS with only two parameters
-    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/style.css");
+    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
 
     gtk_style_context_add_provider_for_display(
         gdk_display_get_default(),
