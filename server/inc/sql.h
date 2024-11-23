@@ -65,6 +65,7 @@ typedef struct group {
     int owner_id;
     int occupants_num;
     int *occupants; //int array of the group occupants
+    int unread_mes_qty;
 } s_group;
 
 int select_user_by_id(sqlite3 *db, s_user *user, int id);
@@ -138,6 +139,8 @@ void free_groups_full_list(s_group* groups, const int groups_qty);
 
 int activate_deactivate_user(sqlite3 *db, const int user_id, const bool is_active);
 
+int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *message,
+                         unsigned char *s_key);
 
 
 

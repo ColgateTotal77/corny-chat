@@ -13,6 +13,7 @@ char *six_var_strbuilder(char *s1, char *s2, char *s3, char *s4, char *s5, char 
 /**
  * @brief returns an array of groups that the user is included in. If user_id = 0 returns all groups;
  * @warning function allocates memory. Use free_groups_full_list function to free.
+ * @note if user_id == 0 unread_mes_qty == -1
  *
  * @param db
  * @param user_id id of the user who is a groups member
@@ -21,21 +22,23 @@ char *six_var_strbuilder(char *s1, char *s2, char *s3, char *s4, char *s5, char 
  */
 s_group *get_groups_full_list(sqlite3 *db, const int user_id, int *group_qty) {
     char *sql = NULL;
-    char *sql_basic = "SELECT g.id, g.name, g.createdAt, g.ownerId,  gu.qty "
-            "FROM groups g "
+    char *sql_first_line_user = "SELECT g.id, g.name, g.createdAt, g.ownerId, gu.qty, gu2.unreadNum ";
+    char *sql_first_line_no_user = "SELECT g.id, g.name, g.createdAt, g.ownerId, gu.qty ";
+    char *sql_basic = "FROM groups g "
             "JOIN "
             "(SELECT groupId , COUNT(*) AS qty "
             "FROM group_users "
             "GROUP BY groupId) AS gu ON g.id = gu.groupId ";
     sqlite3_stmt *stmt;
     if (user_id > 0) {
-        char *sql_addition = "WHERE g.id IN "
+        char *sql_addition = "JOIN group_users gu2 ON g.id = gu2.groupId "
+                "WHERE gu2.userId = ? AND g.id IN"
                 "(SELECT groupId "
                 "FROM group_users gu "
                 "WHERE userId = ?)";
-        sql = six_var_strbuilder(sql_basic, sql_addition, "", "", "", "");
+        sql = six_var_strbuilder(sql_first_line_user, sql_basic, sql_addition, "", "", "");
     } else {
-        sql = six_var_strbuilder(sql_basic, ";", "", "", "", "");
+        sql = six_var_strbuilder(sql_first_line_no_user, sql_basic, ";", "", "", "");
     }
     if (!sql) {
         printf("Error allocation memory\n");
@@ -50,6 +53,7 @@ s_group *get_groups_full_list(sqlite3 *db, const int user_id, int *group_qty) {
     free(sql);
     if (user_id > 0) {
         sqlite3_bind_int(stmt, 1, user_id);
+        sqlite3_bind_int(stmt, 2, user_id);
     }
 
     t_list *list = NULL;
@@ -64,6 +68,7 @@ s_group *get_groups_full_list(sqlite3 *db, const int user_id, int *group_qty) {
                      NULL);
         int *occ = get_group_occupants_list(db, group->id, group->occupants_num);
         group->occupants = occ;
+        group->unread_mes_qty = user_id ? sqlite3_column_int(stmt, 5) : -1;
         mx_push_back(&list, group);
     }
     *group_qty = mx_list_size(list);
