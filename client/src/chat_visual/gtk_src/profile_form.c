@@ -130,7 +130,7 @@ static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     gtk_widget_remove_css_class(error_label, "error-label");
 
     // Send data to server
-    create_new_user(ssl, (char *)login_input, (char *)password_input);
+    create_new_user(ssl, (char *)login_input, (char *)password_input, true);
 
     // Simulated response handling (replace this with actual response logic)
     bool user_created_successfully = true; // Replace with actual server response check

@@ -20,4 +20,9 @@ cJSON *handle_create_user(call_data_t *call_data, cJSON *json);
 cJSON* handle_get_all_clients_userslist(call_data_t *call_data);
 cJSON *handle_mark_chat_msgs_as_readed(call_data_t *call_data, cJSON *json);
 cJSON* handle_get_my_clients_userslist(call_data_t *call_data);
+cJSON *handle_delete_user_from_group(call_data_t *call_data, cJSON *json);
+cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json);
+cJSON *handle_delete_group(call_data_t *call_data, cJSON *json);
+cJSON *handle_admin_change_password(call_data_t *call_data, cJSON *json);
+cJSON* handle_get_last_msgs_between(call_data_t *call_data, cJSON *json);
 

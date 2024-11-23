@@ -40,6 +40,8 @@ void free_client_data(call_data_t *call_data) {
         SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
         SSL_free(call_data->client_data->ssl);
         client_data->ssl = NULL;
+        printf("freeing ssl here\n");
+        fflush(stdout);
 	    //close(client_data->sockfd);
 	    //client_data->sockfd = -1;
 		if (client_data->user_data != NULL) {
@@ -135,9 +137,8 @@ int main(int argc, char * argv[]) {
     printf("Server Started\n");
 
     int online_count = 0;
-	int chat_uid = 0;
 
-	general_data_t *general_data = setup_general_data(&stop_server, &online_count, &chat_uid);
+	general_data_t *general_data = setup_general_data(&stop_server, &online_count);
 	pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t chats_mutex = PTHREAD_MUTEX_INITIALIZER;
 	pthread_mutex_t db_mutex = PTHREAD_MUTEX_INITIALIZER;

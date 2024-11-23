@@ -16,7 +16,8 @@ static void set_user_contacts(sqlite3 *db, int user_id, int **contacts_list, int
 	free(chat_users);
 }
 
-user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname, bool is_online) {
+user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname, 
+                       bool is_admin, bool is_active, bool is_online) {
 	user_t *user_data = (user_t*)malloc(sizeof(user_t));
     user_data->user_id = id;
     user_data->contacts_count = 0;
@@ -41,6 +42,8 @@ user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname, bool is
 	}
 	set_user_contacts(db, user_data->user_id, &user_data->contacts_id, &user_data->contacts_count);
 	user_data->is_online = is_online;
+	user_data->is_admin = is_admin;
+	user_data->is_active = is_active;
 
 	return user_data;
 }

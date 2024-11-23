@@ -82,8 +82,13 @@ int handle_login(char *str_json_login_password, call_data_t *call_data) {
         printf("Invalid Input\n");
 		cJSON *response_json = create_response_json(LOGIN, false, "Invalid login input\n");
         send_to_user_and_delete_json(call_data, &response_json);
+
+		SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
+        SSL_free(call_data->client_data->ssl);
+        call_data->client_data->ssl = NULL;
 		free(call_data->client_data);
 		call_data->client_data = NULL;
+
 		leave_flag = 1;
 	}
 	else if (is_valid_login == VALID_LOGIN_VIA_SESSION_ID) {
