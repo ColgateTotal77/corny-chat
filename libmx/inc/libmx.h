@@ -11,6 +11,7 @@ void append_to_intarr(int** arr, int* arr_size, int num);
 bool num_inarray(int* arr, int arr_size, int num);
 void *mx_memcpy(void *restrict dst, const void *restrict src, size_t n);
 void *mx_realloc(void *ptr, size_t size);
+void remove_from_intarr(int** arr, int* arr_size, int num);
 //
 
 // Used by snazarenko

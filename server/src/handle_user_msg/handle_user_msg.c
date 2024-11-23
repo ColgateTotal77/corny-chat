@@ -70,6 +70,21 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case GET_MY_CLIENTS_USERSLIST:
         response_json = handle_get_my_clients_userslist(call_data);
         break;
+    case DELETE_USER_FROM_GROUP:
+        response_json = handle_delete_user_from_group(call_data, msg_json);
+        break;
+    case ADD_MANY_USERS_TO_GROUP:
+        response_json = handle_add_many_users_to_group(call_data, msg_json);
+        break;
+    case DELETE_GROUP:
+        response_json = handle_delete_group(call_data, msg_json);
+        break;
+    case ADMIN_CHANGE_PASSWORD:
+        response_json = handle_admin_change_password(call_data, msg_json);
+        break;
+    case GET_NUM_OF_MSGS_BETWEEN:
+        response_json = handle_get_last_msgs_between(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;

@@ -56,7 +56,7 @@ static void free_logins_cache(ht_str_t *login_to_id) {
 
 void free_general_data(general_data_t *general_data) {
     sqlite3_close(general_data->db);
-
+    //printf("here %d <-------------\n", rc);
 	free_chats_cache(general_data->chats);
 	free_clients_cache(general_data->clients);
     free_logins_cache(general_data->login_to_id);

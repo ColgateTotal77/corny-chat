@@ -21,29 +21,25 @@ static void notify_user_about_new_contact(call_data_t *call_data,
 static void add_and_notify_new_contact(call_data_t *call_data, client_t *contact_data) {
     int user_id = call_data->client_data->user_data->user_id;
     int contact_id = contact_data->user_data->user_id;
-    int **new_contact_contacts_list = &contact_data->user_data->contacts_id;
-    int *new_contact_contacts_count = &contact_data->user_data->contacts_count;
 
-    if (!num_inarray(*new_contact_contacts_list, *new_contact_contacts_count, user_id)) {
-        append_to_intarr(new_contact_contacts_list, new_contact_contacts_count, user_id);
+    if (!user_has_such_contact(contact_data->user_data, user_id)) {
+        append_to_users_contacts(contact_data->user_data, user_id);
         notify_user_about_new_contact(call_data, contact_id, user_id);
     }
 }
 
 static bool add_contact_and_notify_user(call_data_t *call_data, client_t *contact_data) {
     int contact_id = contact_data->user_data->user_id;
-    int **user_contacts_list = &call_data->client_data->user_data->contacts_id;
-    int *user_contacts_count = &call_data->client_data->user_data->contacts_count;
+    user_t *user_data = call_data->client_data->user_data;
 
     bool already_was_in_contacts = true;
 
-    if (!num_inarray(*user_contacts_list, *user_contacts_count, contact_id)) {
-        append_to_intarr(user_contacts_list, user_contacts_count, contact_id);
+    if (!user_has_such_contact(user_data, contact_id)) {
+        append_to_users_contacts(user_data, contact_id);
         already_was_in_contacts = false;
     }
-    
+
     return already_was_in_contacts;
-    
 }
 
 

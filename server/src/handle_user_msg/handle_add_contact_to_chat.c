@@ -2,21 +2,6 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 #include "create_json.h"
-#include "command_codes.h"
-
-static void notify_user_about_him_being_add_to_chat(call_data_t *call_data,
-                                                    int user_to_notify_id, int contact,
-                                                    int chat_id, char *contact_nickname,
-                                                    char *chat_name) {
-    cJSON *notification_json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(notification_json, "event_code", YOU_WERE_ADDED_TO_CHAT);
-    cJSON_AddNumberToObject(notification_json, "contact", contact);
-    cJSON_AddStringToObject(notification_json, "contact_nickname", contact_nickname);
-    cJSON_AddNumberToObject(notification_json, "chat_id", chat_id);
-    cJSON_AddStringToObject(notification_json, "chat_name", chat_name);
-
-    send_to_id_and_delete_json(call_data, &notification_json, user_to_notify_id);
-}
 
 
 cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
@@ -30,8 +15,7 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
     cJSON *chat_id_json = cJSON_GetObjectItemCaseSensitive(json, "chat_id");
     int chat_id = (int)cJSON_GetNumberValue(chat_id_json);
 
-    if (!num_inarray(call_data->client_data->user_data->contacts_id, 
-                     call_data->client_data->user_data->contacts_count, contact_id)) {
+    if (!user_has_such_contact(call_data->client_data->user_data, contact_id)) {
         cJSON *error_response = create_error_json("No such contact\n");
         cJSON_AddNumberToObject(error_response, "contact_id", contact_id);
         cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
@@ -41,24 +25,33 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
     chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
     client_t *contact_data = ht_get(call_data->general_data->clients, contact_id);
 
-    if (num_inarray(chat->users_id, chat->users_count, contact_id)) {
+    if (group_has_such_user(chat, contact_id)) {
         char buffer[BUF_SIZE];
         sprintf(buffer, "%s already joined to chat %s\n", contact_data->user_data->login, chat->name);
-        cJSON *error_response = create_error_json("No such contact\n");
+        cJSON *error_response = create_error_json(buffer);
         cJSON_AddNumberToObject(error_response, "contact_id", contact_id);
         cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
         return error_response;
     }
 
-    append_to_intarr(&chat->users_id, &chat->users_count, contact_id);
+    const int users[] = {contact_id};
+	int res = add_users_to_group(call_data->general_data->db, chat_id, users, 1);
+    if (res <= 0) {
+        cJSON *error_response = create_error_json("Something went wrong\n");
+        cJSON_AddNumberToObject(error_response, "contact_id", contact_id);
+        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
+        return error_response;
+    }
 
-    notify_user_about_him_being_add_to_chat(
-        call_data,
-        contact_id, 
+    update_group_users_and_user_groups(chat, contact_data);
+    
+
+    cJSON *notification_json = you_were_added_to_group_notification( 
         call_data->client_data->user_data->user_id,
-        chat_id,
         call_data->client_data->user_data->nickname,
+        chat_id,
         chat->name);
+    send_to_id_and_delete_json(call_data, &notification_json, contact_id);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

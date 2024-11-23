@@ -66,7 +66,12 @@ void* send_msg_handler(void* arg) {
                       "CREATE_USER 16\n"
                       "GET_ALL_CLIENTS_USERSLIST 17\n"
                       "MARK_CHAT_MSGS_AS_READED 18\n"
-                      "GET_MY_CLIENTS_USERSLIST 19\n";
+                      "GET_MY_CLIENTS_USERSLIST 19\n"
+                      "DELETE_USER_FROM_GROUP 20\n"
+                      "ADD_MANY_USERS_TO_GROUP 21\n"
+                      "DELETE_GROUP 22\n"
+                      "ADMIN_CHANGE_PASSWORD 23\n";
+                      "GET_NUM_OF_MSGS_BETWEEN 24\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -93,6 +98,13 @@ void* send_msg_handler(void* arg) {
 
         char *login;
         char *password;
+        int *users_array;
+        int users_count;
+
+        int user2;
+        int before;
+        int quantity;
+
 
         switch (command) {
         case SEND_TO_CHAT:
@@ -224,7 +236,8 @@ void* send_msg_handler(void* arg) {
                 free(login);
                 break;
             }
-            create_new_user(call_data->ssl, login, password);
+            bool is_admin = true;
+            create_new_user(call_data->ssl, login, password, is_admin);
             free(login);
             free(password);
             break;
@@ -243,6 +256,98 @@ void* send_msg_handler(void* arg) {
             break;
         case GET_MY_CLIENTS_USERSLIST:
             get_my_clients_userslist(call_data->ssl);
+            break;
+        case DELETE_USER_FROM_GROUP:
+            bzero(message, BUF_SIZE);
+            printf("Enter user id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            contact_id = atoi(message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter chat id:");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            chat_id = atoi(message);
+            delete_user_from_group(call_data->ssl, contact_id, chat_id);
+            break;
+        case ADD_MANY_USERS_TO_GROUP:
+            bzero(message, BUF_SIZE);
+            printf("Enter chat id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            chat_id = atoi(message);
+            users_array = NULL;
+            users_array = (int*)malloc(0);
+            users_count = 0;
+
+            while (true) {
+                bzero(message, BUF_SIZE);
+                printf("Enter user id(or nothing to break): ");
+                fflush(stdout);
+                fgets(message, BUF_SIZE, stdin);
+                str_del_newline(message, BUF_SIZE);
+                if (strcmp(message, "") == 0) {
+                    break;
+                }
+                contact_id = atoi(message);
+                append_to_intarr(&users_array, &users_count, contact_id);
+            }
+
+            add_many_users_to_group(call_data->ssl, users_array, users_count, chat_id);
+            free(users_array);
+            users_array = NULL;
+            break;
+        case DELETE_GROUP:
+            bzero(message, BUF_SIZE);
+            printf("Enter chat id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            chat_id = atoi(message);
+
+            delete_group(call_data->ssl, chat_id); 
+            break;
+        case ADMIN_CHANGE_PASSWORD:
+            bzero(message, BUF_SIZE);
+            printf("Enter user id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            user_id = atoi(message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter new password: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            admin_change_password(call_data->ssl, user_id, message); 
+            break;
+        case GET_NUM_OF_MSGS_BETWEEN:
+            bzero(message, BUF_SIZE);
+            printf("Enter user 2: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            user2 = atoi(message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter before id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            before = atoi(message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter quantity: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            quantity = atoi(message);
+            get_num_of_msgs_with_user(call_data->ssl, user2, before, quantity);
             break;
         default:
             printf("Wrong command code\n");

@@ -11,10 +11,15 @@ cJSON *handle_join_chat(call_data_t *call_data, cJSON *json) {
 
     cJSON *chat_id_json = cJSON_GetObjectItemCaseSensitive(json, "chat_id");
     int chat_id = (int)cJSON_GetNumberValue(chat_id_json);
-
     int user_id = call_data->client_data->user_data->user_id;
-
     chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
+
+    if (group_has_such_user(chat, user_id)) {
+        cJSON *error_response = create_error_json("Already joined\n");
+        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
+        return error_response;
+    }
+
 
     append_to_intarr(&chat->users_id, &chat->users_count, user_id);
     append_to_intarr(&call_data->client_data->user_data->groups_id,
