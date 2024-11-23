@@ -134,7 +134,7 @@ s_group *get_groups_full_list(sqlite3 *db, const int user_id, int* group_qty);
 
 void free_groups_full_list(s_group* groups, const int groups_qty);
 
-
+int activate_deactivate_user(sqlite3 *db, const int user_id, const bool is_active);
 
 
 
