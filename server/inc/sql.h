@@ -29,39 +29,43 @@ typedef struct User {
 } s_user;
 
 typedef struct message {
-	int id;
-	char createdAt[20];
-	int owner_id;
-	int target_id;
-	int target_group_id;
-	char message[512];
-	bool readed;
+    int id;
+    char createdAt[20];
+    int owner_id;
+    int target_id;
+    int target_group_id;
+    char message[512];
+    bool readed;
 } s_message;
 
 typedef struct texting {
-	int user1_id;
-	int user2_id;
-	int	unread_mes_qty;
-	int all_mes_qty;
-	s_message* messages;
+    int user1_id;
+    int user2_id;
+    int unread_mes_qty;
+    int all_mes_qty;
+    s_message *messages;
 } s_texting;
 
 typedef struct unread_messages {
-	int sender_id;
-	int unread_mes_qty;
+    int sender_id;
+    int unread_mes_qty;
 } s_unread;
 
 typedef struct Chat_user {
-	int id;
-	char nickname[50];
-	bool active;
-	int unread_mes_qty;  // -1 if NO messaging
+    int id;
+    char nickname[50];
+    bool active;
+    int unread_mes_qty; // -1 if NO messaging
 } chat_user;
 
-
-int create_user(sqlite3 *db, user_create usr);
-
-int sql_insert_msg(sqlite3 *db, int usr_id, char *msg);
+typedef struct group {
+    int id;
+    char name[50];
+    char createdAt[20];
+    int owner_id;
+    int occupants_num;
+    int *occupants; //int array of the group occupants
+} s_group;
 
 int select_user_by_id(sqlite3 *db, s_user *user, int id);
 
@@ -75,36 +79,60 @@ s_user *select_all_users(sqlite3 *db);
 
 void init_user_create(user_create *usr, const char *login, const char *nickname,
                       const unsigned char *pas_hash, const int role_id);
+
 unsigned char *get_password_hash(sqlite3 *db, const char *login);
 
-int update_password_hash(sqlite3* db, const int usr_id, const unsigned char* hash);
-int update_nickname(sqlite3* db, const int usr_id, const char* new_nickname);
-int insert_private_message(sqlite3* db, int owner_id, int target_id, char* message, unsigned char* s_key);
+int update_password_hash(sqlite3 *db, const int usr_id, const unsigned char *hash);
+
+int update_nickname(sqlite3 *db, const int usr_id, const char *new_nickname);
+
+int insert_private_message(sqlite3 *db, int owner_id, int target_id, char *message, unsigned char *s_key);
+
 void init_message(s_message *msg, const int id, const char *created_at,
-			   const int owner_id, const int target_id, const int target_group_id,
-			   char message[512],const bool readed);
-int get_message_by_id(sqlite3* db, s_message *message, const int mes_id);
-s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty);
-s_unread* get_senders_list(sqlite3* db, int receiver_id, int* senders_num);
-s_texting* get_starting_messages(sqlite3* db, const int user_id, int* senders_qty);
-void free_texting(s_texting* textings, const int senders_qty);
-int set_mes_read_status(sqlite3* db, int user_id, int sender_id);
-s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int usr2_id,
-									 const int qty, const int before);
-void init_chat_user(chat_user* usr, const int id, const char* nickname, const bool active,
-					const int unread_mes_qty);
+                  const int owner_id, const int target_id, const int target_group_id,
+                  char message[512], const bool readed);
 
-chat_user* get_clients_userslist(sqlite3* db, const int usr_id, bool show_unknown, int* usr_qty) ;
-bool get_usr_status(sqlite3* db, const char *login);
-int add_users_to_group(sqlite3* db, int group_id, const int* users_list, const int list_len);
-int create_group(sqlite3* db, const int owner_id, char* name, const int* users_list,
-				 const int list_len);
-int delete_usr_from_group(sqlite3* db, const int user_id, const int group_id);
+int get_message_by_id(sqlite3 *db, s_message *message, const int mes_id);
+
+s_message *get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty);
+
+s_unread *get_senders_list(sqlite3 *db, int receiver_id, int *senders_num);
+
+s_texting *get_starting_messages(sqlite3 *db, const int user_id, int *senders_qty);
+
+void free_texting(s_texting *textings, const int senders_qty);
+
+int set_mes_read_status(sqlite3 *db, int user_id, int sender_id);
+
+s_texting *get_last_messages_between(sqlite3 *db, const int usr1_id, const int usr2_id,
+                                     const int qty, const int before);
+
+void init_chat_user(chat_user *usr, const int id, const char *nickname, const bool active,
+                    const int unread_mes_qty);
+
+chat_user *get_clients_userslist(sqlite3 *db, const int usr_id, bool show_unknown, int *usr_qty);
+
+bool get_usr_status(sqlite3 *db, const char *login);
+
+int add_users_to_group(sqlite3 *db, int group_id, const int *users_list, const int list_len);
+
+int create_group(sqlite3 *db, const int owner_id, char *name, const int *users_list,
+                 const int list_len);
+
+int delete_usr_from_group(sqlite3 *db, const int user_id, const int group_id);
+
 int delete_group(sqlite3 *db, const int group_id);
-s_user* get_group_users(sqlite3* db, int group_id, int* usr_qty);
 
+s_user *get_group_users(sqlite3 *db, int group_id, int *usr_qty);
 
+int *get_group_occupants_list(sqlite3 *db, int group_id, const int occupants_num);
 
+void init_s_group(s_group *group, const int id, char *name, char *created_at,
+                  const int owner_id, int occupants_num, int *occupants);
+
+s_group *get_groups_full_list(sqlite3 *db, const int user_id, int* group_qty);
+
+void free_groups_full_list(s_group* groups, const int groups_qty);
 
 
 
