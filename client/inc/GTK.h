@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
     char *contact_name;
     int contact_id;
+    int last_message_id;
     GtkWidget *messages_container;
     GtkWidget *messages_container_wrapper;
     GtkWidget *status_indicator;
@@ -51,7 +52,8 @@ typedef struct {
 
 typedef struct {
     //GtkWidget *messages_container;
-    char *message; 
+    char *message;
+    int user_id; 
     call_data_t *call_data;
     chat_manager_t *chat_manager;
     user_list_t *user_list;
@@ -62,6 +64,7 @@ typedef struct {
 
 //extern GtkWidget *messages_container;
 void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
+void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
 void sleep_ms(int milliseconds);
 gboolean scroll_idle_callback(gpointer data);
 void scroll_to_bottom(GtkWidget *container);
