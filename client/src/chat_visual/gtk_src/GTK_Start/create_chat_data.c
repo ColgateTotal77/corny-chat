@@ -6,7 +6,7 @@ chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_d
 
     chat_data->contact_name = g_strdup(contact_name);
     chat_data->contact_id = contact_id;
-    
+    chat_data->last_message_id = 0;
     chat_data->messages_container_wrapper = create_message_container(chat_data);
     gtk_widget_add_css_class(chat_data->messages_container_wrapper, "messages-container");
     // gtk_box_append(GTK_BOX(chat_area_background), chat_data->messages_container_wrapper);
