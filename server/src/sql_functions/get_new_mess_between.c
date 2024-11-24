@@ -6,7 +6,7 @@
 
 /**
  *
- * @brief returns all messages after EARLIEST UNREAD MESSAGE and 5(currently) messages before.
+ * @brief returns all messages after EARLIEST UNREAD MESSAGE and 10(currently) messages before.
  * function allocates memory DO NOT FORGET FREE
  *
  * @param db
@@ -16,23 +16,25 @@
  * @return pointer to array  of sorted messages
  */
 s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty){
-	const int num_of_readed = 5;
+	const int num_of_readed = 10;
 	const char* sql = "SELECT m1.id, m1.createdAt, m1.ownerId, m1.targetUserId, m1.targetGroupId, m1.message, m1.readed"
 						" FROM messages m1"
-						" WHERE ((m1.ownerId = ? AND m1.targetUserId = ? ) OR (m1.ownerId = ? AND m1.targetUserId = ? )) and m1.createdAt >= ("
-							" SELECT MIN(m.createdAt) as earlyest_unread"
+						" WHERE ((m1.ownerId = ? AND m1.targetUserId = ? ) OR (m1.ownerId = ? AND m1.targetUserId = ? )) and m1.id >= ("
+							" SELECT MIN(m.id) as earlyest_unread"
 							" FROM messages m"
 							" WHERE m.readed = FALSE AND ((m.ownerId = ? AND m.targetUserId = ? ) OR (m.ownerId = ? AND m.targetUserId = ? )))"
 						" UNION"
 						" SELECT * FROM "
 							" (SELECT m1.id, m1.createdAt, m1.ownerId, m1.targetUserId, m1.targetGroupId, m1.message, m1.readed"
 							" FROM messages m1 "
-							" WHERE ((m1.ownerId = ? AND m1.targetUserId = ? ) OR (m1.ownerId = ? AND m1.targetUserId = ? )) and m1.createdAt < ("
-								" SELECT MIN(m.createdAt) as earlyest_unread "
+							" WHERE ((m1.ownerId = ? AND m1.targetUserId = ? ) OR (m1.ownerId = ? AND m1.targetUserId = ? )) and m1.id < ("
+								" SELECT MIN(m.id) as earlyest_unread "
 								" FROM messages m"
 								" WHERE m.readed = FALSE AND ((m.ownerId = ? AND m.targetUserId = ? ) OR (m.ownerId = ? AND m.targetUserId = ? )))"
-							" LIMIT ?)"
-						" ORDER BY readed DESC, createdAt ;";
+						" ORDER BY m1.id DESC "
+						" LIMIT ?)"
+						" ORDER BY readed DESC, id ;";
+	printf("%s\n", sql);
 	sqlite3_stmt* stmt;
 
 	// Подготовка SQL-запроса

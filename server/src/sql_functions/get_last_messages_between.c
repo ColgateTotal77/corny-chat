@@ -32,18 +32,18 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) "
-			"ORDER BY m.createdAt DESC "
+			"ORDER BY m.id DESC "
 			"LIMIT ?) "
-			"ORDER BY createdAt;";
+			"ORDER BY id;";
 	}
 	else {
 		sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) AND m.id < ?"
-			"ORDER BY m.createdAt DESC "
+			"ORDER BY m.id DESC "
 			"LIMIT ?) "
-			"ORDER BY createdAt;";
+			"ORDER BY id";
 	}
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
