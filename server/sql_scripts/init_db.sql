@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS messages
 (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     createdAt     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt     DATETIME,
     ownerId       INTEGER NOT NULL,
     targetUserId  INTEGER,
     targetGroupId INTEGER,
