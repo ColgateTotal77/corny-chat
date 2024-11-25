@@ -28,6 +28,7 @@ s_message *get_new_group_mess(sqlite3 *db, int group_id, int required_qty,
 						"SELECT "
 							"m.id, "
 							"m.createdAt, "
+							"m.updatedAt, "
 							"m.ownerId, "
 							"m.targetUserId,"
 							"m.targetGroupId, "
@@ -61,13 +62,14 @@ s_message *get_new_group_mess(sqlite3 *db, int group_id, int required_qty,
 	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		s_message *message = malloc(sizeof(s_message));
 		init_message(message,
-					 sqlite3_column_int(stmt, 0),
-					 (const char*)sqlite3_column_text(stmt, 1),
-					 sqlite3_column_int(stmt, 2),
-					 sqlite3_column_int(stmt, 3),
-					 sqlite3_column_int(stmt, 4),
-					 (char*)sqlite3_column_text(stmt, 5),
-					 (bool)sqlite3_column_int(stmt, 6));
+		             sqlite3_column_int(stmt, 0),
+		             (const char*)sqlite3_column_text(stmt, 1),
+		             (const char*)sqlite3_column_text(stmt, 2),
+		             sqlite3_column_int(stmt, 3),
+		             sqlite3_column_int(stmt, 4),
+		             sqlite3_column_int(stmt, 5),
+		             (char*)sqlite3_column_text(stmt, 6),
+		             (bool)sqlite3_column_int(stmt, 7));
 		mx_push_back(&list, message);
 	}
 	*act_arr_len = mx_list_size(list);

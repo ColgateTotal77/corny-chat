@@ -28,7 +28,7 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
                                      const int qty, const int before) {
 	const char* sql = NULL;
 	if (before <= 0) {
-		sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
+		sql = "SELECT id, createdAt, updatedAt, ownerId, targetUserId, targetGroupId, message, readed "
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) "
@@ -37,7 +37,7 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 			"ORDER BY id;";
 	}
 	else {
-		sql = "SELECT id, createdAt, ownerId, targetUserId, targetGroupId, message, readed "
+		sql = "SELECT id, createdAt, updatedAt, ownerId, targetUserId, targetGroupId, message, readed "
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) AND m.id < ?"
@@ -71,11 +71,12 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 		init_message(message,
 		             sqlite3_column_int(stmt, 0),
 		             (const char*)sqlite3_column_text(stmt, 1),
-		             sqlite3_column_int(stmt, 2),
+		             (const char*)sqlite3_column_text(stmt, 2),
 		             sqlite3_column_int(stmt, 3),
 		             sqlite3_column_int(stmt, 4),
-		             (char*)sqlite3_column_text(stmt, 5),
-		             (bool)sqlite3_column_int(stmt, 6));
+		             sqlite3_column_int(stmt, 5),
+		             (char*)sqlite3_column_text(stmt, 6),
+		             (bool)sqlite3_column_int(stmt, 7));
 		if (!message->readed) unread_num++;
 		mx_push_back(&list, message);
 	}

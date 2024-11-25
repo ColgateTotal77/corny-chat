@@ -31,6 +31,7 @@ typedef struct User {
 typedef struct message {
     int id;
     char createdAt[20];
+    char updatedAt[20];
     int owner_id;
     int target_id;
     int target_group_id;
@@ -92,9 +93,9 @@ int update_nickname(sqlite3 *db, const int usr_id, const char *new_nickname);
 
 int insert_private_message(sqlite3 *db, int owner_id, int target_id, char *message, unsigned char *s_key);
 
-void init_message(s_message *msg, const int id, const char *created_at,
+void init_message(s_message *msg, const int id, const char *created_at, const char *updated_at,
                   const int owner_id, const int target_id, const int target_group_id,
-                  char message[512], const bool readed);
+                  char *message,const bool readed);
 
 int get_message_by_id(sqlite3 *db, s_message *message, const int mes_id);
 
@@ -145,4 +146,6 @@ int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *m
 
 s_message *get_new_group_mess(sqlite3 *db, int group_id, int required_qty,
                               int *act_arr_len, int before);
+
+int update_message(sqlite3 *db, int message_id, char *new_message);
 #endif //SQL_H

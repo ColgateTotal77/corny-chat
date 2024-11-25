@@ -13,7 +13,7 @@
  * @return SQLITE_OK or rc code
  */
 int get_message_by_id(sqlite3* db, s_message *message, const int mes_id) {
-	const char* sql = "SELECT m.id, m.createdAt, m.ownerId, m.targetUserId, m.targetGroupId, m.message, m.readed "
+	const char* sql = "SELECT m.id, m.createdAt, m.updatedAt,  m.ownerId, m.targetUserId, m.targetGroupId, m.message, m.readed "
 		"FROM messages m "
 		"WHERE id = ?;";
 	sqlite3_stmt* stmt;
@@ -31,13 +31,14 @@ int get_message_by_id(sqlite3* db, s_message *message, const int mes_id) {
 	if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
 		init_message(message,
 		             sqlite3_column_int(stmt, 0),
-		             (const char*)sqlite3_column_text(stmt, 1),
-		             sqlite3_column_int(stmt, 2),
+		             (const char *) sqlite3_column_text(stmt, 1),
+		             (const char *) sqlite3_column_text(stmt, 2),
 		             sqlite3_column_int(stmt, 3),
 		             sqlite3_column_int(stmt, 4),
-		             (char*)sqlite3_column_text(stmt, 5),
-		             (bool)sqlite3_column_int(stmt, 6));
-	}else {
+		             sqlite3_column_int(stmt, 5),
+		             (char *) sqlite3_column_text(stmt, 6),
+		             (bool) sqlite3_column_int(stmt, 7));
+	} else {
 		fprintf(stderr, "message not found: %s\n", sqlite3_errmsg(db));
 	}
 	sqlite3_finalize(stmt);
