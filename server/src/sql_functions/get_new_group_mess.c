@@ -2,8 +2,7 @@
 // Created by konst on 25.11.24.
 //
 
-#include <libmx.h>
-#include <tlist.h>
+#include "../../libmx/inc/libmx.h"
 
 #include "../../inc/sql.h"
 
