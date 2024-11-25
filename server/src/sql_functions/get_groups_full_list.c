@@ -76,6 +76,7 @@ s_group *get_groups_full_list(sqlite3 *db, const int user_id, int *group_qty) {
 
     if (!groups) {
         mx_t_list_deep_free(list);
+        sqlite3_finalize(stmt);
         return NULL;
     }
     if (*group_qty > 0) {

@@ -46,6 +46,7 @@ typedef struct texting {
     s_message *messages;
 } s_texting;
 
+
 typedef struct unread_messages {
     int sender_id;
     int unread_mes_qty;
@@ -142,6 +143,6 @@ int activate_deactivate_user(sqlite3 *db, const int user_id, const bool is_activ
 int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *message,
                          unsigned char *s_key);
 
-
-
+s_message *get_new_group_mess(sqlite3 *db, int group_id, int required_qty,
+                              int *act_arr_len, int before);
 #endif //SQL_H

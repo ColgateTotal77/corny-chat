@@ -34,7 +34,7 @@ s_message* get_new_mess_between(sqlite3 *db, const int user1_id, const int user2
 						" ORDER BY m1.id DESC "
 						" LIMIT ?)"
 						" ORDER BY readed DESC, id ;";
-	printf("%s\n", sql);
+	// printf("%s\n", sql);
 	sqlite3_stmt* stmt;
 
 	// Подготовка SQL-запроса
