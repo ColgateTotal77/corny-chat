@@ -13,9 +13,14 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
 
     GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(GTK_data->chat_manager->message_entry));
     const char *message_text = gtk_entry_buffer_get_text(buffer);
-    
+
+    int message_size = strlen(message_text);
+    if (message_size > 500) {
+        gtk_widget_set_visible(GTK_data->chat_manager->error_label, TRUE);
+    }
     // Only send if the message is not empty
-    if (message_text && strlen(message_text) > 0) {
+    else if (message_text && strlen(message_text) > 0) {
+        gtk_widget_set_visible(GTK_data->chat_manager->error_label, FALSE);
         GDateTime *now = g_date_time_new_now_local();
         char *time_str = g_date_time_format(now, "%H:%M");
         
