@@ -351,3 +351,8 @@ button.send-button:active {
     transform: scale(0.98); /* Slightly shrink for a pressed effect */
 }
 
+.error-label {
+    color: red;
+    font-weight: bold;
+    margin-top: 5px;
+}

@@ -44,6 +44,7 @@ typedef struct {
     GtkWidget *chat_user_label;
     GtkWidget *message_entry;
     GtkWidget *sidebar;
+    GtkWidget *error_label;
 } chat_manager_t;
 
 typedef struct {

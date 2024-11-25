@@ -282,9 +282,18 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
+    GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
+    gtk_widget_set_margin_top(input_container, 10);
+
+    GtkWidget *error_label = gtk_label_new("Too long message > 500");
+    gtk_widget_add_css_class(error_label, "error-label");
+    gtk_widget_set_halign(error_label, GTK_ALIGN_START);
+    gtk_widget_set_visible(error_label, FALSE);
+    gtk_box_append(GTK_BOX(input_container), error_label);
+
     GtkWidget *input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_widget_set_margin_top(input_box, 10);
     gtk_widget_add_css_class(input_box, "input-box");
+    gtk_box_append(GTK_BOX(input_container), input_box);
 
     // Create message entry
     GtkWidget *message_entry = gtk_entry_new();
@@ -292,7 +301,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_hexpand(message_entry, TRUE);
     gtk_widget_add_css_class(message_entry, "message-entry");
     gtk_box_append(GTK_BOX(input_box), message_entry);
-    
+
     // Создаем менеджер чатов
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
@@ -300,6 +309,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->chat_area_background = chat_area_background;
     chat_manager->message_entry = message_entry;
     chat_manager->sidebar = sidebar;
+    chat_manager->error_label = error_label;
     GTK_data->user_list = create_user_list();
     
     create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
@@ -350,7 +360,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(main_grid), input_box, 1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(main_grid), input_container, 1, 2, 1, 1);
 
     // Add main grid to window
     gtk_window_set_child(GTK_WINDOW(window), main_grid);
