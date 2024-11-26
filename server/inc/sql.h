@@ -148,4 +148,11 @@ s_message *get_new_group_mess(sqlite3 *db, int group_id, int required_qty,
                               int *act_arr_len, int before);
 
 int update_message(sqlite3 *db, int message_id, char *new_message);
+
+int delete_message(sqlite3 *db, int message_id);
+
+
+
+
+
 #endif //SQL_H

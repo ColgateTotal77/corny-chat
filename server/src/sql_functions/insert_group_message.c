@@ -6,7 +6,7 @@
 
 
 /**
- * @brief adds private message to DB
+ * @brief adds group message to DB
  *
  * @param db
  * @param owner_id

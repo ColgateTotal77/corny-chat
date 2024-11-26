@@ -4,6 +4,15 @@
 
 #include "../../inc/sql.h"
 
+/**
+ * @brief updates message in DB
+ * @warning updating must only be permitted for the author
+ *
+ * @param db
+ * @param message_id
+ * @param new_message
+ * @return DB response code (101 if OK)
+ */
 int update_message(sqlite3 *db, int message_id, char *new_message) {
     char* sql = "UPDATE messages"
                 " SET updatedAt = CURRENT_TIMESTAMP,"
