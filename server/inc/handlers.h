@@ -25,4 +25,6 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json);
 cJSON *handle_delete_group(call_data_t *call_data, cJSON *json);
 cJSON *handle_admin_change_password(call_data_t *call_data, cJSON *json);
 cJSON* handle_get_last_msgs_between(call_data_t *call_data, cJSON *json);
+cJSON *handle_deactivate_user(call_data_t *call_data, cJSON *json);
+cJSON *handle_activate_user(call_data_t *call_data, cJSON *json);
 

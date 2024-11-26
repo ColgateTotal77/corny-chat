@@ -37,13 +37,14 @@ void free_client_data(call_data_t *call_data) {
 	client_t *client_data = call_data->client_data;
 
 	if (client_data != NULL) {
-        SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
-        SSL_free(call_data->client_data->ssl);
-        client_data->ssl = NULL;
-        printf("freeing ssl here\n");
-        fflush(stdout);
-	    //close(client_data->sockfd);
-	    //client_data->sockfd = -1;
+        if (client_data->ssl != NULL) {
+            SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
+            SSL_free(call_data->client_data->ssl);
+            client_data->ssl = NULL;
+            printf("freeing ssl here\n");
+            fflush(stdout);
+        }
+        
 		if (client_data->user_data != NULL) {
             client_data->user_data->is_online = false;
 	    }
@@ -81,7 +82,7 @@ void *handle_client(void *arg) {
 	char buff_out[BUF_SIZE];
 	bzero(buff_out, BUF_SIZE);
 
-    while (!leave_flag) {
+    while (!leave_flag && call_data->client_data->user_data->is_active) {
         int bytes_received = SSL_read(call_data->client_data->ssl, buff_out, BUF_SIZE);
         if (bytes_received <= 0) {
             int err = SSL_get_error(call_data->client_data->ssl, bytes_received);

@@ -71,7 +71,9 @@ void* send_msg_handler(void* arg) {
                       "ADD_MANY_USERS_TO_GROUP 21\n"
                       "DELETE_GROUP 22\n"
                       "ADMIN_CHANGE_PASSWORD 23\n"
-                      "GET_NUM_OF_MSGS_BETWEEN 24\n";
+                      "GET_NUM_OF_MSGS_BETWEEN 24\n"
+                      "DEACTIVATE_USER 25\n"
+                      "ACTIVATE_USER 26\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -348,6 +350,26 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             quantity = atoi(message);
             get_num_of_msgs_with_user(call_data->ssl, user2, before, quantity);
+            break;
+        case DEACTIVATE_USER:
+            bzero(message, BUF_SIZE);
+            printf("Enter user id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            user_id = atoi(message);
+
+            deactivate_user(call_data->ssl, user_id); 
+            break;
+        case ACTIVATE_USER:
+            bzero(message, BUF_SIZE);
+            printf("Enter user id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            user_id = atoi(message);
+
+            activate_user(call_data->ssl, user_id); 
             break;
         default:
             printf("Wrong command code\n");

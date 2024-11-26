@@ -85,6 +85,12 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case GET_NUM_OF_MSGS_BETWEEN:
         response_json = handle_get_last_msgs_between(call_data, msg_json);
         break;
+    case DEACTIVATE_USER:
+        response_json = handle_deactivate_user(call_data, msg_json);
+        break;
+    case ACTIVATE_USER:
+        response_json = handle_activate_user(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;
@@ -105,6 +111,12 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
 void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data) {
     if (bytes_received > 0) {
 		if (strlen(client_msg) <= 0) { return; }
+
+        if (!call_data->client_data->user_data->is_active) {
+            send_user_exit_msg(call_data);
+            *leave_flag = 1;
+            return;
+        }
         
 		handle_user_valid_msg(client_msg, leave_flag, call_data);
 	}

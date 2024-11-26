@@ -12,14 +12,12 @@
  * @return socket number or -1 in case of an errors
  */
 static int setup_client_socket_with_silent_errors(char *hostname, int port) {
-    printf ("Creating socket...\n");
     int sock = socket(AF_INET, SOCK_STREAM, 0);
  
     if (sock < 0) {
         return -1;
     }
     
-    printf ("Looking for the host...\n");
     struct hostent *server = gethostbyname(hostname);
     
     if (server == NULL) {
@@ -32,13 +30,11 @@ static int setup_client_socket_with_silent_errors(char *hostname, int port) {
     serv_addr.sin_family = AF_INET;
     memcpy(&serv_addr.sin_addr.s_addr, (server->h_addr_list)[0], server->h_length);
     serv_addr.sin_port = htons(port);
-    printf ("Connecting to server...\n");
  
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         return -1;
     }
 
-    printf("Client started\n");
 
     return sock;
 }
@@ -61,6 +57,26 @@ static SSL_CTX *init_ssl_context(void) {
     return ctx;
 }
 
+static bool is_login_data_accepted(SSL *ssl) {
+    char* message = NULL;
+    int bytes_received = recieve_next_response(ssl, &message);
+    
+    if (bytes_received > 0) {
+        cJSON *parsed_json = cJSON_Parse(message);
+        cJSON *success_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "success");
+        if (success_json->valueint == 1) {
+            cJSON_Delete(parsed_json);
+            free(message);
+            return true;
+        }
+        cJSON_Delete(parsed_json);
+    }
+
+    free(message);
+
+    return false;
+}
+
 /**
  * @brief Tries to create new connection to server for 30 times sleeping 1 second after
  *        each attempt, if succeeds in connect sends session_id to server in order to login again
@@ -72,13 +88,15 @@ static SSL_CTX *init_ssl_context(void) {
  * @return On success new SSL connection, elsewise NULL
  */
 SSL *try_to_reconnect(char *session_id, char *host, int port) {
+    if (session_id == NULL || host == NULL) {
+        return NULL;
+    }
     int count = 0;
     SSL *new_ssl = NULL;
-    cJSON *reconect_request = cJSON_CreateObject();
-    cJSON_AddStringToObject(reconect_request, "session_id", session_id);
 
     while (count < 30 && new_ssl == NULL) {
-        count++;
+        printf("Trying to reconnect %d\n", count);
+        count += 1;
         int socket = setup_client_socket_with_silent_errors(host, port);
         if (socket < 0) {
             sleep(1);
@@ -93,9 +111,22 @@ SSL *try_to_reconnect(char *session_id, char *host, int port) {
         }
 
         new_ssl = ssl;
-        send_and_delete_json(new_ssl, &reconect_request);
     }
 
-    return new_ssl;
+    cJSON *reconect_request = cJSON_CreateObject();
+    cJSON_AddStringToObject(reconect_request, "session_id", session_id);
+
+    if (new_ssl != NULL) {
+        send_and_delete_json(new_ssl, &reconect_request);
+
+        if (is_login_data_accepted(new_ssl)) {
+            return new_ssl;
+        }
+    
+        SSL_shutdown(new_ssl);//Закриття SSL з'єднання
+        SSL_free(new_ssl);
+    }
+
+    return NULL;
 }
 

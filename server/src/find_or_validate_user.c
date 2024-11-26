@@ -19,6 +19,14 @@ static enum LoginValidationResult validate_login_via_session_id(call_data_t *cal
     }
 
     client_t *client_data = ht_get(call_data->general_data->clients, client_id);
+
+    if (!client_data->user_data->is_active) {
+        printf("User was deactivated\n");
+        fflush(stdout);
+        ht_str_del(call_data->general_data->session_id_to_id, 
+                   session_id->valuestring);
+        return INVALID_INPUT;
+    }
     
     struct tm parsed_time;
     strptime(client_data->time_created_session_id, "%Y-%m-%d %H:%M:%S", &parsed_time);

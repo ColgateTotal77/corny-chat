@@ -2,6 +2,12 @@
 #include "command_codes.h"
 #include "password.h"
 
+static bool is_active_user(call_data_t *call_data, char *login) {
+	int user_id = ht_str_get(call_data->general_data->login_to_id, login);
+	client_t *client_data = ht_get(call_data->general_data->clients, user_id);
+
+	return client_data->user_data->is_active;
+}
 
 static void update_server_client_data(call_data_t *call_data, int client_id) {
     client_t *client_data = call_data->client_data;
@@ -78,7 +84,7 @@ int handle_login(char *str_json_login_password, call_data_t *call_data) {
 
     int leave_flag = 0;
    
-	if (is_valid_login == INVALID_INPUT) {
+	if (is_valid_login == INVALID_INPUT || !is_active_user(call_data, login->valuestring)) {
         printf("Invalid Input\n");
 		cJSON *response_json = create_response_json(LOGIN, false, "Invalid login input\n");
         send_to_user_and_delete_json(call_data, &response_json);

@@ -29,6 +29,8 @@ void add_many_users_to_group(SSL *ssl, int* users_id, int users_count, int chat_
 void delete_group(SSL *ssl, int group_id);
 void admin_change_password(SSL *ssl, int user_id, char *new_password);
 void get_num_of_msgs_with_user(SSL *ssl, int user2, int before, int quantity);
+void deactivate_user(SSL *ssl, int user_id);
+void activate_user(SSL *ssl, int user_id);
 
 
 void send_and_delete_json(SSL *ssl, cJSON **json);
