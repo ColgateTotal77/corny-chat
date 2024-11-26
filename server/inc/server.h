@@ -29,7 +29,8 @@
 typedef struct {
     int* users_id;
     int users_count;
-    char name[32];
+    char name[50];
+    char createdAt[20];
     int chat_id;
     int owner_id;
 } chat_t;
