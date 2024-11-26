@@ -1,8 +1,7 @@
 #include "GTK.h"
 
 // Function to apply CSS styles
-static void apply_css(GtkWidget *widget) {
-    (void)widget;
+static void apply_css(void) {
     GtkCssProvider *css_provider = gtk_css_provider_new();
 
     // Load CSS with only two parameters
@@ -17,21 +16,6 @@ static void apply_css(GtkWidget *widget) {
     g_object_unref(css_provider);
 }
 
-// Function to create the contact sidebar
-// GtkWidget* create_contact_sidebar(void) {
-//     GtkWidget *scrolled_window = gtk_scrolled_window_new();
-//     gtk_widget_set_vexpand(scrolled_window, TRUE);
-//     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-
-//     GtkWidget *contact_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-//     gtk_widget_add_css_class(contact_box, "contact-box");
-//     gtk_widget_set_valign(contact_box, GTK_ALIGN_START); // Align contacts to the top
-//     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), contact_box);
-
-//     return scrolled_window;
-// }
-
-// Add this function after on_send_clicked, to send the message when you press enter
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
     (void) entry;
     on_send_clicked(NULL, user_data);
@@ -66,7 +50,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
     // Apply CSS to window
-    apply_css(window);
+    apply_css();
 
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();
@@ -76,9 +60,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_margin_end(main_grid, 20);
     gtk_widget_set_hexpand(main_grid, TRUE); // Make the main grid horizontally expandable
     gtk_widget_set_vexpand(main_grid, TRUE); // Make the main grid vertically expandable
-
-    // Set a fixed width for the main grid
-    // gtk_widget_set_size_request(main_grid, 1800, -1);
 
     // --- Top Panel (Settings and Search Bar) ---
     GtkWidget *top_panel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -163,7 +144,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(message_entry, "message-entry");
     gtk_box_append(GTK_BOX(input_box), message_entry);
 
-    // Создаем менеджер чатов
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
@@ -177,31 +157,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     create_user(GTK_data->user_list, "Team Alpha", 3, true, "Meeting at 2 PM", "10:15");
     create_user(GTK_data->user_list, "Bob Wilson", 4, true, "Thanks!", "09:30");
     create_user(GTK_data->user_list, "Project Beta", 5, true, "Updates ready", "08:45");
-
-    // //Створюємо перший чат за замовчуванням
-    // char *contacts[] = {
-    //     "Notes"
-    // };
-    
-    // int contact_id[] = {0};
-
-    // chat_data_t *chat_data = create_chat_data(contacts[0], contact_id[0], NULL);
-    // g_hash_table_insert(chat_manager->chats, GINT_TO_POINTER(contact_id[0]), chat_data);
-
-    // GtkWidget *chat_item = create_chat_item(contacts[0], contact_id[0], "None", "12:00", true, false, chat_manager);
-    // gtk_box_append(GTK_BOX(sidebar), chat_item);
-
-    // //Перший чат за замовчуванням
-    // chat_data_t *first_chat = g_hash_table_lookup(chat_manager->chats, GINT_TO_POINTER(contact_id[0]));
-    // if (first_chat != NULL) {
-    //     gtk_box_append(GTK_BOX(chat_area_background), first_chat->messages_container_wrapper);
-    //     chat_manager->active_chat = first_chat;
-
-    //     GtkWidget *chat_user_label = gtk_label_new(contacts[0]);
-    //     gtk_widget_add_css_class(chat_user_label, "header-name");
-    //     gtk_box_append(GTK_BOX(chat_header), chat_user_label);
-    //     chat_manager->chat_user_label = chat_user_label;
-    // }
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");
@@ -237,6 +192,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_size_request(select_a_chat_label, -1, 500);
     gtk_widget_set_hexpand(select_a_chat_label, true);
     gtk_widget_set_visible(select_a_chat_label, true);
+    chat_manager->select_a_chat_label = select_a_chat_label;
     
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);
@@ -265,9 +221,9 @@ void GTK_start(call_data_t *call_data) {
         GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->message = NULL;
         GTK_data->call_data = call_data;
-        
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
+        
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
         g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
     }

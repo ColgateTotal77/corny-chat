@@ -82,11 +82,6 @@ void* recv_msg_handler(void* arg) {
                         }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
-                    // // Then update the login list if it exists
-                    // if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                    //     update_login_list(GTK_data->profile_data->login_list, parsed_json);
-                    // }
-                    //get_all_talks(call_data->ssl);
                     stop_flag = false;
                     continue;
                 }
@@ -231,11 +226,11 @@ void* recv_msg_handler(void* arg) {
 
                                 if (owner_id == GTK_data->user_id) {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, true);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, true, chat->adjustment);
                                 }
                                 else {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, false);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, false, chat->adjustment);
                                 }
                             }   
                         } 

@@ -17,7 +17,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
-#include <gtk/gtk.h>
 
 #define BUF_SIZE 256
 

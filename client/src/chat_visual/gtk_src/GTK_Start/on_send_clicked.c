@@ -1,5 +1,5 @@
 #include "GTK.h"
-#include <string.h>
+// #include <string.h>
 
 void on_send_clicked(GtkWidget *widget, gpointer user_data) {
     (void) widget;

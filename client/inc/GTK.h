@@ -5,7 +5,9 @@
 #include "client.h"
 #include "commands.h"
 #include "password.h"
-#include <time.h>
+#include <gtk/gtk.h>
+
+//#include <time.h>
 
 typedef struct {
     char *username;
@@ -30,6 +32,7 @@ typedef struct {
     GtkWidget *status_indicator;
     GtkWidget *time_label;
     GtkWidget *message_label;
+    GtkAdjustment *adjustment;
 } chat_data_t;
 
 typedef struct {
@@ -47,6 +50,7 @@ typedef struct {
     GtkWidget *error_label;
     GtkWidget *input_box;
     GtkWidget *chat_header;
+    GtkWidget *select_a_chat_label;
 } chat_manager_t;
 
 typedef struct {
@@ -76,9 +80,8 @@ typedef struct {
 
 //extern GtkWidget *messages_container;
 void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
+void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment);
 void sleep_ms(int milliseconds);
-gboolean scroll_idle_callback(gpointer data);
 void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);
 GtkWidget* create_message_container(chat_data_t *chat_data);

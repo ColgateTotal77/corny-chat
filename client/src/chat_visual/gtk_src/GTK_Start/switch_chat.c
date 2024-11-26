@@ -7,6 +7,8 @@ void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager) {
     }
     
     if(chat_manager->active_chat == NULL) {
+        gtk_widget_unparent(chat_manager->select_a_chat_label); // Уничтожаем виджет
+        chat_manager->select_a_chat_label = NULL;  
         gtk_widget_set_visible(chat_manager->input_box, true);
         gtk_widget_set_visible(chat_manager->chat_area_background, true);
         gtk_widget_set_visible(chat_manager->chat_header, true);

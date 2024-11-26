@@ -15,11 +15,9 @@ chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_d
     g_object_ref(chat_data->messages_container_wrapper);
     if (scroll_data != NULL) {
         scroll_data->chat = chat_data;
-        GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(chat_data->messages_container_wrapper));
-        g_signal_connect(adjustment, "value-changed", G_CALLBACK(on_scroll_changed), scroll_data);
+        chat_data->adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(chat_data->messages_container_wrapper));
+        g_signal_connect(chat_data->adjustment, "value-changed", G_CALLBACK(on_scroll_changed), scroll_data);
     }
-    // gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(chat_data->messages_scroll),
-    //                             chat_data->messages_container);
     return chat_data;
 }
 

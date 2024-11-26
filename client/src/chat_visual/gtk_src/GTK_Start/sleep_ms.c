@@ -1,4 +1,4 @@
-#include "GTK.h"
+#include <time.h>
 
 // Convert milliseconds to seconds
 void sleep_ms(int milliseconds)
