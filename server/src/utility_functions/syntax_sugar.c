@@ -32,6 +32,12 @@ bool user_exists(call_data_t *call_data, int user_id) {
     return user_data != NULL;
 }
 
+bool group_exists(call_data_t *call_data, int group_id) {
+    chat_t *group_data = ht_get(call_data->general_data->chats, group_id);
+
+    return group_data != NULL;
+}
+
 bool user_has_such_contact(user_t *user_data, int contact_id) {
     bool result = num_inarray(user_data->contacts_id, user_data->contacts_count, contact_id);
 

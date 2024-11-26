@@ -31,6 +31,7 @@ void admin_change_password(SSL *ssl, int user_id, char *new_password);
 void get_num_of_msgs_with_user(SSL *ssl, int user2, int before, int quantity);
 void deactivate_user(SSL *ssl, int user_id);
 void activate_user(SSL *ssl, int user_id);
+void get_num_of_msgs_from_group(SSL *ssl, int group_id, int before, int quantity);
 
 
 void send_and_delete_json(SSL *ssl, cJSON **json);
