@@ -3,7 +3,8 @@
 #include "create_json.h"
 #include "command_codes.h"
 
-static cJSON *create_incoming_group_message_json(char *message, 
+static cJSON *create_incoming_group_message_json(char *message,
+                                                 int message_id,
                                                  int sender_id,
                                                  char *sender_nickname,
                                                  int chat_id,
@@ -13,6 +14,7 @@ static cJSON *create_incoming_group_message_json(char *message,
     cJSON_AddNumberToObject(message_json, "message_type", GROUP_MESSAGE);
     cJSON_AddNumberToObject(message_json, "sender_id", sender_id);
     cJSON_AddNumberToObject(message_json, "chat_id", chat_id);
+    cJSON_AddNumberToObject(message_json, "chat_id", message_id);
     cJSON_AddStringToObject(message_json, "message", message);
     cJSON_AddStringToObject(message_json, "sender_nickname", sender_nickname);
     cJSON_AddStringToObject(message_json, "chat_name", chat_name);
@@ -32,18 +34,41 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
 
     chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
 
+    if (chat == NULL) {
+        cJSON *error_response = create_error_json("No such group\n");
+        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
+        return error_response;
+    }
+
+    int message_id = insert_group_message(
+        call_data->general_data->db,
+        call_data->client_data->user_data->user_id,
+        chat_id,
+        message_json->valuestring,
+        NULL
+    );
+
+    if (message_id == -1) {
+        cJSON *error_response = create_error_json("Something went wrong\n");
+        cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
+        return error_response;
+    }
+
     cJSON *message_data_json = create_incoming_group_message_json(
         message_json->valuestring,
+        message_id,
         call_data->client_data->user_data->user_id,
         call_data->client_data->user_data->nickname,
         chat_id,
         chat->name
     );
+    
     send_to_chat_and_delete_json(call_data, &message_data_json, chat_id);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
+    cJSON_AddNumberToObject(response_json, "message_id", message_id);
 
     return response_json;
 }
