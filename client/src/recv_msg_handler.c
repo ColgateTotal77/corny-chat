@@ -43,6 +43,9 @@ void* recv_msg_handler(void* arg) {
                     session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
                     strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
                     GTK_data->user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    char* nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
+                    GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));
+                    strncpy(GTK_data->username, nickname, strlen(nickname));
                     continue;
                 }
                 else if (command_code_json->valueint == 17 && stop_flag) {                 
@@ -195,6 +198,7 @@ void* recv_msg_handler(void* arg) {
                 if(!stop_flag && counter == number_of_users){
                     switch (command_code_json->valueint)
                     {
+                    cJSON *users;
                     int all_mes_qty;
                     chat_data_t *chat = NULL;
                     case 24:
@@ -237,7 +241,49 @@ void* recv_msg_handler(void* arg) {
                         } 
                         break;
                     case 17:
-                        //Код Деніса
+                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
+                        
+                        // Clear existing login list first
+                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
+                            while (child) {
+                                GtkWidget *next = gtk_widget_get_next_sibling(child);
+                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
+                                child = next;
+                            }
+                        }
+
+                        for (int i = 0; i < number_of_users; i++) {
+                            cJSON *user = cJSON_GetArrayItem(users, i);
+                            
+                            int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
+                            const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                            //bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
+
+                            // Skip FirstAdmin and inactive users
+                            if (user_id == 1 || g_strcmp0(nickname, "FirstAdmin") == 0) {
+                                continue;
+                            }
+
+                            cJSON *active = cJSON_GetObjectItemCaseSensitive(user, "active");
+                            if (!cJSON_IsBool(active) || !cJSON_IsTrue(active)) {
+                                continue;
+                            }
+
+                            // Update login list
+                            if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                                GtkWidget *row = gtk_list_box_row_new();
+                                GtkWidget *label = gtk_label_new(nickname);
+                                gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+                            }
+                        }
+                        // Ensure login list is visible
+                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
+                            gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
+                        }
                         break;
                     
                     default:

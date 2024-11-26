@@ -308,7 +308,10 @@ button.eye-icon{
 .error-label {
     color: red;
     font-weight: bold;
-    margin-top: 5px;
+    font-size: 10px; /* Make the text smaller */
+    margin-top: 2px; /* Minimize space above the label */
+    margin-bottom: 0; /* Minimize space below the label */
+    padding: 0; /* Remove internal padding */
 }
 
 .success-label {
@@ -316,5 +319,14 @@ button.eye-icon{
     font-weight: bold;
     margin-top: 5px;
     margin-left: 60px;
+}
+
+/* Style for the separator under the nickname entry */
+.nickname-separator {
+    background-color: #cccccc; /* Light gray color */
+    min-height: 2px; /* Thickness of the separator */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 1px; /* Slightly rounded edges */
 }
 
