@@ -45,7 +45,7 @@ int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *m
     const int message_id = (int) sqlite3_last_insert_rowid(db);
     sqlite3_finalize(stmt);
 
-    const char* sql2 = "UPDATE group_users SET unreadNum = unreadNum +1 WHERE groupId = ?;";
+    const char* sql2 = "UPDATE group_users SET unreadNum = unreadNum +1 WHERE groupId = ? AND userId != ?;";
     rc = sqlite3_prepare_v2(db, sql2, -1, &stmt2, NULL);
 
     if (rc != SQLITE_OK) {
@@ -54,13 +54,15 @@ int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *m
     }
 
     sqlite3_bind_int(stmt2, 1, target_group_id);
-    rc = sqlite3_step(stmt);
+    sqlite3_bind_int(stmt2, 2, owner_id);
+
+    rc = sqlite3_step(stmt2);
     if (rc != SQLITE_DONE) {
         fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
-        sqlite3_finalize(stmt);
+        sqlite3_finalize(stmt2);
         return -1;
     }
-    sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt2);
 
     printf("message '%s' saved successfully.\n", message);
     return message_id;
