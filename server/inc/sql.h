@@ -151,7 +151,7 @@ int update_message(sqlite3 *db, int message_id, char *new_message);
 
 int delete_message(sqlite3 *db, int message_id);
 
-
+int set_group_mes_read_status(sqlite3 *db, int user_id, int group_id);
 
 
 
