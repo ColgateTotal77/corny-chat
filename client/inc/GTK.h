@@ -49,10 +49,19 @@ typedef struct {
 
 typedef struct {
     GtkListBox *login_list;
+    GtkWidget *name_label;
+    GtkWidget *nickname_entry;
+    GtkWidget *nickname_error_label;
+    GtkWidget *password_error_label;
+    GtkWidget *password_success_label;
+    GtkWidget *new_password_entry_1;
+    GtkWidget *new_password_entry_2;
+    GtkWidget *old_password_entry;
 } profile_data_t;
 
 typedef struct {
     //GtkWidget *messages_container;
+    char *username;
     char *message;
     int user_id; 
     call_data_t *call_data;
