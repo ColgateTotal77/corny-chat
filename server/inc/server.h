@@ -106,6 +106,7 @@ char *add_length_to_string(char *str);
 bool user_has_such_contact(user_t *user_data, int contact_id);
 bool group_has_such_user(chat_t *chat_data, int user_id);
 bool user_exists(call_data_t *call_data, int user_id);
+bool group_exists(call_data_t *call_data, int group_id);
 void append_to_group_users(chat_t *chat_data, int user_id);
 void append_to_users_groups(user_t *user_data, int chat_id);
 void update_group_users_and_user_groups(chat_t *chat_data, client_t *client_data);

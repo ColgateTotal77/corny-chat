@@ -91,6 +91,9 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case ACTIVATE_USER:
         response_json = handle_activate_user(call_data, msg_json);
         break;
+    case GET_NUM_OF_MSGS_FROM_GROUP:
+        response_json = handle_get_num_of_msgs_from_group(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;
