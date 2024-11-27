@@ -28,4 +28,5 @@ cJSON* handle_get_last_msgs_between(call_data_t *call_data, cJSON *json);
 cJSON *handle_deactivate_user(call_data_t *call_data, cJSON *json);
 cJSON *handle_activate_user(call_data_t *call_data, cJSON *json);
 cJSON* handle_get_num_of_msgs_from_group(call_data_t *call_data, cJSON *json);
+cJSON *handle_update_message(call_data_t *call_data, cJSON *json);
 

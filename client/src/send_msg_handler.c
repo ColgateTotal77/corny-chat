@@ -74,7 +74,8 @@ void* send_msg_handler(void* arg) {
                       "GET_NUM_OF_MSGS_BETWEEN 24\n"
                       "DEACTIVATE_USER 25\n"
                       "ACTIVATE_USER 26\n"
-                      "GET_NUM_OF_MSGS_FROM_GROUP 27\n";
+                      "GET_NUM_OF_MSGS_FROM_GROUP 27\n"
+                      "UPDATE_MESSAGE 288\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -107,6 +108,7 @@ void* send_msg_handler(void* arg) {
         int user2;
         int before;
         int quantity;
+        int message_id;
 
 
         switch (command) {
@@ -394,6 +396,21 @@ void* send_msg_handler(void* arg) {
             str_del_newline(message, BUF_SIZE);
             quantity = atoi(message);
             get_num_of_msgs_from_group(call_data->ssl, chat_id, before, quantity);
+            break;
+        case UPDATE_MESSAGE:
+            bzero(message, BUF_SIZE);
+            printf("Enter message id to update: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            message_id = atoi(message);
+
+            bzero(message, BUF_SIZE);
+            printf("Enter new message: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            update_message(call_data->ssl, message_id, message); 
             break;
         default:
             printf("Wrong command code\n");
