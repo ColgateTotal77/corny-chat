@@ -279,47 +279,6 @@ void* recv_msg_handler(void* arg) {
                         if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
                             gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
                         }
-                        // Handle additional server response for command_code 16
-                        char *server_response = NULL;
-                        int response_len = recieve_next_response(call_data->ssl, &server_response); // Replace with actual function to receive server response
-
-                        if (response_len > 0 && server_response) {
-                            cJSON *response_parsed = cJSON_Parse(server_response);
-                            if (response_parsed) {
-                                cJSON *success = cJSON_GetObjectItemCaseSensitive(response_parsed, "success");
-                                cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(response_parsed, "err_msg");
-
-                                if (cJSON_IsBool(success) && cJSON_IsFalse(success) && cJSON_IsString(err_msg)) {
-                                    // Show the server error message
-                                    gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->create_error_label), err_msg->valuestring);
-                                    gtk_widget_add_css_class(GTK_WIDGET(GTK_data->profile_data->create_error_label), "error-label");
-
-                                    // Set timeout to hide error label after 1.5 seconds
-                                    g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->create_error_label);
-                                } else if (cJSON_IsBool(success) && cJSON_IsTrue(success)) {
-                                    // Success message
-                                    gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->create_success_label), "Account successfully created!");
-                                    gtk_widget_add_css_class(GTK_WIDGET(GTK_data->profile_data->create_success_label), "success-label");
-
-                                    // Set timeout to hide success label after 1.5 seconds
-                                    g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->create_success_label);
-
-                                    // Clear input fields
-                                    gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->login_entry), "");
-                                    gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->password_entry), "");
-                                }
-
-                                cJSON_Delete(response_parsed);
-                            }
-                            free(server_response);
-                        } else {
-                            gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->create_error_label), "Error: Server did not respond.");
-                            gtk_widget_add_css_class(GTK_WIDGET(GTK_data->profile_data->create_error_label), "error-label");
-
-                            // Set timeout to hide error label after 1.5 seconds
-                            g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->create_error_label);
-                        }
-
                         break;
                     
                     default:
