@@ -33,6 +33,8 @@ typedef struct {
     GtkWidget *time_label;
     GtkWidget *message_label;
     GtkAdjustment *adjustment;
+    bool is_show;
+    GtkWidget *button;
 } chat_data_t;
 
 typedef struct {
@@ -78,6 +80,7 @@ typedef struct {
     profile_data_t *profile_data;
     GtkWidget *window;
     GtkWidget *profile_window;
+    GtkWidget *search_bar;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;

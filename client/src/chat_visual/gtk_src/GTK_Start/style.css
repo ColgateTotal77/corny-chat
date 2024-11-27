@@ -362,3 +362,40 @@ button.send-button:active {
     color: #C9C9C9; 
 }
 
+.chat-item-button{
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    background-color: transparent;
+    padding-top: 5px;
+    border-radius: 40px;
+}
+
+.chat-item-button:hover {
+    background-color: #666767;
+}
+
+.chat-item-button:active {
+    background-color: #a3a3a3;
+}
+
+.search-erase-button{
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    background-color: transparent;
+    color: #555555; /* Text color */
+    font-size: 28px;
+    font-weight: bold;
+}
+.search-erase-button:hover {
+    color: #909090; /* Text color */
+}
+
+.search-erase-button:active {
+    color: #a3a3a3;
+}

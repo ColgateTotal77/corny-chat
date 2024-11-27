@@ -59,6 +59,8 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     g_object_set_data(G_OBJECT(button), "chat_id", GINT_TO_POINTER(chat_id));
     g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), chat_manager);
     
+    chat->button = button;
+
     return button;
 }
 

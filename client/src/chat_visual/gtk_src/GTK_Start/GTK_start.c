@@ -40,6 +40,76 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     gtk_window_present(GTK_WINDOW(current_window));
 }
 
+void show_all_contacts(GTK_data_t *GTK_data){
+    if (!GTK_data || !GTK_data->chat_manager) {
+        printf("Chat manager is NULL.\n");
+        return;
+    }
+
+    chat_manager_t *chat_manager = GTK_data->chat_manager;
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, chat_manager->chats);
+    
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        chat_data_t *chat_data = (chat_data_t *)value;
+        if(!chat_data->is_show){
+            chat_data->is_show = true;
+            gtk_widget_set_visible(chat_data->button, TRUE);
+        }
+    }
+}
+
+// Function to print chat manager information
+void print_chat_manager_info(GTK_data_t *GTK_data, const char *search_enter) {
+    if (!GTK_data || !GTK_data->chat_manager) {
+        printf("Chat manager is NULL.\n");
+        return;
+    }
+
+    // Print all chats in chat_manager
+    chat_manager_t *chat_manager = GTK_data->chat_manager;
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, chat_manager->chats);
+
+    int search_length = strlen(search_enter);
+    if(search_length > 0){
+        while (g_hash_table_iter_next(&iter, &key, &value)) {
+            chat_data_t *chat_data = (chat_data_t *)value;
+
+            if(search_enter && strncmp(search_enter, chat_data->contact_name, search_length) == 0){
+                chat_data->is_show = true;
+                gtk_widget_set_visible(chat_data->button, TRUE);
+            } else {
+                chat_data->is_show = false;
+                gtk_widget_set_visible(chat_data->button, FALSE);
+            }
+        }
+    }else{
+        show_all_contacts(GTK_data);
+    }
+}
+
+// Signal handler for search bar changes
+void on_search_bar_changed(GtkEntry *entry, gpointer user_data) {
+    (void)entry;
+    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
+    const char *enter = gtk_editable_get_text(GTK_EDITABLE(entry));
+    print_chat_manager_info(GTK_data, enter);
+}
+
+void on_erase_button_clicked(GtkButton *button, gpointer user_data) {
+    (void)button;
+    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
+    // Clear the search bar text
+    if (GTK_data->search_bar) {
+        gtk_editable_set_text(GTK_EDITABLE(GTK_data->search_bar), ""); // Clear the search bar
+    }
+    show_all_contacts(GTK_data);
+}
+
+
 // Main application window setup
 static void on_activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
@@ -89,10 +159,18 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_size_request(search_icon, 28, 28);
     gtk_box_append(GTK_BOX(search_container), search_icon);
 
-    GtkWidget *search_bar = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(search_bar), "Search");
-    gtk_widget_add_css_class(search_bar, "search-bar");
-    gtk_box_append(GTK_BOX(search_container), search_bar);
+    GTK_data->search_bar = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(GTK_data->search_bar), "Search");
+    gtk_widget_add_css_class(GTK_data->search_bar, "search-bar");
+    gtk_box_append(GTK_BOX(search_container), GTK_data->search_bar);
+
+    GtkWidget *erase_button = gtk_button_new_with_label("X");
+    gtk_widget_add_css_class(erase_button, "search-erase-button");
+    gtk_widget_set_size_request(erase_button, 28, 28);
+    gtk_box_append(GTK_BOX(search_container), erase_button);
+
+    g_signal_connect(erase_button, "clicked", G_CALLBACK(on_erase_button_clicked), GTK_data);
+    g_signal_connect(GTK_data->search_bar, "changed", G_CALLBACK(on_search_bar_changed), GTK_data);
 
     // --- Sidebar Setup ---
     GtkWidget *sidebar_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
