@@ -109,6 +109,7 @@ void* send_msg_handler(void* arg) {
         int before;
         int quantity;
         int message_id;
+        bool is_admin;
 
 
         switch (command) {
@@ -241,7 +242,14 @@ void* send_msg_handler(void* arg) {
                 free(login);
                 break;
             }
-            bool is_admin = true;
+
+            bzero(message, BUF_SIZE);
+            printf("Enter is admin: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            is_admin = atoi(message) == 1;
+
             create_new_user(call_data->ssl, login, password, is_admin);
             free(login);
             free(password);

@@ -37,10 +37,6 @@ cJSON *handle_join_chat(call_data_t *call_data, cJSON *json) {
     append_to_group_users(chat, user_id);
     append_to_users_groups(call_data->client_data->user_data, chat_id);
 
-    //append_to_intarr(&chat->users_id, &chat->users_count, user_id);
-    //append_to_intarr(&call_data->client_data->user_data->groups_id,
-    //                 &call_data->client_data->user_data->groups_count, chat_id);
-
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "chat_joined", chat_id);

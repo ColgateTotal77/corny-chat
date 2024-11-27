@@ -15,6 +15,8 @@ static void add_contacts_to_json(call_data_t *call_data, cJSON *response_json) {
         cJSON_AddStringToObject(contact_data_json, "login", client_data->user_data->login);
         cJSON_AddStringToObject(contact_data_json, "nickname", client_data->user_data->nickname);
         cJSON_AddNumberToObject(contact_data_json, "online", client_data->user_data->is_online);
+        cJSON_AddNumberToObject(contact_data_json, "admin", client_data->user_data->is_admin);
+        cJSON_AddNumberToObject(contact_data_json, "active", client_data->user_data->is_active);
         cJSON_AddItemToArray(contacts_array, contact_data_json);
     }
 }
