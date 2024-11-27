@@ -50,13 +50,18 @@ cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
 
     client_t *reciever_data = ht_get(call_data->general_data->clients, contact_id);
 
-    if (reciever_data == NULL) {
+    if (reciever_data == NULL
+        || !reciever_data->user_data->is_active) {
         return create_error_json("No such user\n");
     }
 
     int message_id = insert_private_message(call_data->general_data->db,
                            call_data->client_data->user_data->user_id,
                            contact_id, message_json->valuestring, NULL);
+
+    if (message_id == -1) {
+        return create_error_json("Something went wrong\n");
+    }
     
     update_reciever_and_user_contact_lists(reciever_data, call_data->client_data);
 

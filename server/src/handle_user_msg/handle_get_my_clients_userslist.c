@@ -30,6 +30,7 @@ cJSON* handle_get_my_clients_userslist(call_data_t *call_data) {
         cJSON *chat_user_json = create_chat_user_json(chat_users[i]);
         client_t *chat_user_data = ht_get(call_data->general_data->clients, chat_users[i].id);
         cJSON_AddBoolToObject(chat_user_json, "online", chat_user_data->user_data->is_online);
+        cJSON_AddBoolToObject(chat_user_json, "admin", chat_user_data->user_data->is_admin);
         cJSON_AddItemToArray(users_array, chat_user_json);
     }
     free(chat_users);

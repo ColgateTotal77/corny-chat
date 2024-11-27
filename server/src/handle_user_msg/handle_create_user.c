@@ -40,17 +40,22 @@ cJSON *handle_create_user(call_data_t *call_data, cJSON *json) {
     if (user_already_exists(call_data, login_json->valuestring)) {
         return create_error_json("User already exists\n");
     }
-    
+
     unsigned char *input_hash = hash_password(password_json->valuestring, login_json->valuestring);
     int user_id = create_new_user_and_return_id(call_data, login_json->valuestring,
                                                 input_hash, is_admin_json->valueint);
     free(input_hash);
 
+    if (user_id == -1) {
+        return create_error_json("Something went wrong\n");
+    }
+
     add_offline_user_to_server_cache(call_data->general_data->db,
                                      call_data->general_data->clients,
                                      call_data->general_data->login_to_id,
                                      user_id, login_json->valuestring, NULL,
-                                     is_admin_json->valueint, true);
+                                     is_admin_json->valueint, true
+    );
 
     cJSON *notif_about_new_user = create_json_notif_about_new_user(user_id, login_json->valuestring);
     send_to_another_ids_and_delete_json(call_data, &notif_about_new_user);
