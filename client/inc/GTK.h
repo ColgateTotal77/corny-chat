@@ -67,6 +67,10 @@ typedef struct {
     GtkWidget *old_password_entry;
     GtkWidget *deactivate_entry;
     GtkWidget *deactivate_error_label;
+    GtkWidget *create_error_label;  // For create user error messages
+    GtkWidget *create_success_label;  // For create user success messages
+    GtkWidget *login_entry;         // For login field
+    GtkWidget *password_entry;      // For password field
 } profile_data_t;
 
 typedef struct {

@@ -71,44 +71,4 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     // Send data to server
     create_new_user(ssl, (char *)login_input, (char *)password_input, is_admin);
 
-    // Handle server response
-    char *server_response = NULL;
-    int response_len = recieve_next_response(ssl, &server_response); // Replace with actual function to receive server response
-
-    if (response_len > 0 && server_response) {
-        cJSON *parsed_json = cJSON_Parse(server_response);
-        if (parsed_json) {
-            cJSON *success = cJSON_GetObjectItemCaseSensitive(parsed_json, "success");
-            cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(parsed_json, "err_msg");
-
-            if (cJSON_IsBool(success) && cJSON_IsFalse(success) && cJSON_IsString(err_msg)) {
-                // Show the server error message
-                gtk_label_set_text(GTK_LABEL(error_label), err_msg->valuestring);
-                gtk_widget_add_css_class(error_label, "error-label");
-
-                // Set timeout to hide error label after 1.5 seconds
-                g_timeout_add(1500, hide_label_after_timeout, error_label);
-            } else if (cJSON_IsBool(success) && cJSON_IsTrue(success)) {
-                // Success message
-                gtk_label_set_text(GTK_LABEL(success_label), "Account successfully created!");
-                gtk_widget_add_css_class(success_label, "success-label");
-
-                // Set timeout to hide success label after 1.5 seconds
-                g_timeout_add(1500, hide_label_after_timeout, success_label);
-
-                // Clear input fields
-                gtk_editable_set_text(GTK_EDITABLE(login_entry), "");
-                gtk_editable_set_text(GTK_EDITABLE(password_entry), "");
-            }
-
-            cJSON_Delete(parsed_json);
-        }
-        free(server_response);
-    } else {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Server did not respond.");
-        gtk_widget_add_css_class(error_label, "error-label");
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
-    }
 }
