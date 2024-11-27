@@ -78,7 +78,7 @@ void print_chat_manager_info(GTK_data_t *GTK_data, const char *search_enter) {
         while (g_hash_table_iter_next(&iter, &key, &value)) {
             chat_data_t *chat_data = (chat_data_t *)value;
 
-            if(search_enter && strncmp(search_enter, chat_data->contact_name, search_length) == 0){
+            if(search_enter && mx_strstr(chat_data->contact_name, search_enter) != 0){
                 chat_data->is_show = true;
                 gtk_widget_set_visible(chat_data->button, TRUE);
             } else {
