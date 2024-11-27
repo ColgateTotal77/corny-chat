@@ -97,6 +97,9 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case UPDATE_MESSAGE:
         response_json = handle_update_message(call_data, msg_json);
         break;
+    case DELETE_MESSAGE:
+        response_json = handle_delete_message(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;

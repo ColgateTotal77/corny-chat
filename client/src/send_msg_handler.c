@@ -75,7 +75,8 @@ void* send_msg_handler(void* arg) {
                       "DEACTIVATE_USER 25\n"
                       "ACTIVATE_USER 26\n"
                       "GET_NUM_OF_MSGS_FROM_GROUP 27\n"
-                      "UPDATE_MESSAGE 288\n";
+                      "UPDATE_MESSAGE 28\n"
+                      "DELETE_MESSAGE 29\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -419,6 +420,16 @@ void* send_msg_handler(void* arg) {
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
             update_message(call_data->ssl, message_id, message); 
+            break;
+        case DELETE_MESSAGE:
+            bzero(message, BUF_SIZE);
+            printf("Enter message id to delete: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            message_id = atoi(message);
+
+            delete_message(call_data->ssl, message_id); 
             break;
         default:
             printf("Wrong command code\n");
