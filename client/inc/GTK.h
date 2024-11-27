@@ -63,6 +63,8 @@ typedef struct {
     GtkWidget *new_password_entry_1;
     GtkWidget *new_password_entry_2;
     GtkWidget *old_password_entry;
+    GtkWidget *deactivate_entry;
+    GtkWidget *deactivate_error_label;
 } profile_data_t;
 
 typedef struct {
@@ -103,4 +105,16 @@ void profile_css(GtkWidget *widget);
 void update_login_list(GtkListBox *login_list, cJSON *parsed_json);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);
+
+// profile_form functions
+void on_change_password_button_clicked(GtkButton *button, gpointer user_data);
+void on_create_button_clicked(GtkButton *button, gpointer user_data);
+void on_update_button_clicked(GtkButton *button, gpointer user_data);
+void update_nickname_in_header(GTK_data_t *GTK_data, const char *new_nickname);
+void on_eye_button_clicked(GtkToggleButton *button, gpointer user_data);
+void on_login_row_selected(GtkListBox *list_box, GtkListBoxRow *row, gpointer user_data);
+void on_key_pressed(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer user_data);
+const char *find_similar_email(const char *input, GtkListBox *list_box);
+gboolean hide_label_after_timeout(gpointer label);
+char *strdup(const char *str);
 

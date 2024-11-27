@@ -330,3 +330,10 @@ button.eye-icon{
     border-radius: 1px; /* Slightly rounded edges */
 }
 
+.activate-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+}

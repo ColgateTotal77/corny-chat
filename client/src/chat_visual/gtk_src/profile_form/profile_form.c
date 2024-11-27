@@ -1,312 +1,90 @@
 #include "GTK.h"
 
-const char *stack_children[] = {"create", "delete", "change_password"};
+const char *stack_children[] = {"create", "change_password", "delete"};
 int current_index = 0;
 
-// Callbacks for Navigation
 void on_next_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
     GtkStack *stack = GTK_STACK(user_data);
-    current_index = (current_index + 1) % 3;
+
+    // Ensure the stack is properly initialized
+    if (!stack || current_index < 0) {
+        return;
+    }
+
+    // Move to the next child
+    current_index = (current_index + 1) % G_N_ELEMENTS(stack_children);
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
 }
 
 void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
     GtkStack *stack = GTK_STACK(user_data);
-    current_index = (current_index - 1 + 3) % 3;
+
+    // Ensure the stack is properly initialized
+    if (!stack || current_index < 0) {
+        return;
+    }
+
+    // Move to the previous child
+    current_index = (current_index - 1 + G_N_ELEMENTS(stack_children)) % G_N_ELEMENTS(stack_children);
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
 }
 
-void update_carousel_label(GtkStack *stack, GtkLabel *label) {
-    const char *current_child_name = gtk_stack_get_visible_child_name(stack);
-    if (g_strcmp0(current_child_name, "create") == 0) {
-        gtk_label_set_text(label, "Create");
-    } else if (g_strcmp0(current_child_name, "delete") == 0) {
-        gtk_label_set_text(label, "Delete");
-    } else if (g_strcmp0(current_child_name, "change_password") == 0) {
-        gtk_label_set_text(label, "Change Password");
-    }
+static void apply_css(void) {
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+
+    // Load CSS with only two parameters
+    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
+
+    gtk_style_context_add_provider_for_display(
+        gdk_display_get_default(),
+        GTK_STYLE_PROVIDER(css_provider),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
+
+    g_object_unref(css_provider);
 }
 
-static gboolean hide_label_after_timeout(gpointer label) {
-    gtk_label_set_text(GTK_LABEL(label), ""); // Clear the label text
-    gtk_widget_remove_css_class(GTK_WIDGET(label), "error-label");
-    gtk_widget_remove_css_class(GTK_WIDGET(label), "success-label");
-    return G_SOURCE_REMOVE; // Stop the timeout callback
-}
+// Callback for the "Deactivate" button
+// void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
+//     (void)button;
+//     GTK_data_t *GTK_data = (GTK_data_t *)user_data;
+//     GtkEntry *deactivate_entry = GTK_ENTRY(GTK_data->profile_data->deactivate_entry);
+//     GtkLabel *error_label = GTK_LABEL(GTK_data->profile_data->deactivate_error_label);
+//     SSL *ssl = GTK_data->call_data->ssl;
 
-// void on_login_row_selected(GtkListBox *box, GtkListBoxRow *row, gpointer user_data) {
-//     if (!row || !user_data) return;
+//     // Retrieve the text from the entry
+//     const char *user_id_str = gtk_editable_get_text(GTK_EDITABLE(deactivate_entry));
 
-//     GtkWidget *delete_entry = GTK_WIDGET(user_data);
-//     GtkWidget *label = gtk_bin_get_child(GTK_BIN(row));
-
-//     if (GTK_IS_LABEL(label)) {
-//         const char *text = gtk_label_get_text(GTK_LABEL(label));
-//         gtk_entry_set_text(GTK_ENTRY(delete_entry), text);
+//     // Validate the input
+//     if (!user_id_str || strlen(user_id_str) == 0) {
+//         gtk_label_set_text(error_label, "User ID cannot be empty.");
+//         gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
+//         return;
 //     }
+
+//     // Convert the text to an integer
+//     char *endptr;
+//     int user_id = strtol(user_id_str, &endptr, 10);
+//     if (*endptr != '\0' || user_id <= 0) {
+//         gtk_label_set_text(error_label, "Invalid User ID. Please enter a valid number.");
+//         gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
+//         return;
+//     }
+
+//     // Send the deactivation request to the server
+//     deactivate_user(ssl, user_id);
+
+//     // Provide feedback to the user
+//     gtk_label_set_text(error_label, "Deactivation request sent.");
+//     gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
 // }
-
-
-// Callback to toggle password visibility
-static void on_eye_button_clicked(GtkToggleButton *button, gpointer user_data) {
-    GtkEntry *password_entry = GTK_ENTRY(user_data);
-    gboolean active = gtk_toggle_button_get_active(button);
-
-    // Toggle password visibility
-    gtk_entry_set_visibility(password_entry, active);
-
-    // Change the icon of the eye button
-    if (active) {
-        gtk_button_set_icon_name(GTK_BUTTON(button), "view-reveal-symbolic");
-    } else {
-        gtk_button_set_icon_name(GTK_BUTTON(button), "view-conceal-symbolic");
-    }
-}
-
-char *strdup(const char *str) {
-    size_t len = strlen(str) + 1;
-    char *copy = malloc(len);
-    if (copy) {
-        memcpy(copy, str, len);
-    }
-    return copy;
-}
-
-void update_nickname_in_header(GTK_data_t *GTK_data, const char *new_nickname) {
-    if (!GTK_data || !GTK_data->profile_data || !GTK_data->profile_data->name_label || !new_nickname) {
-        fprintf(stderr, "Error: Missing GTK_data, profile_data, name_label, or new_nickname.\n");
-        return;
-    }
-
-    // Free the old username memory if it was dynamically allocated
-    if (GTK_data->username) {
-        free(GTK_data->username);
-        GTK_data->username = NULL; // Prevent double free
-    }
-
-    // Allocate new memory for the username
-    GTK_data->username = strdup(new_nickname);
-    if (!GTK_data->username) {
-        fprintf(stderr, "Error: Failed to allocate memory for username.\n");
-        return;
-    }
-
-    // Update the label in the header-box
-    gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->name_label), new_nickname);
-
-    printf("Nickname updated to: %s\n", new_nickname); // Debugging message to confirm the change
-}
-
-static void on_update_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
-
-    if (!user_data) {
-        fprintf(stderr, "Error: user_data is NULL.\n");
-        return;
-    }
-
-    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
-
-    if (!GTK_data || !GTK_data->profile_data || !GTK_data->profile_data->nickname_entry || !GTK_data->profile_data->nickname_error_label) {
-        fprintf(stderr, "Error: GTK_data or required fields are NULL.\n");
-        return;
-    }
-
-    GtkWidget *nickname_entry = GTK_data->profile_data->nickname_entry;
-    GtkWidget *nickname_error_label = GTK_data->profile_data->nickname_error_label;
-    const char *new_nickname = gtk_editable_get_text(GTK_EDITABLE(nickname_entry));
-
-    // Validate the nickname
-    if (!new_nickname || strlen(new_nickname) < 2 || strlen(new_nickname) > 30) {
-        gtk_label_set_text(GTK_LABEL(nickname_error_label), "Nickname must be 2-30 characters long.");
-        gtk_widget_add_css_class(nickname_error_label, "error-label");
-
-        // Hide the error message after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, nickname_error_label);
-        return;
-    }
-
-    // Clear the error label
-    gtk_label_set_text(GTK_LABEL(nickname_error_label), "");
-    gtk_widget_remove_css_class(nickname_error_label, "error-label");
-
-    // Update the nickname on the server
-    update_my_nickname(GTK_data->call_data->ssl, (char *)new_nickname);
-
-    // Update the nickname locally
-    update_nickname_in_header(GTK_data, new_nickname);
-
-    // Clear the nickname entry
-    gtk_editable_set_text(GTK_EDITABLE(nickname_entry), "");
-}
-
-
-
-static void on_create_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
-
-    // Validate user_data
-    if (!user_data) {
-        fprintf(stderr, "Error: user_data is NULL.\n");
-        return;
-    }
-
-    // Unpack entries
-    gpointer *entries = (gpointer *)user_data;
-    GtkWidget *login_entry = GTK_WIDGET(entries[0]);
-    GtkWidget *password_entry = GTK_WIDGET(entries[1]);
-    GtkWidget *error_label = GTK_WIDGET(entries[2]);
-    GtkWidget *success_label = GTK_WIDGET(entries[5]);
-    GtkWidget *admin_check = GTK_WIDGET(entries[6]);
-    GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
-    SSL *ssl = GTK_data->call_data->ssl;
-
-    // Validate individual widgets
-    if (!GTK_IS_WIDGET(login_entry) || !GTK_IS_WIDGET(password_entry) || 
-        !GTK_IS_WIDGET(error_label) || !GTK_IS_WIDGET(success_label) || 
-        !GTK_IS_WIDGET(admin_check)) {
-        fprintf(stderr, "Error: One or more widgets are invalid.\n");
-        return;
-    }
-
-    // Get text from input fields
-    const char *login_input = gtk_editable_get_text(GTK_EDITABLE(login_entry));
-    const char *password_input = gtk_editable_get_text(GTK_EDITABLE(password_entry));
-
-    if (!login_input || !*login_input || !password_input || !*password_input) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Login and password cannot be empty.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
-        return;
-    }
-
-    // Validate login and password
-    if (strlen(login_input) < 2 || strlen(login_input) > 30) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Login must be 2-30 characters.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
-        return;
-    }
-    if (!check_password((char *)password_input)) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Invalid password. Must be 8-20 characters.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
-        return;
-    }
-
-    // Get the state of the admin checkbox
-    gboolean is_admin = gtk_check_button_get_active(GTK_CHECK_BUTTON(admin_check));
-
-    // Clear error label
-    gtk_label_set_text(GTK_LABEL(error_label), "");
-    gtk_widget_remove_css_class(error_label, "error-label");
-
-    // Send data to server
-    create_new_user(ssl, (char *)login_input, (char *)password_input, is_admin);
-
-    // Simulated response handling (replace this with actual response logic)
-    bool user_created_successfully = true; // Replace with actual server response check
-
-    if (user_created_successfully) {
-        // Success message
-        gtk_label_set_text(GTK_LABEL(success_label), "Account successfully created!");
-        gtk_widget_add_css_class(success_label, "success-label");
-
-        // Set timeout to hide success label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, success_label);
-
-        // Clear input fields
-        gtk_editable_set_text(GTK_EDITABLE(login_entry), "");
-        gtk_editable_set_text(GTK_EDITABLE(password_entry), "");
-    } else {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Account creation failed.");
-        gtk_widget_add_css_class(error_label, "error-label");
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
-    }
-}
-
-static void on_change_password_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
-    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
-
-    // Validate GTK_data and profile_data
-    if (!GTK_data || !GTK_data->profile_data) {
-        fprintf(stderr, "Error: GTK_data or required fields are NULL.\n");
-        return;
-    }
-
-    GtkWidget *old_password_entry = GTK_data->profile_data->old_password_entry;
-    GtkWidget *new_password_entry_1 = GTK_data->profile_data->new_password_entry_1;
-    GtkWidget *new_password_entry_2 = GTK_data->profile_data->new_password_entry_2;
-    GtkWidget *password_error_label = GTK_data->profile_data->password_error_label;
-    GtkWidget *password_success_label = GTK_data->profile_data->password_success_label;
-
-    const char *old_password = gtk_editable_get_text(GTK_EDITABLE(old_password_entry));
-    const char *new_password_1 = gtk_editable_get_text(GTK_EDITABLE(new_password_entry_1));
-    const char *new_password_2 = gtk_editable_get_text(GTK_EDITABLE(new_password_entry_2));
-
-    // Validate passwords
-    if (!old_password || strlen(old_password) == 0) {
-        gtk_label_set_text(GTK_LABEL(password_error_label), "Error: Old password cannot be empty.");
-        gtk_widget_add_css_class(password_error_label, "error-label");
-        return;
-    }
-
-    if (!new_password_1 || strlen(new_password_1) < 8 || strlen(new_password_1) > 20) {
-        gtk_label_set_text(GTK_LABEL(password_error_label), "Error: New password must be 8-20 characters long.");
-        gtk_widget_add_css_class(password_error_label, "error-label");
-        return;
-    }
-
-    if (strcmp(new_password_1, new_password_2) != 0) {
-        gtk_label_set_text(GTK_LABEL(password_error_label), "Error: New passwords do not match.");
-        gtk_widget_add_css_class(password_error_label, "error-label");
-        return;
-    }
-
-    // Clear error label
-    gtk_label_set_text(GTK_LABEL(password_error_label), "");
-    gtk_widget_remove_css_class(password_error_label, "error-label");
-
-    // Send change password request
-    change_password(GTK_data->call_data->ssl, (char *)old_password, (char *)new_password_1);
-
-    // Simulated response for success (Replace with server response handling)
-    bool success = true; // Replace with actual server response
-
-    if (success) {
-        gtk_label_set_text(GTK_LABEL(password_success_label), "Password changed successfully.");
-        gtk_widget_add_css_class(password_success_label, "success-label");
-
-        // Clear input fields
-        gtk_editable_set_text(GTK_EDITABLE(old_password_entry), "");
-        gtk_editable_set_text(GTK_EDITABLE(new_password_entry_1), "");
-        gtk_editable_set_text(GTK_EDITABLE(new_password_entry_2), "");
-    } else {
-        gtk_label_set_text(GTK_LABEL(password_error_label), "Error: Incorrect old password.");
-        gtk_widget_add_css_class(password_error_label, "error-label");
-    }
-}
-
-
 
 static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
     // Apply the CSS styling
-    profile_css(GTK_data->window);
+    apply_css();
 
     // Close the window
     gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
@@ -620,13 +398,13 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *delete_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
     // Input field and Delete button
-    GtkWidget *delete_label = gtk_label_new("Enter login to delete:");
+    GtkWidget *delete_label = gtk_label_new("Enter login to deactivate:");
     gtk_widget_set_halign(delete_label, GTK_ALIGN_START);
 
     GtkWidget *delete_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
 
-    GtkWidget *delete_button = gtk_button_new_with_label("Delete");
+    GtkWidget *delete_button = gtk_button_new_with_label("Deactivation");
     gtk_widget_add_css_class(delete_button, "delete-button");
 
     GtkWidget *delete_input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -665,19 +443,16 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_container), login_list);
     GTK_data->profile_data->login_list = GTK_LIST_BOX(login_list);
 
-    cJSON *command = cJSON_CreateObject();
-    cJSON_AddNumberToObject(command, "command_code", 17);
-    send_and_delete_json(ssl, &command);
-
     //update_login_list(GTK_LIST_BOX(login_list), parced_json);
 
-    // GtkEventController *key_controller = gtk_event_controller_key_new();
-    // g_object_set_data(G_OBJECT(key_controller), "list-box", login_list);
-    // g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_pressed), delete_entry);
-    // gtk_widget_add_controller(delete_entry, key_controller);
+    GtkEventController *key_controller = gtk_event_controller_key_new();
+    g_object_set_data(G_OBJECT(key_controller), "list-box", login_list);
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_pressed), delete_entry);
+    gtk_widget_add_controller(delete_entry, key_controller);
 
     // Connect signal for row selection to delete_entry only
-    //g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
+    g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
+    //g_signal_connect(delete_button, "clicked", G_CALLBACK(on_deactivate_button_clicked), GTK_data);
 
     // Append scroll container to the background container
     gtk_box_append(GTK_BOX(login_list_background), scroll_container);
@@ -701,6 +476,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(password_box1), new_password_entry);
     gtk_box_append(GTK_BOX(password_box1), password_button);
     gtk_stack_add_titled(GTK_STACK(carousel_stack), password_box1, "change_password", "Change Password");
+
 
     // Connect Navigation Buttons
     g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
@@ -750,11 +526,15 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(main_box), header_box);
     gtk_box_append(GTK_BOX(main_box), content_box);
 
+    cJSON *command = cJSON_CreateObject();
+    cJSON_AddNumberToObject(command, "command_code", 17);
+    send_and_delete_json(ssl, &command);
+
     gtk_window_set_child(GTK_WINDOW(window), main_box);
 
     // Load CSS
     GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_path(provider, "src/chat_visual/gtk_src/profile_form.css");
+    gtk_css_provider_load_from_path(provider, "src/chat_visual/gtk_src/profile_form/profile_form.css");
     gtk_style_context_add_provider_for_display(
         gdk_display_get_default(),
         GTK_STYLE_PROVIDER(provider),
