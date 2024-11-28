@@ -24,6 +24,21 @@ typedef struct {
 } user_list_t;
 
 typedef struct {
+    GtkWidget *alignment_box;
+    GtkWidget *message_label;
+    GtkWidget *time_label;
+    //gboolean edited;
+    GtkWidget *message_entry;
+    gboolean *is_editing;
+    gboolean own_is_editing;
+    GtkWidget *send_button;
+
+    int message_id;
+    SSL* ssl;
+} message_data_t;
+
+
+typedef struct {
     char *contact_name;
     int contact_id;
     int last_message_id;
@@ -33,6 +48,7 @@ typedef struct {
     GtkWidget *time_label;
     GtkWidget *message_label;
     GtkAdjustment *adjustment;
+    GHashTable *messages; 
     bool is_show;
     GtkWidget *button;
 } chat_data_t;
@@ -48,6 +64,8 @@ typedef struct {
     GtkWidget *chat_area_background;
     GtkWidget *chat_user_label;
     GtkWidget *message_entry;
+    gboolean *is_editing;
+    GtkWidget *send_button;
     GtkWidget *sidebar;
     GtkWidget *error_label;
     GtkWidget *input_box;
@@ -76,7 +94,6 @@ typedef struct {
 typedef struct {
     //GtkWidget *messages_container;
     char *username;
-    char *message;
     int user_id; 
     call_data_t *call_data;
     chat_manager_t *chat_manager;
@@ -88,8 +105,9 @@ typedef struct {
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
-void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent);
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment);
+void apply_css(GtkWidget *widget, char* path);
+void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, chat_manager_t *chat_manager, message_data_t *message_data, SSL* ssl);
+void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment, chat_manager_t *chat_manager, message_data_t *message_data, SSL* ssl);
 void sleep_ms(int milliseconds);
 void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);
@@ -100,6 +118,8 @@ void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager);
 void change_sidebar_chat_info(chat_data_t *chat, char *message, char *time);
 void change_status_sidebar_chat(chat_data_t *chat, bool is_online);
 void on_scroll_changed(GtkAdjustment *adjustment, gpointer user_data);
+message_data_t* create_message_data (int message_id, chat_data_t* chat);
+void on_message_edit(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
 
 user_list_t* create_user_list(void);
 void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);

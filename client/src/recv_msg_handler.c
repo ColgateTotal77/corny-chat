@@ -63,7 +63,7 @@ void* recv_msg_handler(void* arg) {
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
                         g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
 
-                        GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "12:00", is_online, FALSE, GTK_data->chat_manager);
+                        GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
 
                         GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
                         gboolean added = FALSE;
@@ -102,23 +102,13 @@ void* recv_msg_handler(void* arg) {
                             int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
                             int target_id = cJSON_GetObjectItemCaseSensitive(message_data, "target_id")->valueint;
                             char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
-
-                            if (i == 0) {
-                                if(owner_id == GTK_data->user_id) {
-                                    chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                    chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
-                                }
-                                else {
-                                    chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                    chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
-                                }
-                            }
+                            int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
 
                             if (owner_id == GTK_data->user_id) {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                add_message(chat->messages_container, message, time_to_send, true);
+                                add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
                                 if (i == 0) {
-                                    chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                                    chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
                                     if (local_time->tm_mday > adjusted_time->tm_mday) {
@@ -133,9 +123,9 @@ void* recv_msg_handler(void* arg) {
                             }
                             else {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                add_message(chat->messages_container, message, time_to_send, false);
+                                add_message(chat->messages_container, message, time_to_send, false, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
                                 if (i == 0) {
-                                    chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                                    chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
                                     if (local_time->tm_mday > adjusted_time->tm_mday) {
@@ -212,25 +202,26 @@ void* recv_msg_handler(void* arg) {
                                 int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
                                 int target_id = cJSON_GetObjectItemCaseSensitive(message_data, "target_id")->valueint;
                                 char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
+                                int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
 
                                 if (i == 0) {
                                     if(owner_id == GTK_data->user_id) {
                                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                        chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                                        chat->last_message_id = msg_id;
                                     }
                                     else {
                                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                        chat->last_message_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                                        chat->last_message_id = msg_id;
                                     }
                                 }
 
                                 if (owner_id == GTK_data->user_id) {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, true, chat->adjustment);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, true, chat->adjustment, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
                                 }
                                 else {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, false, chat->adjustment);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, false, chat->adjustment, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
                                 }
                             }   
                         } 
@@ -280,7 +271,6 @@ void* recv_msg_handler(void* arg) {
                             gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
                         }
                         break;
-                    
                     case 16:{ 
                         printf("lox");
                         // // Declare variables at the beginning of the block
@@ -310,9 +300,24 @@ void* recv_msg_handler(void* arg) {
                         //     }
                         //     free(server_response);
                         // } 
-                    break; // Ensure the case ends with a break   
-                    }       
-                    
+                        break; // Ensure the case ends with a break   
+                    }
+                    case 1:
+                        if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int contact_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "contact_id")->valueint;
+                            int message_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                            char *created_at = cJSON_GetObjectItemCaseSensitive(parsed_json, "time_reached_server")->valuestring;
+                            chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(contact_id));
+
+                            strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                            time_t time_value = mktime(&message_time);
+                            time_value += time_zone; 
+                            adjusted_time = localtime(&time_value);
+                            strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                            
+                            add_message(chat->messages_container, "msg", time_to_send, true, GTK_data->chat_manager, create_message_data(message_id, chat), call_data->ssl);
+                        }
+                        break;      
                     default:
 
                         break;
@@ -334,7 +339,8 @@ void* recv_msg_handler(void* arg) {
                         char *msg = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(parsed_json, "message"));
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
-                        add_message(chat->messages_container, msg, time_str, false);
+                        //int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "msg_id")->valueint;
+                        add_message(chat->messages_container, msg, time_str, false, NULL, NULL, NULL);
                         change_sidebar_chat_info(chat, msg, time_str);
                     }
                     break;
