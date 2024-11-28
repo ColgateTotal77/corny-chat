@@ -2,13 +2,14 @@
 #include "command_codes.h"
 
 
-cJSON *message_deleted_notification(int message_id, int sender_id, bool is_group_message) {
+cJSON *message_deleted_notification(int message_id, int sender_id, bool is_group_message, int group_id) {
     cJSON *notification_json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(notification_json, "event_code", UPDATED_MESSAGE);
+    cJSON_AddNumberToObject(notification_json, "event_code", DELETED_MESSAGE);
     cJSON_AddNumberToObject(notification_json, "message_type", 
         is_group_message ? GROUP_MESSAGE : PRIVATE_MESSAGE);
     cJSON_AddNumberToObject(notification_json, "message_id", message_id);
     cJSON_AddNumberToObject(notification_json, "sender_id", sender_id);
+    cJSON_AddNumberToObject(notification_json, "group_id", group_id);
 
     return notification_json;
 }
@@ -53,7 +54,8 @@ cJSON *handle_delete_message(call_data_t *call_data, cJSON *json) {
     cJSON *message_deleted_notif = message_deleted_notification(
         message_id, 
         user_id,
-        is_group_message
+        is_group_message,
+        message.target_group_id
     );
 
     // check for unactive target users here later
