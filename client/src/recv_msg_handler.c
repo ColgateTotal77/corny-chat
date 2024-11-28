@@ -340,8 +340,8 @@ void* recv_msg_handler(void* arg) {
                         char *msg = cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(parsed_json, "message"));
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
-                        //int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "msg_id")->valueint;
-                        add_message(chat->messages_container, msg, time_str, false, NULL, NULL, NULL);
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        add_message(chat->messages_container, msg, time_str, false, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
                         change_sidebar_chat_info(chat, msg, time_str);
                     }
                     break;
