@@ -27,12 +27,12 @@ static void apply_css(GtkWidget *widget) {
 }
 
 /* Function to convert login and password to JSON and print */
-static void print_json_data(const char *login, const char *password, SSL *ssl) {
+static void print_json_data(const char *login, const char *password, call_data_t *call_data) {
     cJSON *json = cJSON_CreateObject();
     cJSON_AddStringToObject(json, "name", login);
     cJSON_AddStringToObject(json, "password", password);
 
-    send_and_delete_json(ssl, &json);
+    send_and_delete_json(call_data->ssl, &json);
 }
 
 bool check_password(char *password) { //Валідація паролю
@@ -54,6 +54,33 @@ bool check_password(char *password) { //Валідація паролю
     return true;
 }
 
+static void apply_css_1(void) {
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+
+    // Load CSS with only two parameters
+    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
+
+    gtk_style_context_add_provider_for_display(
+        gdk_display_get_default(),
+        GTK_STYLE_PROVIDER(css_provider),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
+
+    g_object_unref(css_provider);
+}
+
+static void login_window_close_wrapper(GTK_data_t *GTK_data) {
+    return;
+    apply_css_1();
+    GTK_start(GTK_data);
+}
+void set_error_text(GtkWidget *error_label, bool *error, const char *error_text) {
+    gtk_label_set_text(GTK_LABEL(error_label), error_text);
+    if (error) {
+        *error = true;
+    }
+}
+
 /* Callback function to handle the login button click */
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
@@ -61,7 +88,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     const char *login_input = gtk_editable_get_text(GTK_EDITABLE(entries[0]));
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(entries[1]));
     GtkWidget *error_label = entries[2];
-    SSL *ssl = (SSL *)entries[3];
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
 
     // Check login validity: length 2-30 characters
     bool valid_login = login_input && strlen(login_input) >= 2 && strlen(login_input) <= 30;
@@ -69,33 +96,62 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     // Check password validity using the check_password function
     bool valid_password = password_input && check_password((char *)password_input);
 
+    printf("valid_login: %d; valid_password: %d \n",valid_login, valid_password);
+
     // Reset error label text
     gtk_label_set_text(GTK_LABEL(error_label), "");
+    bool is_error_appear = false;
 
     // Determine the error message based on validation results
     if (!valid_login && !valid_password) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Both login and password are invalid.");
+        // gtk_label_set_text(GTK_LABEL(error_label), "Both login and password are invalid.");
+        // is_error_appear = true;
+        set_error_text(error_label, &is_error_appear, "Both login and password are invalid.");
     } else if (!valid_login) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Invalid login. Must be 2-30 characters.");
+        // gtk_label_set_text(GTK_LABEL(error_label), "Invalid login. Must be 2-30 characters.");
+        // is_error_appear = true;
+        set_error_text(error_label, &is_error_appear, "Invalid login. Must be 2-30 characters.");
     } else if (!valid_password) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Invalid password. Must be 8-20 characters with no spaces.");
+        // gtk_label_set_text(GTK_LABEL(error_label), "Invalid password. Must be 8-20 characters with no spaces.");
+        // is_error_appear = true;
+        set_error_text(error_label, &is_error_appear, "Invalid password. Must be 8-20 characters with no spaces.");
     } else {
         // If validation passes, print JSON data
-        print_json_data(login_input, password_input, ssl);
-        GtkWidget *window = entries[4];
-        check_remember_me(entries[5], login_input, password_input);
-        gtk_window_close(GTK_WINDOW(window));
+        print_json_data(login_input, password_input, GTK_data->call_data);
+        // Wait for login completion
+        pthread_mutex_lock(&GTK_data->login_mutex);
+        
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        timeout.tv_sec += 1;  // 1-second timeout
+        
+        int result = pthread_cond_timedwait(&GTK_data->login_cond, 
+                                            &GTK_data->login_mutex, 
+                                            &timeout);
+        
+
+        printf("before if\n");
+        if(result == 0 && GTK_data->login_completed){
+            GtkWidget *window = entries[4];
+            check_remember_me(entries[5], login_input, password_input);
+            gtk_widget_set_visible(window, FALSE);
+            login_window_close_wrapper(GTK_data);
+            gtk_window_close(GTK_WINDOW(window));
+        }else{
+            set_error_text(error_label, &is_error_appear, "Login failed. Please try again.");
+        }
+        pthread_mutex_unlock(&GTK_data->login_mutex);
     }
 
     // Add red color style to the error label if there's an error
-    if (!valid_login || !valid_password) {
+    if (is_error_appear) {
         gtk_widget_add_css_class(error_label, "error-label");
     } else {
         gtk_widget_remove_css_class(error_label, "error-label");
     }
 }
 
-void on_activate(GtkApplication *app, gpointer ssl) {
+void on_activate(GtkApplication *app, gpointer GTK_data) {
     
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
@@ -157,7 +213,7 @@ void on_activate(GtkApplication *app, gpointer ssl) {
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
-    entries[3] = ssl;
+    entries[3] = GTK_data;
     entries[4] = window;
     entries[5] = remember_me_check;
 
@@ -176,16 +232,27 @@ void on_activate(GtkApplication *app, gpointer ssl) {
 
     gtk_window_set_child(GTK_WINDOW(window), main_container);
     gtk_window_present(GTK_WINDOW(window));
+
+    pthread_t recv_login_msg_thread;
+    if (pthread_create(&recv_login_msg_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
+        printf("ERROR: pthread\n");
+    }
 }
 
-void start_login(SSL *ssl) {
+void start_login(call_data_t *call_data) {
     // Use a static variable to track the application instance
     static GtkApplication *app = NULL;
     
     // If no app exists, create a new one
     if (app == NULL) {
-        app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
-        g_signal_connect(app, "activate", G_CALLBACK(on_activate), ssl);
+        GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
+        GTK_data->call_data = call_data;
+        GTK_data->login_completed = false;
+        pthread_mutex_init(&GTK_data->login_mutex, NULL);
+        pthread_cond_init(&GTK_data->login_cond, NULL);
+
+        app = gtk_application_new("com.example.GtkApplication1", G_APPLICATION_NON_UNIQUE);
+        g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
     }
     
     // Activate the application

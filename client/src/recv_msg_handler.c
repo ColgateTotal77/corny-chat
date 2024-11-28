@@ -10,7 +10,7 @@ void* recv_msg_handler(void* arg) {
     call_data_t *call_data = GTK_data->call_data;
 
     cJSON *parsed_json;
-    char *session_id = NULL;
+    char *session_id = GTK_data->session_id;
     bool stop_flag = true;
 
     time_t now = time(NULL);
@@ -38,17 +38,7 @@ void* recv_msg_handler(void* arg) {
 
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
             if (command_code_json) {
-                if ((command_code_json)->valueint == 11 && cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
-                    cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
-                    session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
-                    strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
-                    GTK_data->user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
-                    char* nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
-                    GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));
-                    strncpy(GTK_data->username, nickname, strlen(nickname));
-                    continue;
-                }
-                else if (command_code_json->valueint == 17 && stop_flag) {                 
+                if (command_code_json->valueint == 17 && stop_flag) {                 
                     cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                     number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
                     

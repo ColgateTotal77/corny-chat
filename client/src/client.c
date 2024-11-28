@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
     // strcpy(call_data->name, name_json->valuestring);
     // cJSON_Delete(json_name_and_password);
 
-    start_login(ssl);
-    GTK_start(call_data);
+    start_login(call_data);
+    // GTK_start(call_data);
 
     while (1) {
         if (stop_flag) {

@@ -74,6 +74,7 @@ typedef struct {
     char *username;
     char *message;
     int user_id; 
+    char *session_id;
     call_data_t *call_data;
     chat_manager_t *chat_manager;
     user_list_t *user_list;
@@ -81,6 +82,9 @@ typedef struct {
     GtkWidget *window;
     GtkWidget *profile_window;
     GtkWidget *search_bar;
+    pthread_mutex_t login_mutex;
+    pthread_cond_t login_cond;
+    bool login_completed;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
@@ -99,10 +103,10 @@ void on_scroll_changed(GtkAdjustment *adjustment, gpointer user_data);
 
 user_list_t* create_user_list(void);
 void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);
-void GTK_start(call_data_t *call_data);
+void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
-void start_login(SSL *ssl);
+void start_login(call_data_t *call_data);
 void profile_start(GTK_data_t *GTK_data);
 void profile_css(GtkWidget *widget);
 void update_login_list(GtkListBox *login_list, cJSON *parsed_json);

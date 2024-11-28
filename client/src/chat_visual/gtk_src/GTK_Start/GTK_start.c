@@ -1,20 +1,20 @@
 #include "GTK.h"
 
 // Function to apply CSS styles
-static void apply_css(void) {
-    GtkCssProvider *css_provider = gtk_css_provider_new();
+// static void apply_css(void) {
+//     GtkCssProvider *css_provider = gtk_css_provider_new();
 
-    // Load CSS with only two parameters
-    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
+//     // Load CSS with only two parameters
+//     gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
 
-    gtk_style_context_add_provider_for_display(
-        gdk_display_get_default(),
-        GTK_STYLE_PROVIDER(css_provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-    );
+//     gtk_style_context_add_provider_for_display(
+//         gdk_display_get_default(),
+//         GTK_STYLE_PROVIDER(css_provider),
+//         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+//     );
 
-    g_object_unref(css_provider);
-}
+//     g_object_unref(css_provider);
+// }
 
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
     (void) entry;
@@ -120,7 +120,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
     // Apply CSS to window
-    apply_css();
+    // apply_css();
 
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();
@@ -292,13 +292,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
 }
 
-void GTK_start(call_data_t *call_data) {
+void GTK_start(GTK_data_t *GTK_data) {
     static GtkApplication *app = NULL;
 
     if (app == NULL) {
-        GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
+        // GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->message = NULL;
-        GTK_data->call_data = call_data;
+        // GTK_data->call_data = call_data;
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
         
