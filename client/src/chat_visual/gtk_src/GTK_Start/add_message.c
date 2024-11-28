@@ -5,18 +5,17 @@ void change_message(GtkWidget *widget, gpointer user_data) {
 
     message_data_t *message_data = (message_data_t*)user_data;
 
-    if (*(message_data->is_editing) == false && message_data->own_is_editing == false) {
-        return;
+    if (!(*(message_data->is_editing) == false && message_data->own_is_editing == false)) {
+        GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
+        const char *message_text = gtk_entry_buffer_get_text(buffer);
+        gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
+        *(message_data->is_editing) = false;
+        message_data->own_is_editing = false;
+
+        update_message(message_data->ssl, message_data->message_id, (char *)message_text);
+
+        gtk_entry_buffer_set_text(buffer, "", -1);
     }
-
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
-    const char *message_text = gtk_entry_buffer_get_text(buffer);
-    gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
-    *(message_data->is_editing) = false;
-    message_data->own_is_editing = false;
-
-    update_message(message_data->ssl, message_data->message_id, (char *)message_text);
-
     g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
     g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
 }
@@ -45,11 +44,7 @@ void on_delete_button_clicked(GtkButton *button, gpointer user_data) {
     gtk_widget_unparent(alignment_box);
 }
 
-void on_message_edit(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data) {
-    (void)n_press;
-    (void)x;
-    (void)y;
-    (void)user_data;
+void on_message_edit(GtkGestureClick *gesture) {
 
     GtkWidget *alignment_box = GTK_WIDGET(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
 
@@ -95,9 +90,7 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
         message_data->alignment_box = alignment_box;
         message_data->message_label = message_label;
         message_data->time_label = time_label;
-        //message_data->edited = false;
         message_data->message_entry = chat_manager->message_entry;
-        message_data->is_editing = g_new(gboolean, 1);
         message_data->is_editing = chat_manager->is_editing;
         message_data->own_is_editing = false;
         message_data->send_button = chat_manager->send_button;
@@ -111,6 +104,8 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
         gtk_widget_add_controller(alignment_box, GTK_EVENT_CONTROLLER(right_click));
     } 
     else {
+        message_data->alignment_box = alignment_box;
+        message_data->message_label = message_label;
         gtk_box_append(GTK_BOX(message_box), message_label);
         gtk_box_append(GTK_BOX(message_box), time_label);
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_START); // Set the alignment to the left if the message is sent

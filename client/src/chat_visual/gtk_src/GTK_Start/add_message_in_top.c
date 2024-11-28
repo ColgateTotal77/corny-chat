@@ -40,6 +40,8 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
         gtk_widget_add_controller(alignment_box, GTK_EVENT_CONTROLLER(right_click));
     } 
     else {
+        message_data->alignment_box = alignment_box;
+        message_data->message_label = message_label;
         gtk_box_append(GTK_BOX(message_box), message_label);
         gtk_box_append(GTK_BOX(message_box), time_label);
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_START); // Set the alignment to the left if the message is sent

@@ -307,6 +307,7 @@ void* recv_msg_handler(void* arg) {
                             int contact_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "contact_id")->valueint;
                             int message_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
                             char *created_at = cJSON_GetObjectItemCaseSensitive(parsed_json, "time_reached_server")->valuestring;
+                            char *message = cJSON_GetObjectItemCaseSensitive(parsed_json, "message")->valuestring;
                             chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(contact_id));
 
                             strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
@@ -315,7 +316,7 @@ void* recv_msg_handler(void* arg) {
                             adjusted_time = localtime(&time_value);
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
-                            add_message(chat->messages_container, "msg", time_to_send, true, GTK_data->chat_manager, create_message_data(message_id, chat), call_data->ssl);
+                            add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, create_message_data(message_id, chat), call_data->ssl);
                         }
                         break;      
                     default:
@@ -362,10 +363,19 @@ void* recv_msg_handler(void* arg) {
                     break;
                 }
                 case 57: {
-                    // int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
-                    // int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "msg_id")->valueint;
-                    // char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
-
+                    int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
+                    int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                    char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
+                    change_message_from_others(chat, msg_id, new_message);
+                    break;
+                }
+                case 58: {
+                    int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
+                    int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
+                    delete_message_from_others(chat, msg_id);
+                    break;
                 }
             }
             cJSON_Delete(parsed_json);
