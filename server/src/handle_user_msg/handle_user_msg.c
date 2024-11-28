@@ -100,6 +100,12 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case DELETE_MESSAGE:
         response_json = handle_delete_message(call_data, msg_json);
         break;
+    case GET_MY_GROUPS:
+        response_json = handle_get_my_groups(call_data);
+        break;
+    case MARK_GROUP_MSGS_AS_READED:
+        response_json = handle_mark_group_msgs_as_readed(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;
