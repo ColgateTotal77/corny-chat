@@ -31,20 +31,20 @@ void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
 }
 
-static void apply_css(void) {
-    GtkCssProvider *css_provider = gtk_css_provider_new();
+// static void apply_css(void) {
+//     GtkCssProvider *css_provider = gtk_css_provider_new();
 
-    // Load CSS with only two parameters
-    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
+//     // Load CSS with only two parameters
+//     gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
 
-    gtk_style_context_add_provider_for_display(
-        gdk_display_get_default(),
-        GTK_STYLE_PROVIDER(css_provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-    );
+//     gtk_style_context_add_provider_for_display(
+//         gdk_display_get_default(),
+//         GTK_STYLE_PROVIDER(css_provider),
+//         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+//     );
 
-    g_object_unref(css_provider);
-}
+//     g_object_unref(css_provider);
+// }
 
 // Callback for the "Deactivate" button
 // void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
@@ -84,7 +84,7 @@ static void apply_css(void) {
 static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
     // Apply the CSS styling
-    apply_css();
+    apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
 
     // Close the window
     gtk_window_close(GTK_WINDOW(GTK_data->profile_window));

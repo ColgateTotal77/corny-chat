@@ -3,11 +3,16 @@
 
 void on_send_clicked(GtkWidget *widget, gpointer user_data) {
     (void) widget;
-    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data; 
 
     // Check if message_entry is valid
     if (GTK_data->chat_manager->message_entry == NULL) {
         printf("message_entry is NULL!\n");
+        return;
+    }
+    
+    if (*(GTK_data->chat_manager->is_editing) == true) {
+        //printf("Message is editing");
         return;
     }
 
@@ -25,7 +30,7 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
         char *time_str = g_date_time_format(now, "%H:%M");
         
         send_to_user(GTK_data->call_data->ssl, GTK_data->chat_manager->active_chat->contact_id, (char *)message_text);
-        add_message(GTK_data->chat_manager->active_chat->messages_container, message_text, time_str, TRUE);
+        //add_message(GTK_data->chat_manager->active_chat->messages_container, message_text, time_str, TRUE, GTK_data->chat_manager);
         change_sidebar_chat_info(GTK_data->chat_manager->active_chat, (char *)message_text, time_str);
 
         gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_data->chat_manager->message_entry)), "", 0);
