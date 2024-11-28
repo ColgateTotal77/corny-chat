@@ -2,13 +2,14 @@
 #include "command_codes.h"
 
 
-cJSON *message_updated_notification(int message_id, char *new_message, int sender_id, bool is_group_message) {
+cJSON *message_updated_notification(int message_id, char *new_message, int sender_id, bool is_group_message, int group_id) {
     cJSON *notification_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(notification_json, "event_code", UPDATED_MESSAGE);
     cJSON_AddNumberToObject(notification_json, "message_type", 
         is_group_message ? GROUP_MESSAGE : PRIVATE_MESSAGE);
     cJSON_AddNumberToObject(notification_json, "message_id", message_id);
     cJSON_AddNumberToObject(notification_json, "sender_id", sender_id);
+    cJSON_AddNumberToObject(notification_json, "group_id", group_id);
     cJSON_AddStringToObject(notification_json, "new_message", new_message);
 
     return notification_json;
@@ -64,7 +65,8 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
         message_id, 
         new_message_json->valuestring, 
         user_id,
-        is_group_message
+        is_group_message,
+        message.target_group_id
     );
 
     // check for unactive target users

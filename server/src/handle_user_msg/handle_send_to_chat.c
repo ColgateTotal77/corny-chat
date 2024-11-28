@@ -69,6 +69,7 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
     cJSON_AddNumberToObject(response_json, "message_id", message_id);
+    cJSON_AddStringToObject(response_json, "message", message_json->valuestring);
 
     return response_json;
 }
