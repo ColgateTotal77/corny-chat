@@ -295,6 +295,11 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 void GTK_start(GTK_data_t *GTK_data) {
     static GtkApplication *app = NULL;
 
+    printf("user_id: %d\n", GTK_data->user_id);
+    printf("username: %s\n", GTK_data->username ? GTK_data->username : "NULL");
+    printf("session_id: %s\n", GTK_data->session_id ? GTK_data->session_id : "NULL");
+    printf("login_completed: %d\n", GTK_data->login_completed);
+
     if (app == NULL) {
         // GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->message = NULL;

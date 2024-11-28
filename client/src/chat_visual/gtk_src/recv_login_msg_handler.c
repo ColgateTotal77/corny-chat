@@ -93,7 +93,7 @@ void* recv_login_msg_handler(void* arg) {
     cJSON *parsed_json;
 
     bool stop_login = false;
-    char *session_id = GTK_data->session_id;
+    // char *session_id = GTK_data->session_id;
     // if(false){
     //     printf("session_id %s\n",session_id);
     // }
@@ -117,8 +117,8 @@ void* recv_login_msg_handler(void* arg) {
                     pthread_mutex_lock(&GTK_data->login_mutex);
                     if(cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
                         cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
-                        session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
-                        strncpy(session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
+                        GTK_data->session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
+                        strncpy(GTK_data->session_id, session_id_json->valuestring, strlen(session_id_json->valuestring));
                         GTK_data->user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
                         char* nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
                         GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));

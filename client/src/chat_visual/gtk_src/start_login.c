@@ -70,7 +70,6 @@ static void apply_css_1(void) {
 }
 
 static void login_window_close_wrapper(GTK_data_t *GTK_data) {
-    return;
     apply_css_1();
     GTK_start(GTK_data);
 }
@@ -131,6 +130,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         
 
         printf("before if\n");
+        pthread_mutex_unlock(&GTK_data->login_mutex);
         if(result == 0 && GTK_data->login_completed){
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
@@ -138,9 +138,8 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             login_window_close_wrapper(GTK_data);
             gtk_window_close(GTK_WINDOW(window));
         }else{
-            set_error_text(error_label, &is_error_appear, "Login failed. Please try again.");
+            set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
         }
-        pthread_mutex_unlock(&GTK_data->login_mutex);
     }
 
     // Add red color style to the error label if there's an error

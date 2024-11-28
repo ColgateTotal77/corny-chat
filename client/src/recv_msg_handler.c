@@ -23,6 +23,19 @@ void* recv_msg_handler(void* arg) {
     int number_of_users;
     get_all_clients_userslist(call_data->ssl);
     int counter = 0;
+    // if(false){
+    // printf("parsed_json: %p\n", (void *)parsed_json);
+    // printf("stop_flag: %d\n", stop_flag);
+    // printf("time_zone: %d\n", time_zone);
+    // printf("message_time: %d-%d-%d %d:%d:%d\n",
+    //        message_time.tm_year + 1900, message_time.tm_mon + 1, message_time.tm_mday,
+    //        message_time.tm_hour, message_time.tm_min, message_time.tm_sec);
+    // printf("time_to_send: %s\n", time_to_send);
+    // printf("adjusted_time: %p\n", (void *)adjusted_time);
+    // printf("number_of_users: %d\n", number_of_users);
+    // printf("counter: %d\n", counter);
+    // printf("session_id: %s\n", session_id);
+    // }
 
     while (!*(call_data->stop_flag)) {
         //bzero(message, 1024);
