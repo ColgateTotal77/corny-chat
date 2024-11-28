@@ -83,10 +83,11 @@ void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
 
 static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
-    // Apply the CSS styling
+    
+    // Cleanup before closing
+    
+    // Apply CSS and close window
     apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
-
-    // Close the window
     gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
 }
 

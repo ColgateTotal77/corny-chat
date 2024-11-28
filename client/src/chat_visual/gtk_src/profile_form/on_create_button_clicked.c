@@ -32,41 +32,29 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(password_entry));
 
     if (!login_input || !*login_input || !password_input || !*password_input) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Login and password cannot be empty.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
+        display_ui_message(GTK_data, "Error: Login and password cannot be empty.", false);
         return;
     }
 
     // Validate login and password
     if (strlen(login_input) < 2 || strlen(login_input) > 30) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Login must be 2-30 characters.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
+        display_ui_message(GTK_data, "Error: Login must be 2-30 characters.", false);
         return;
     }
+    
     if (!check_password((char *)password_input)) {
-        gtk_label_set_text(GTK_LABEL(error_label), "Error: Invalid password. Must be 8-20 characters.");
-        gtk_widget_add_css_class(error_label, "error-label");
-        gtk_label_set_text(GTK_LABEL(success_label), ""); // Clear success message
-
-        // Set timeout to hide error label after 1.5 seconds
-        g_timeout_add(1500, hide_label_after_timeout, error_label);
+        display_ui_message(GTK_data, "Error: Invalid password. Must be 8-20 characters.", false);
         return;
     }
 
     // Get the state of the admin checkbox
     gboolean is_admin = gtk_check_button_get_active(GTK_CHECK_BUTTON(admin_check));
 
-    // Clear error label
-    gtk_label_set_text(GTK_LABEL(error_label), "");
-    gtk_widget_remove_css_class(error_label, "error-label");
+    // Store widgets in GTK_data for later use
+    GTK_data->profile_data->login_entry = login_entry;
+    GTK_data->profile_data->password_entry = password_entry;
+    GTK_data->profile_data->create_error_label = error_label;
+    GTK_data->profile_data->create_success_label = success_label;
 
     // Send data to server
     create_new_user(ssl, (char *)login_input, (char *)password_input, is_admin);

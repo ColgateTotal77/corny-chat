@@ -147,4 +147,5 @@ void on_key_pressed(GtkEventControllerKey *controller, guint keyval, guint keyco
 const char *find_similar_email(const char *input, GtkListBox *list_box);
 gboolean hide_label_after_timeout(gpointer label);
 char *strdup(const char *str);
+void display_ui_message(GTK_data_t *GTK_data, const char *message, bool is_success);
 

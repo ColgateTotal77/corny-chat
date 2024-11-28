@@ -271,36 +271,31 @@ void* recv_msg_handler(void* arg) {
                             gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
                         }
                         break;
-                    case 16:{ 
-                        printf("lox");
-                        // // Declare variables at the beginning of the block
-                        // char *server_response = NULL;
-                        // int response_len = recieve_next_response(call_data->ssl, &server_response); // Replace with actual function to receive server response
+                    case 16:{
+                        cJSON *json = cJSON_Parse(message);
+                        if (!json) {
+                            fprintf(stderr, "Error: Failed to parse JSON response\n");
+                            break;
+                        }
 
-                        // if (response_len > 0 && server_response) {
-                        //     cJSON *response_parsed = cJSON_Parse(server_response);
-                        //     if (response_parsed) {
-                        //         cJSON *success = cJSON_GetObjectItemCaseSensitive(response_parsed, "success");
-                        //         //cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(response_parsed, "err_msg");
+                        cJSON *success = cJSON_GetObjectItemCaseSensitive(json, "success");
+                        if (cJSON_IsBool(success)) {
+                            if (GTK_data && GTK_data->profile_data) {
+                                if (success->valueint) {
+                                    // Success case
+                                    display_ui_message(GTK_data, "Account successfully created!", true);
+                                } else {
+                                    // Error case
+                                    cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(json, "err_msg");
+                                    const char *error_text = (err_msg && cJSON_IsString(err_msg)) ? 
+                                                        err_msg->valuestring : "Account creation failed";
+                                    display_ui_message(GTK_data, error_text, false);
+                                }
+                            }
+                        }
 
-                        //         if (cJSON_IsBool(success) && cJSON_IsTrue(success)) {
-                        //             // Success message
-                        //             gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->create_success_label), "Account successfully created!");
-                        //             gtk_widget_add_css_class(GTK_WIDGET(GTK_data->profile_data->create_success_label), "success-label");
-
-                        //             // Set timeout to hide success label after 1.5 seconds
-                        //             g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->create_success_label);
-
-                        //             // Clear input fields
-                        //             gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->login_entry), "");
-                        //             gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->password_entry), "");
-                        //         }
-
-                        //         cJSON_Delete(response_parsed);
-                        //     }
-                        //     free(server_response);
-                        // } 
-                        break; // Ensure the case ends with a break   
+                        cJSON_Delete(json);
+                        break;
                     }
                     case 1:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
