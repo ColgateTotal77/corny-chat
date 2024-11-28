@@ -87,32 +87,22 @@ SSL *setup_new_connection(char *host, int port) {
 void* recv_login_msg_handler(void* arg) {
     GTK_data_t *GTK_data = (GTK_data_t*)arg;
     call_data_t *call_data = GTK_data->call_data;
-    // if(false){
-    //     printf("call_data %s\n",call_data->name);
-    // }
     cJSON *parsed_json;
 
     bool stop_login = false;
-    // char *session_id = GTK_data->session_id;
-    // if(false){
-    //     printf("session_id %s\n",session_id);
-    // }
 
     while (!stop_login) {
-        //bzero(message, 1024);
         char* message = NULL;
         int bytes_received = recieve_next_response(call_data->ssl, &message);
-        // int count_for_debug = 0;
 
         if (bytes_received > 0) {
-            printf("\nLOGIN message = %s\n\n",message);
+            printf("\nLOGIN message = %s\n",message);
             parsed_json = cJSON_Parse(message);
             if (!parsed_json) {
                 continue;
             }
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
             if (command_code_json) {
-                // if ((command_code_json)->valueint == 11 && cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
                 if ((command_code_json)->valueint == 11) {
                     pthread_mutex_lock(&GTK_data->login_mutex);
                     if(cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
@@ -124,13 +114,13 @@ void* recv_login_msg_handler(void* arg) {
                         GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));
                         strncpy(GTK_data->username, nickname, strlen(nickname));
 
-                        GTK_data->login_completed = true;
-                        pthread_cond_signal(&GTK_data->login_cond);
+                        GTK_data->login_successful = true;
                         stop_login = true;
                     }else{
                         call_data->ssl = setup_new_connection(call_data->host, call_data->port);
                     }
-
+                    
+                    pthread_cond_signal(&GTK_data->login_cond);
                     pthread_mutex_unlock(&GTK_data->login_mutex);
                     cJSON_Delete(parsed_json);
                     free(message);

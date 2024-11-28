@@ -84,7 +84,7 @@ typedef struct {
     GtkWidget *search_bar;
     pthread_mutex_t login_mutex;
     pthread_cond_t login_cond;
-    bool login_completed;
+    bool login_successful;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;

@@ -117,21 +117,16 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     } else {
         // If validation passes, print JSON data
         print_json_data(login_input, password_input, GTK_data->call_data);
-        // Wait for login completion
+
         pthread_mutex_lock(&GTK_data->login_mutex);
-        
-        struct timespec timeout;
-        clock_gettime(CLOCK_REALTIME, &timeout);
-        timeout.tv_sec += 1;  // 1-second timeout
-        
-        int result = pthread_cond_timedwait(&GTK_data->login_cond, 
-                                            &GTK_data->login_mutex, 
-                                            &timeout);
+
+        // Wait for the login response
+        pthread_cond_wait(&GTK_data->login_cond, &GTK_data->login_mutex);
+        pthread_mutex_unlock(&GTK_data->login_mutex);
         
 
         printf("before if\n");
-        pthread_mutex_unlock(&GTK_data->login_mutex);
-        if(result == 0 && GTK_data->login_completed){
+        if(GTK_data->login_successful){
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
             gtk_widget_set_visible(window, FALSE);
@@ -246,7 +241,7 @@ void start_login(call_data_t *call_data) {
     if (app == NULL) {
         GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->call_data = call_data;
-        GTK_data->login_completed = false;
+        GTK_data->login_successful = false;
         pthread_mutex_init(&GTK_data->login_mutex, NULL);
         pthread_cond_init(&GTK_data->login_cond, NULL);
 

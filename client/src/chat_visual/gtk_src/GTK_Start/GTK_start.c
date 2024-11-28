@@ -298,7 +298,7 @@ void GTK_start(GTK_data_t *GTK_data) {
     printf("user_id: %d\n", GTK_data->user_id);
     printf("username: %s\n", GTK_data->username ? GTK_data->username : "NULL");
     printf("session_id: %s\n", GTK_data->session_id ? GTK_data->session_id : "NULL");
-    printf("login_completed: %d\n", GTK_data->login_completed);
+    printf("login_successful: %d\n", GTK_data->login_successful);
 
     if (app == NULL) {
         // GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
