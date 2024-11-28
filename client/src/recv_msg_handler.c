@@ -361,6 +361,12 @@ void* recv_msg_handler(void* arg) {
                     }
                     break;
                 }
+                case 57: {
+                    // int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    // int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "msg_id")->valueint;
+                    // char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
+
+                }
             }
             cJSON_Delete(parsed_json);
             free(message);

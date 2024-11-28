@@ -120,6 +120,9 @@ void change_status_sidebar_chat(chat_data_t *chat, bool is_online);
 void on_scroll_changed(GtkAdjustment *adjustment, gpointer user_data);
 message_data_t* create_message_data (int message_id, chat_data_t* chat);
 void on_message_edit(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
+void change_message_from_others(chat_data_t *chat, int msg_id, char* new_message);
+void delete_message_from_others(chat_data_t *chat, int msg_id);
+
 
 user_list_t* create_user_list(void);
 void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);
