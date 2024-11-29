@@ -3,7 +3,7 @@
 
 
 cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
-    if (!cJSON_HasObjectItem(json, "user_id")) {
+    if (!cJSON_HasObjectItem(json, "user_login")) {
         return create_error_json("Invalid json format\n");
     }
 
@@ -11,8 +11,13 @@ cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
         return create_error_json("You have to rights\n");
     }
 
-    cJSON *user_to_activate_id_json = cJSON_GetObjectItemCaseSensitive(json, "user_id");
-    int user_to_activate = user_to_activate_id_json->valueint;
+    cJSON *user_login_json = cJSON_GetObjectItemCaseSensitive(json, "user_login");
+    int user_to_activate = ht_str_get(call_data->general_data->login_to_id, user_login_json->valuestring);
+
+    if (user_to_activate == -1 ||
+        user_to_activate == 1) {
+        return create_error_json("No such user\n");
+    }
     
     if (user_to_activate == call_data->client_data->user_data->user_id) {
         return create_error_json("You can't activate your self. Use another admin account\n");
@@ -25,12 +30,14 @@ cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
     if (activated_user_data == NULL) {
         cJSON *error_response = create_error_json("No such user\n");
         cJSON_AddNumberToObject(error_response, "user_id", user_to_activate);
+        cJSON_AddStringToObject(error_response, "login", user_login_json->valuestring);
         return error_response;
     }
 
     if (activated_user_data->user_data->is_active == is_active) {
         cJSON *error_response = create_error_json("Already activated\n");
         cJSON_AddNumberToObject(error_response, "user_id", user_to_activate);
+        cJSON_AddStringToObject(error_response, "login", user_login_json->valuestring);
         return error_response;
     }
 
@@ -45,6 +52,8 @@ cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
     cJSON_AddNumberToObject(response_json, "user_id", user_to_activate);
+    cJSON_AddStringToObject(response_json, "login", user_login_json->valuestring);
+
 
     return response_json;
 }
