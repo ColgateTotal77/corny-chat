@@ -26,12 +26,12 @@ typedef struct {
 typedef struct {
     GtkWidget *alignment_box;
     GtkWidget *message_label;
-    GtkWidget *time_label;
-    //gboolean edited;
     GtkWidget *message_entry;
     gboolean *is_editing;
     gboolean own_is_editing;
     GtkWidget *send_button;
+    GHashTable *messages; 
+    GtkWidget *edited_label;
 
     int message_id;
     SSL* ssl;
@@ -106,8 +106,8 @@ typedef struct {
 
 //extern GtkWidget *messages_container;
 void apply_css(GtkWidget *widget, char* path);
-void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, chat_manager_t *chat_manager, message_data_t *message_data, SSL* ssl);
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment, chat_manager_t *chat_manager, message_data_t *message_data, SSL* ssl);
+void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
+void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
 void sleep_ms(int milliseconds);
 void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);

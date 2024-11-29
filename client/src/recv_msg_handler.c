@@ -5,6 +5,27 @@ void str_overwrite_stdout(void) {
     fflush(stdout);
 }
 
+void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_data_t *GTK_data, chat_data_t *new_chat) {
+    g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
+    GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
+   
+    GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
+    gboolean added = FALSE;
+
+    while (child != NULL) {
+        if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
+            gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+            added = TRUE;
+            break;
+        }
+        child = gtk_widget_get_next_sibling(child);
+    }
+
+    if (!added) {
+        gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+    }
+}
+
 void* recv_msg_handler(void* arg) {
     GTK_data_t *GTK_data = (GTK_data_t*)arg;
     call_data_t *call_data = GTK_data->call_data;
@@ -56,30 +77,14 @@ void* recv_msg_handler(void* arg) {
                         cJSON *user = cJSON_GetArrayItem(users, i);
                         
                         int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
-                        const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                        char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
                         bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
-                        g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
 
-                        GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
-
-                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
-                        gboolean added = FALSE;
+                        create_user_in_sidebar(user_id, nickname, is_online, GTK_data, new_chat);
                         
-                        while (child != NULL) {
-                            if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
-                                added = TRUE;
-                                break;
-                            }
-                            child = gtk_widget_get_next_sibling(child);
-                        }
-
-                        if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
-                        }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
                     stop_flag = false;
@@ -106,12 +111,12 @@ void* recv_msg_handler(void* arg) {
 
                             if (owner_id == GTK_data->user_id) {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
+                                add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
-                                    if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                    if (local_time->tm_mday < adjusted_time->tm_mday) {
                                         strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
                                         change_sidebar_chat_info(chat, message, time_to_send);
                                     }
@@ -123,7 +128,7 @@ void* recv_msg_handler(void* arg) {
                             }
                             else {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                add_message(chat->messages_container, message, time_to_send, false, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
+                                add_message(chat->messages_container, message, time_to_send, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
@@ -217,11 +222,11 @@ void* recv_msg_handler(void* arg) {
 
                                 if (owner_id == GTK_data->user_id) {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, true, chat->adjustment, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, true, chat->adjustment, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 }
                                 else {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, false, chat->adjustment, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
+                                    add_message_to_top(chat->messages_container, message, time_to_send, false, chat->adjustment, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 }
                             }   
                         } 
@@ -244,7 +249,7 @@ void* recv_msg_handler(void* arg) {
                             cJSON *user = cJSON_GetArrayItem(users, i);
                             
                             int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
-                            const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                            char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
                             //bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
 
                             // Skip FirstAdmin and inactive users
@@ -287,7 +292,7 @@ void* recv_msg_handler(void* arg) {
                                 } else {
                                     // Error case
                                     cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(json, "err_msg");
-                                    const char *error_text = (err_msg && cJSON_IsString(err_msg)) ? 
+                                    char *error_text = (err_msg && cJSON_IsString(err_msg)) ? 
                                                         err_msg->valuestring : "Account creation failed";
                                     display_ui_message(GTK_data, error_text, false);
                                 }
@@ -311,7 +316,7 @@ void* recv_msg_handler(void* arg) {
                             adjusted_time = localtime(&time_value);
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
-                            add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, create_message_data(message_id, chat), call_data->ssl);
+                            add_message(chat->messages_container, message, time_to_send, true, GTK_data->chat_manager, call_data->ssl, message_id, chat);
                         }
                         break;      
                     default:
@@ -336,7 +341,7 @@ void* recv_msg_handler(void* arg) {
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                        add_message(chat->messages_container, msg, time_str, false, GTK_data->chat_manager, create_message_data(msg_id, chat), call_data->ssl);
+                        add_message(chat->messages_container, msg, time_str, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                         change_sidebar_chat_info(chat, msg, time_str);
                     }
                     break;
@@ -355,6 +360,15 @@ void* recv_msg_handler(void* arg) {
                     if(chat != NULL) {
                         change_status_sidebar_chat(chat, false);
                     }
+                    break;
+                }
+                case 55: {
+                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "id")->valueint;
+                    char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
+                    scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
+                    scroll_data->ssl = call_data->ssl;
+                    chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
+                    create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
                     break;
                 }
                 case 57: {
