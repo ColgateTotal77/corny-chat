@@ -282,7 +282,12 @@ button.add-group-button:active {
     background-color: #C9C9C9;
 }
 
-.message-bubble {
+.message-text {
+    color: #333333; /* Text color */
+    font-size: 16px;
+}
+
+.alignment-bubble {
     background-color: #D9D9D9; /* Light background for the message */
     border-radius: 20px;
     padding: 10px 15px;
@@ -296,12 +301,6 @@ button.add-group-button:active {
     color: #666666; /* Lighter color for time */
     margin-top: 3px; /* Space between message and time */
 }
-
-
-
-
-
-
 
 .input-box {
     padding: 10px;
@@ -398,4 +397,9 @@ button.send-button:active {
 
 .search-erase-button:active {
     color: #a3a3a3;
+}
+
+.message-edited {
+    font-size: 12px;
+    color: rgba(128, 128, 128, 0.8);
 }
