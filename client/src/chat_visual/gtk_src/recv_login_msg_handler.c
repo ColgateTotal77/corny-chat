@@ -131,7 +131,6 @@ void* recv_login_msg_handler(void* arg) {
         }
         free(message);
     }
-    printf("pthread_detach(pthread_self());\n");
     pthread_detach(pthread_self());
     return NULL;
 }

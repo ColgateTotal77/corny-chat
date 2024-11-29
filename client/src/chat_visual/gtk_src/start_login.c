@@ -95,24 +95,16 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     // Check password validity using the check_password function
     bool valid_password = password_input && check_password((char *)password_input);
 
-    printf("valid_login: %d; valid_password: %d \n",valid_login, valid_password);
-
     // Reset error label text
     gtk_label_set_text(GTK_LABEL(error_label), "");
     bool is_error_appear = false;
 
     // Determine the error message based on validation results
     if (!valid_login && !valid_password) {
-        // gtk_label_set_text(GTK_LABEL(error_label), "Both login and password are invalid.");
-        // is_error_appear = true;
         set_error_text(error_label, &is_error_appear, "Both login and password are invalid.");
     } else if (!valid_login) {
-        // gtk_label_set_text(GTK_LABEL(error_label), "Invalid login. Must be 2-30 characters.");
-        // is_error_appear = true;
         set_error_text(error_label, &is_error_appear, "Invalid login. Must be 2-30 characters.");
     } else if (!valid_password) {
-        // gtk_label_set_text(GTK_LABEL(error_label), "Invalid password. Must be 8-20 characters with no spaces.");
-        // is_error_appear = true;
         set_error_text(error_label, &is_error_appear, "Invalid password. Must be 8-20 characters with no spaces.");
     } else {
         // If validation passes, print JSON data
@@ -123,9 +115,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         // Wait for the login response
         pthread_cond_wait(&GTK_data->login_cond, &GTK_data->login_mutex);
         pthread_mutex_unlock(&GTK_data->login_mutex);
-        
 
-        printf("before if\n");
         if(GTK_data->login_successful){
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
