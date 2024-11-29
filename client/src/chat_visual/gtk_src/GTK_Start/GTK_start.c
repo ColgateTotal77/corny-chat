@@ -1,21 +1,5 @@
 #include "GTK.h"
 
-// Function to apply CSS styles
-// static void apply_css(void) {
-//     GtkCssProvider *css_provider = gtk_css_provider_new();
-
-//     // Load CSS with only two parameters
-//     gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
-
-//     gtk_style_context_add_provider_for_display(
-//         gdk_display_get_default(),
-//         GTK_STYLE_PROVIDER(css_provider),
-//         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-//     );
-
-//     g_object_unref(css_provider);
-// }
-
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
     (void) entry;
     on_send_clicked(NULL, user_data);
@@ -120,7 +104,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
     // Apply CSS to window
-    // apply_css();
+
+    apply_css(window, "src/chat_visual/gtk_src/GTK_Start/style.css");
+    // Show the main window again
 
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();
@@ -228,6 +214,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->message_entry = message_entry;
     chat_manager->sidebar = sidebar;
     chat_manager->error_label = error_label;
+    chat_manager->is_editing = g_new(gboolean, 1);
+    *chat_manager->is_editing = false;
     GTK_data->user_list = create_user_list();
     
     create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
@@ -254,6 +242,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_widget_add_css_class(send_button, "send-button");
+    chat_manager->send_button = send_button;
     // Connect the callback to the send button
     g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_clicked), GTK_data);    
     // In the on_activate function, after creating message_entry, add:

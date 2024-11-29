@@ -80,6 +80,7 @@ cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
     cJSON_AddNumberToObject(response_json, "contact_id", contact_id);
     cJSON_AddNumberToObject(response_json, "message_id", message_id);
     cJSON_AddStringToObject(response_json, "time_reached_server", time_string);
+    cJSON_AddStringToObject(response_json, "message", message_json->valuestring);
 
     free(time_string);
 

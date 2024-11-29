@@ -5,26 +5,26 @@ char* get_name(void);
 bool check_password(char *password);
 
 /* Apply CSS styling to the widget and its children */
-static void apply_css(GtkWidget *widget) {
-    (void)widget;
-    GtkCssProvider *css_provider = gtk_css_provider_new();
-    GError *error = NULL;
+// static void apply_css(char *path,GtkWidget *widget) {
+//     (void)widget;
+//     GtkCssProvider *css_provider = gtk_css_provider_new();
+//     GError *error = NULL;
     
-    GFile *file = g_file_new_for_path("src/chat_visual/gtk_src/login.css");
-    gtk_css_provider_load_from_file(css_provider, file);
+//     GFile *file = g_file_new_for_path("src/chat_visual/gtk_src/login.css");
+//     gtk_css_provider_load_from_file(css_provider, file);
     
-    if (error) {
-        g_warning("Error loading CSS: %s", error->message);
-        g_error_free(error);
-    } else {
-        gtk_style_context_add_provider_for_display(gdk_display_get_default(),
-                                                   GTK_STYLE_PROVIDER(css_provider),
-                                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
+//     if (error) {
+//         g_warning("Error loading CSS: %s", error->message);
+//         g_error_free(error);
+//     } else {
+//         gtk_style_context_add_provider_for_display(gdk_display_get_default(),
+//                                                    GTK_STYLE_PROVIDER(css_provider),
+//                                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+//     }
     
-    g_object_unref(file);
-    g_object_unref(css_provider);
-}
+//     g_object_unref(file);
+//     g_object_unref(css_provider);
+// }
 
 /* Function to convert login and password to JSON and print */
 static void print_json_data(const char *login, const char *password, call_data_t *call_data) {
@@ -212,7 +212,7 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     
     gtk_box_append(GTK_BOX(main_container), vbox);
     
-    apply_css(window);
+    apply_css(window ,"src/chat_visual/gtk_src/login.css");
 
     gtk_window_set_child(GTK_WINDOW(window), main_container);
     gtk_window_present(GTK_WINDOW(window));

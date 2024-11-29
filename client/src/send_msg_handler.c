@@ -76,7 +76,9 @@ void* send_msg_handler(void* arg) {
                       "ACTIVATE_USER 26\n"
                       "GET_NUM_OF_MSGS_FROM_GROUP 27\n"
                       "UPDATE_MESSAGE 28\n"
-                      "DELETE_MESSAGE 29\n";
+                      "DELETE_MESSAGE 29\n"
+                      "GET_MY_GROUPS 30\n"
+                      "MARK_GROUP_MSGS_AS_READED 31\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -326,19 +328,18 @@ void* send_msg_handler(void* arg) {
             delete_group(call_data->ssl, chat_id); 
             break;
         case ADMIN_CHANGE_PASSWORD:
-            bzero(message, BUF_SIZE);
-            printf("Enter user id: ");
-            fflush(stdout);
-            fgets(message, BUF_SIZE, stdin);
-            str_del_newline(message, BUF_SIZE);
-            user_id = atoi(message);
+            login = get_login_for_new_user();
+            if (login == NULL) {
+                break;
+            }
 
             bzero(message, BUF_SIZE);
             printf("Enter new password: ");
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            admin_change_password(call_data->ssl, user_id, message); 
+            admin_change_password(call_data->ssl, login, message);
+            free(login);
             break;
         case GET_NUM_OF_MSGS_BETWEEN:
             bzero(message, BUF_SIZE);
@@ -365,23 +366,21 @@ void* send_msg_handler(void* arg) {
             break;
         case DEACTIVATE_USER:
             bzero(message, BUF_SIZE);
-            printf("Enter user id: ");
+            printf("Enter user login: ");
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            user_id = atoi(message);
 
-            deactivate_user(call_data->ssl, user_id); 
+            deactivate_user(call_data->ssl, message); 
             break;
         case ACTIVATE_USER:
             bzero(message, BUF_SIZE);
-            printf("Enter user id: ");
+            printf("Enter user login: ");
             fflush(stdout);
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
-            user_id = atoi(message);
 
-            activate_user(call_data->ssl, user_id); 
+            activate_user(call_data->ssl, message); 
             break;
         case GET_NUM_OF_MSGS_FROM_GROUP:
             bzero(message, BUF_SIZE);
@@ -430,6 +429,19 @@ void* send_msg_handler(void* arg) {
             message_id = atoi(message);
 
             delete_message(call_data->ssl, message_id); 
+            break;
+        case GET_MY_GROUPS:
+            get_my_groups(call_data->ssl);
+            break;
+        case MARK_GROUP_MSGS_AS_READED:
+            bzero(message, BUF_SIZE);
+            printf("Enter group id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            chat_id = atoi(message);
+
+            mark_group_msgs_as_readed(call_data->ssl, chat_id);
             break;
         default:
             printf("Wrong command code\n");
