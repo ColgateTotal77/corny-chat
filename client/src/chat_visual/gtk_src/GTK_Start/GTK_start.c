@@ -1,5 +1,7 @@
 #include "GTK.h"
 
+bool switch_to_groups;
+
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
     (void) entry;
     on_send_clicked(NULL, user_data);
@@ -93,6 +95,32 @@ void on_erase_button_clicked(GtkButton *button, gpointer user_data) {
     show_all_contacts(GTK_data);
 }
 
+void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
+    (void) widget;
+    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
+    if (!GTK_data) {
+        printf("GTK_data is NULL\n");
+        return;
+    }
+
+    chat_manager_t *chat_manager = GTK_data->chat_manager;
+
+    if (!chat_manager) {
+        printf("chat_manager is NULL\n");
+        return;
+    }
+
+    // Toggle visibility
+    switch_to_groups = !switch_to_groups;
+
+    if (switch_to_groups) {
+        gtk_widget_set_visible(chat_manager->sidebar_users, FALSE);
+        gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
+    } else {
+        gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
+        gtk_widget_set_visible(chat_manager->sidebar_users, TRUE);
+    }
+}
 
 // Main application window setup
 static void on_activate(GtkApplication *app, gpointer user_data) {
@@ -158,20 +186,65 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     g_signal_connect(erase_button, "clicked", G_CALLBACK(on_erase_button_clicked), GTK_data);
     g_signal_connect(GTK_data->search_bar, "changed", G_CALLBACK(on_search_bar_changed), GTK_data);
 
-    // --- Sidebar Setup ---
+    // --- Sidebar Background Setup For Contacts ---
+
     GtkWidget *sidebar_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(sidebar_background, "sidebar-background");
-    gtk_grid_attach(GTK_GRID(main_grid), sidebar_background, 0, 1, 1, 2);
+    gtk_grid_attach(GTK_GRID(main_grid), sidebar_background, 0, 1, 1, 1);
 
-    GtkWidget *sidebar_scroll = gtk_scrolled_window_new();
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    gtk_widget_set_vexpand(sidebar_scroll, TRUE);
-    gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll);
+    GtkWidget *sidebar_scroll_users = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_users), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_vexpand(sidebar_scroll_users, TRUE);
+    gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_users);
     
-    GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar, 350, -1);
-    gtk_widget_add_css_class(sidebar, "sidebar");
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll), sidebar);
+    GtkWidget *sidebar_users = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_set_size_request(sidebar_users, 350, -1);
+    gtk_widget_add_css_class(sidebar_users, "sidebar");
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_users), sidebar_users);
+    // gtk_widget_set_visible(sidebar_users, FALSE);
+
+    GtkWidget *sidebar_scroll_groups = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_vexpand(sidebar_scroll_groups, TRUE);
+    gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_groups);
+
+    GtkWidget *sidebar_groups = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_set_size_request(sidebar_groups, 350, -1);
+    gtk_widget_add_css_class(sidebar_groups, "sidebar");
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
+    gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
+
+    // --- Sidebar Container Setup ---
+    GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
+    gtk_widget_add_css_class(sidebar_container, "sidebar-container");
+    gtk_grid_attach(GTK_GRID(main_grid), sidebar_container, 0, 2, 1, 1);
+
+    // Left button
+    GtkWidget *left_button = gtk_button_new();
+    gtk_widget_add_css_class(left_button, "left-button");
+    gtk_box_append(GTK_BOX(sidebar_container), left_button);
+    GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
+    gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
+
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), GTK_data);    
+
+    // Center label
+    GtkWidget *center_label = gtk_label_new("Chats");
+    gtk_widget_add_css_class(center_label, "center-label");
+    gtk_label_set_ellipsize(GTK_LABEL(center_label), PANGO_ELLIPSIZE_END); // Handle overflow gracefully
+    gtk_box_append(GTK_BOX(sidebar_container), center_label);
+
+    // Right button
+    GtkWidget *right_button = gtk_button_new();
+    gtk_widget_add_css_class(right_button, "right-button");
+    GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
+    gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
+    gtk_box_append(GTK_BOX(sidebar_container), right_button);
+
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), GTK_data);    
+    
+
+    gtk_box_set_homogeneous(GTK_BOX(sidebar_container), TRUE); // Make all children the same size
 
     // --- Chat Area Setup ---
     GtkWidget *chat_area_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -212,7 +285,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
     chat_manager->message_entry = message_entry;
-    chat_manager->sidebar = sidebar;
+    chat_manager->sidebar_users = sidebar_users;
+    chat_manager->sidebar_groups = sidebar_groups;
     chat_manager->error_label = error_label;
     chat_manager->is_editing = g_new(gboolean, 1);
     *chat_manager->is_editing = false;
@@ -230,6 +304,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->chat_user_label = chat_user_label;
 
     GTK_data->chat_manager = chat_manager;
+    printf("chat_manager initialized at: %p\n", (void *)GTK_data->chat_manager);
+    printf("GTK_data address: %p, chat_manager address: %p\n", (void *)GTK_data, (void *)GTK_data->chat_manager);
     chat_manager->active_chat = NULL;
     chat_manager->input_box = input_box;
     chat_manager->chat_header = chat_header;
@@ -238,7 +314,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     // Add new group button
     GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
     gtk_widget_add_css_class(add_group_button, "add-group-button");
-    gtk_box_append(GTK_BOX(sidebar), add_group_button);
+    gtk_box_append(GTK_BOX(sidebar_background), add_group_button);
+    gtk_widget_set_visible(add_group_button, FALSE);
 
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_widget_add_css_class(send_button, "send-button");
@@ -285,6 +362,7 @@ void GTK_start(GTK_data_t *GTK_data) {
     static GtkApplication *app = NULL;
 
     if (app == NULL) {
+        switch_to_groups = false;
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
         

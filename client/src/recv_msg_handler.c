@@ -55,12 +55,12 @@ void* recv_msg_handler(void* arg) {
 
                         GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
 
-                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
+                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar_users);
                         gboolean added = FALSE;
                         
                         while (child != NULL) {
                             if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item, gtk_widget_get_prev_sibling(child));
                                 added = TRUE;
                                 break;
                             }
@@ -68,7 +68,7 @@ void* recv_msg_handler(void* arg) {
                         }
 
                         if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item);
                         }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }

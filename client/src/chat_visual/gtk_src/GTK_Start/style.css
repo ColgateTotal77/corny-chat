@@ -7,7 +7,7 @@ window {
     background-color: #D9D9D9; /* Adjust color as needed */
     border-radius: 40px;
     padding: 10px; /* Add padding to create spacing between background and sidebar */
-    margin-top: 20px; /* Add space above the sidebar */
+    margin: 30px;
     margin-right: 20px;
 }
 
@@ -18,7 +18,6 @@ window {
     box-shadow: none; /* Remove any box shadow */
     border: none; /* Remove any border if it's causing the shadow effect */
     border-radius: 25px;
-
 }
 
 .sidebar scrollbar {
@@ -398,4 +397,51 @@ button.send-button:active {
 
 .search-erase-button:active {
     color: #a3a3a3;
+}
+
+.sidebar-container {
+    background-color: #D9D9D9; /* Background color for the sidebar container */
+    border-radius: 40px; /* Rounded corners */
+    padding: 10px; /* Padding inside the container */
+    margin-right: 20px;
+    margin-left: 25px;
+}
+
+/* Left button styling */
+button.left-button {
+    background-color: #C9C9C9; /* Background color for the left button */
+    color: #333333; /* Text color */
+    font-size: 16px; /* Font size */
+    padding: 10px 20px; /* Padding for the button */
+    border-radius: 20px; /* Rounded corners */
+    border: none; /* Remove border */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+/* Hover effect for left button */
+button.left-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* Right button styling */
+button.right-button {
+    background-color: #C9C9C9; /* Background color for the right button */
+    color: #333333; /* Text color */
+    font-size: 16px; /* Font size */
+    padding: 10px 20px; /* Padding for the button */
+    border-radius: 20px; /* Rounded corners */
+    border: none; /* Remove border */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+/* Hover effect for right button */
+button.right-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* Center label styling */
+.center-label {
+    font-size: 20px; /* Font size for the label */
+    color: #333333; /* Text color */
+    margin: 0 10px; /* Margin around the label */
 }

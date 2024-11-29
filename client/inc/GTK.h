@@ -66,7 +66,8 @@ typedef struct {
     GtkWidget *message_entry;
     gboolean *is_editing;
     GtkWidget *send_button;
-    GtkWidget *sidebar;
+    GtkWidget *sidebar_users;
+    GtkWidget *sidebar_groups;
     GtkWidget *error_label;
     GtkWidget *input_box;
     GtkWidget *chat_header;
