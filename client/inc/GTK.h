@@ -32,7 +32,7 @@ typedef struct {
     GtkWidget *send_button;
     GHashTable *messages; 
     GtkWidget *edited_label;
-
+    GtkWidget *cancel_button;
     int message_id;
     SSL* ssl;
 } message_data_t;
@@ -71,6 +71,7 @@ typedef struct {
     GtkWidget *input_box;
     GtkWidget *chat_header;
     GtkWidget *select_a_chat_label;
+    GtkWidget *cancel_button;
 } chat_manager_t;
 
 typedef struct {

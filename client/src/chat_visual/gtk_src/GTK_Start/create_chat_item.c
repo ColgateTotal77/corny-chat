@@ -12,9 +12,9 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
 
     // Avatar
-    GtkWidget *avatar_circle = gtk_drawing_area_new();
+    GtkWidget *avatar_circle = gtk_image_new_from_file("src/chat_visual/images/person.svg");
     gtk_widget_set_size_request(avatar_circle, 60, 60);
-    gtk_widget_add_css_class(avatar_circle, "avatar-circle");
+    //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_grid_attach(GTK_GRID(grid), avatar_circle, 0, 0, 1, 2);
 
     // Horizontal box to hold name label and status indicator

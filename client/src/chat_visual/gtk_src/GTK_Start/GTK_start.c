@@ -183,9 +183,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_size_request(chat_header, -1, 60);
     gtk_widget_add_css_class(chat_header, "chat-header");
 
-    GtkWidget *avatar_circle = gtk_drawing_area_new();
+    GtkWidget *avatar_circle = gtk_image_new_from_file("src/chat_visual/images/person.svg");
     gtk_widget_set_size_request(avatar_circle, 60, 60);
-    gtk_widget_add_css_class(avatar_circle, "avatar-circle");
+    //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
@@ -208,6 +208,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(message_entry, "message-entry");
     gtk_box_append(GTK_BOX(input_box), message_entry);
 
+    GtkWidget *cancel_button = gtk_button_new_with_label("X");
+    gtk_widget_add_css_class(cancel_button, "search-erase-button");
+    gtk_widget_set_size_request(cancel_button, 20, 20);
+    gtk_box_append(GTK_BOX(input_box), cancel_button); 
+    gtk_widget_set_visible(cancel_button, false);
+
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
@@ -216,13 +222,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->error_label = error_label;
     chat_manager->is_editing = g_new(gboolean, 1);
     *chat_manager->is_editing = false;
+    chat_manager->cancel_button = cancel_button;
     GTK_data->user_list = create_user_list();
-    
-    create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
-    create_user(GTK_data->user_list, "Jane Smith", 2, false, "See you later", "11:45");
-    create_user(GTK_data->user_list, "Team Alpha", 3, true, "Meeting at 2 PM", "10:15");
-    create_user(GTK_data->user_list, "Bob Wilson", 4, true, "Thanks!", "09:30");
-    create_user(GTK_data->user_list, "Project Beta", 5, true, "Updates ready", "08:45");
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");
