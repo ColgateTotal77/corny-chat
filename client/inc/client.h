@@ -39,3 +39,4 @@ void* send_msg_handler(void* arg);
 int recieve_next_response(SSL *ssl, char **buffer);
 SSL *try_to_reconnect(char *session_id, char *host, int port);
 void* recv_login_msg_handler(void* arg);
+SSL *setup_new_connection(char *host, int port);

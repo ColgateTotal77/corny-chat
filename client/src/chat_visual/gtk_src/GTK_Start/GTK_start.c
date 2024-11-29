@@ -285,7 +285,6 @@ void GTK_start(GTK_data_t *GTK_data) {
     static GtkApplication *app = NULL;
 
     if (app == NULL) {
-        GTK_data->message = NULL;
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
         
