@@ -108,12 +108,13 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
         return;
     }
 
-    chat_manager_t *chat_manager = GTK_data->chat_manager;
+    // chat_manager_t *chat_manager = GTK_data->chat_manager;
+    // chat_manager_t *group_manager = GTK_data->group_manager;
 
-    if (!chat_manager) {
-        printf("chat_manager is NULL\n");
-        return;
-    }
+    // if (!chat_manager) {
+    //     printf("chat_manager is NULL\n");
+    //     return;
+    // }
 
     // Toggle visibility
     switch_to_groups = !switch_to_groups;
@@ -122,16 +123,16 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
         gtk_widget_set_visible(sidebar_scroll_users, FALSE);
         gtk_widget_set_visible(sidebar_scroll_groups, TRUE);
 
-        gtk_widget_set_visible(chat_manager->sidebar_users, FALSE);
-        gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
+        // gtk_widget_set_visible(chat_manager->sidebar, FALSE);
+        // gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
         gtk_widget_set_visible(add_group_button, TRUE);
     } else {
         gtk_widget_set_visible(sidebar_scroll_users, TRUE);
         gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
 
-        gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
+        // gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
         gtk_widget_set_visible(add_group_button, FALSE);
-        gtk_widget_set_visible(chat_manager->sidebar_users, TRUE);
+        // gtk_widget_set_visible(chat_manager->sidebar, TRUE);
     }
 
 }
@@ -241,7 +242,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     entries[2] = sidebar_scroll_groups;
     entries[3] = sidebar_scroll_users;
     
-
     // --- Sidebar Container Setup ---
     GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
     gtk_widget_add_css_class(sidebar_container, "sidebar-container");
@@ -313,12 +313,21 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = NULL;
     chat_manager->message_entry = message_entry;
-    chat_manager->sidebar_users = sidebar_users;
-    chat_manager->sidebar_groups = sidebar_groups;
+    chat_manager->sidebar = sidebar_users;
     chat_manager->error_label = error_label;
     chat_manager->is_editing = g_new(gboolean, 1);
     *chat_manager->is_editing = false;
     GTK_data->user_list = create_user_list();
+
+    chat_manager_t *group_manager = g_new(chat_manager_t, 1);
+    group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
+    group_manager->active_chat = NULL;
+    group_manager->message_entry = message_entry;
+    group_manager->sidebar = sidebar_groups;
+    group_manager->error_label = error_label;
+    group_manager->is_editing = g_new(gboolean, 1);
+    *group_manager->is_editing = false;
+    GTK_data->group_list = create_group_list();
     
     create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
     create_user(GTK_data->user_list, "Jane Smith", 2, false, "See you later", "11:45");
@@ -332,16 +341,23 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->chat_user_label = chat_user_label;
 
     GTK_data->chat_manager = chat_manager;
-    printf("chat_manager initialized at: %p\n", (void *)GTK_data->chat_manager);
-    printf("GTK_data address: %p, chat_manager address: %p\n", (void *)GTK_data, (void *)GTK_data->chat_manager);
+    GTK_data->group_manager = group_manager;
+    // printf("chat_manager initialized at: %p\n", (void *)GTK_data->chat_manager);
+    // printf("GTK_data address: %p, chat_manager address: %p\n", (void *)GTK_data, (void *)GTK_data->chat_manager);
     chat_manager->active_chat = NULL;
     chat_manager->input_box = input_box;
     chat_manager->chat_header = chat_header;
     chat_manager->chat_area_background = chat_area_background;
 
+    group_manager->active_chat = NULL;
+    group_manager->input_box = input_box;
+    group_manager->chat_header = chat_header;
+    group_manager->chat_area_background = chat_area_background;
+
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_widget_add_css_class(send_button, "send-button");
     chat_manager->send_button = send_button;
+    group_manager->send_button = send_button;
     // Connect the callback to the send button
     g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_clicked), GTK_data);    
     // In the on_activate function, after creating message_entry, add:
@@ -359,6 +375,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_hexpand(select_a_chat_label, true);
     gtk_widget_set_visible(select_a_chat_label, true);
     chat_manager->select_a_chat_label = select_a_chat_label;
+    group_manager->select_a_chat_label = select_a_chat_label;
     
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);

@@ -22,6 +22,7 @@ void* recv_msg_handler(void* arg) {
 
     int number_of_users;
     get_all_clients_userslist(call_data->ssl);
+    get_my_groups(call_data->ssl);
     int counter = 0;
 
     while (!*(call_data->stop_flag)) {
@@ -52,28 +53,29 @@ void* recv_msg_handler(void* arg) {
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
                         g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
+                        // g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(user_id), new_chat);
 
                         GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
-                        GtkWidget *new_chat_item1 = create_chat_item(nickname, user_id, "None", "", is_online, TRUE, GTK_data->chat_manager);
+                        // GtkWidget *new_group_item = create_chat_item(nickname, user_id, "None", "", is_online, TRUE, GTK_data->group_manager);
 
-                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar_users);
-                        GtkWidget *child1 = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar_groups);
+                        GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
+                        // GtkWidget *child_group = gtk_widget_get_first_child(GTK_data->group_manager->sidebar);
                         gboolean added = FALSE;
                         
                         while (child != NULL) {
-                            if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item, gtk_widget_get_prev_sibling(child));
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar_groups), new_chat_item1, gtk_widget_get_prev_sibling(child1));
+                            if (GTK_IS_BUTTON(child)) {
+                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
+                                // gtk_box_insert_child_after(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item, gtk_widget_get_prev_sibling(child_group));
                                 added = TRUE;
                                 break;
                             }
                             child = gtk_widget_get_next_sibling(child);
-                            child1 = gtk_widget_get_next_sibling(child1);
+                            // child_group = gtk_widget_get_next_sibling(child_group);
                         }
 
                         if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item);
-                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar_groups), new_chat_item1);
+                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
+                            // gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
                         }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
@@ -137,7 +139,51 @@ void* recv_msg_handler(void* arg) {
                     }
                     counter++;
                     continue;
-                } 
+                }else if(command_code_json->valueint == 30){
+                    printf("\nAAAAAAAAAAAAAAA\n\n");
+                    cJSON *groups = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups");
+                    int groups_count = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups_count")->valueint;
+
+                    for (int i = 0; i < groups_count; i++) {
+                        cJSON *group = cJSON_GetArrayItem(groups, i);
+
+                        int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
+                        const char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
+                        const char *createdAt = cJSON_GetObjectItemCaseSensitive(group, "createdAt")->valuestring;
+                        // int owner_id = cJSON_GetObjectItemCaseSensitive(group, "owner_id")->valueint;
+
+                        // Create a new scroll_data_t for the group
+                        scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
+                        scroll_data->ssl = call_data->ssl; // Assuming GTK_data has a valid SSL pointer
+
+                        // Create a new chat_data_t for the group
+                        chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                        g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
+
+                        // Create a new group item for the sidebar
+                        GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", createdAt, false, true, GTK_data->group_manager);
+
+                        // Insert the new group item into the sidebar
+                        GtkWidget *child_group = gtk_widget_get_first_child(GTK_data->group_manager->sidebar);
+                        gboolean added = FALSE;
+
+                        while (child_group != NULL) {
+                            if (GTK_IS_BUTTON(child_group)) {
+                                gtk_box_insert_child_after(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item, gtk_widget_get_prev_sibling(child_group));
+                                added = TRUE;
+                                break;
+                            }
+                            child_group = gtk_widget_get_next_sibling(child_group);
+                        }
+
+                        if (!added) {
+                            gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
+                        }
+                        get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
+                    }
+                    stop_flag = false;
+                    continue;
+                }
                     // case 12:
                     //     unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
                     //     if (unreaded_chats_qty) {

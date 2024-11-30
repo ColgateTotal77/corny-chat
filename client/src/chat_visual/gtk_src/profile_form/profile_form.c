@@ -87,7 +87,7 @@ static void gtk_window_close_wrapper(gpointer user_data) {
     // Cleanup before closing
     
     // Apply CSS and close window
-    apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
+    // apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
     gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
 }
 

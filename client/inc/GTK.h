@@ -10,6 +10,20 @@
 //#include <time.h>
 
 typedef struct {
+    int id;
+    char *name;
+    int id_owner;
+    char *last_message;
+    char *last_time;
+} group_data_t;
+
+typedef struct {
+    group_data_t **group;
+    int count;
+    int capacity;
+} group_list_t;
+
+typedef struct {
     char *username;
     int id;
     bool is_online;
@@ -66,8 +80,7 @@ typedef struct {
     GtkWidget *message_entry;
     gboolean *is_editing;
     GtkWidget *send_button;
-    GtkWidget *sidebar_users;
-    GtkWidget *sidebar_groups;
+    GtkWidget *sidebar;
     GtkWidget *error_label;
     GtkWidget *input_box;
     GtkWidget *chat_header;
@@ -99,7 +112,9 @@ typedef struct {
     char *session_id;
     call_data_t *call_data;
     chat_manager_t *chat_manager;
+    chat_manager_t *group_manager;
     user_list_t *user_list;
+    group_list_t *group_list;
     profile_data_t *profile_data;
     GtkWidget *window;
     GtkWidget *profile_window;
@@ -131,6 +146,8 @@ void delete_message_from_others(chat_data_t *chat, int msg_id);
 
 user_list_t* create_user_list(void);
 void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);
+group_list_t* create_group_list(void);
+void create_group(group_list_t *list, int id, char *name, int id_owner, char *last_message, char *last_time);
 void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
