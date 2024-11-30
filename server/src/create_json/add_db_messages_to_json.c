@@ -6,6 +6,7 @@ static cJSON *init_message_json(s_message db_message) {
     cJSON *message_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(message_json, "msg_id", db_message.id);
     cJSON_AddStringToObject(message_json, "created_at", db_message.createdAt);
+    cJSON_AddStringToObject(message_json, "updated_at", db_message.updatedAt);
     cJSON_AddNumberToObject(message_json, "owner_id", db_message.owner_id);
     cJSON_AddNumberToObject(message_json, "target_id", db_message.target_id);
     cJSON_AddNumberToObject(message_json, "target_group_id", db_message.target_group_id);
