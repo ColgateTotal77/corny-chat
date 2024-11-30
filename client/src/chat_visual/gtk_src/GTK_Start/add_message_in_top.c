@@ -1,7 +1,6 @@
 #include "GTK.h"
 
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, GtkAdjustment *adjustment, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
-    (void)adjustment;
+void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
@@ -26,7 +25,10 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
 
     gtk_box_append(GTK_BOX(alignment_box), edited_label);
     gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
-    gtk_widget_set_visible(edited_label, false);
+        
+    if (!changed) {
+        gtk_widget_set_visible(edited_label, false);
+    }
     
     message_data->alignment_box = alignment_box;
     message_data->message_label = message_label;
@@ -58,12 +60,12 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
     }
 
 //Пізніше дороблю!
-    // gdouble value = gtk_adjustment_get_value(adjustment); // Поточне становище скролла
-    // gdouble upper = gtk_adjustment_get_upper(adjustment); // Максимальне становище скролла
-    // gdouble page_size = gtk_adjustment_get_page_size(adjustment); // Висота видимої області
+    // gdouble value = gtk_adjustment_get_value(chat->adjustment); // Поточне становище скролла
+    //gdouble upper = gtk_adjustment_get_upper(adjustment); // Максимальне становище скролла
+    //gdouble page_size = gtk_adjustment_get_page_size(chat->adjustment); // Висота видимої області
 
     gtk_box_prepend(GTK_BOX(messages_container), alignment_box);
 
-    // gtk_adjustment_set_value(adjustment, value + page_size);
+    // gtk_adjustment_set_value(chat->adjustment, value);
 }
 

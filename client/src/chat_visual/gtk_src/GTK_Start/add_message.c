@@ -14,6 +14,20 @@ void reset_all_message_own_is_editing(GHashTable *messages) {
     }
     g_list_free(message_id_list); 
 }
+
+void cancel_changing_message(GtkWidget *widget, gpointer user_data) {
+    (void) widget;
+    message_data_t *message_data = (message_data_t*)user_data;
+
+    gtk_widget_set_visible(message_data->cancel_button, false);
+    reset_all_message_own_is_editing(message_data->messages);
+
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
+    gtk_entry_buffer_set_text(buffer, "", -1);
+
+    *(message_data->is_editing) = false;
+}
+
 void change_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
 
@@ -30,26 +44,12 @@ void change_message(GtkWidget *widget, gpointer user_data) {
 
         update_message(message_data->ssl, message_data->message_id, (char *)message_text);
 
-        *(message_data->is_editing) = false;
-        message_data->own_is_editing = false;
+        cancel_changing_message(message_data->cancel_button, (gpointer)message_data);
 
         gtk_entry_buffer_set_text(buffer, "", -1);
     }
     g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
     g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
-}
-
-void cancel_changing_message(GtkWidget *widget, gpointer user_data) {
-    (void) widget;
-    message_data_t *message_data = (message_data_t*)user_data;
-
-    gtk_widget_set_visible(message_data->cancel_button, false);
-    reset_all_message_own_is_editing(message_data->messages);
-
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
-    gtk_entry_buffer_set_text(buffer, "", -1);
-
-    *(message_data->is_editing) = false;
 }
 
 void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
@@ -100,7 +100,7 @@ void on_message_edit(GtkGestureClick *gesture) {
     gtk_popover_popup(GTK_POPOVER(popover));
 }
 
-void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
+void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
@@ -125,8 +125,11 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
 
     gtk_box_append(GTK_BOX(alignment_box), edited_label);
     gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
-    gtk_widget_set_visible(edited_label, false);
-    
+
+    if (!changed) {
+        gtk_widget_set_visible(edited_label, false);
+    }
+
     message_data->alignment_box = alignment_box;
     message_data->message_label = message_label;
     message_data->edited_label = edited_label;
