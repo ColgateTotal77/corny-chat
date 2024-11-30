@@ -96,8 +96,11 @@ void on_erase_button_clicked(GtkButton *button, gpointer user_data) {
 }
 
 void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
-    (void) widget;
-    GTK_data_t *GTK_data = (GTK_data_t *)user_data;
+    (void) widget; // if you erase this, GTK_data will be empty
+    GtkWidget **entries = (GtkWidget **)user_data;
+    GtkWidget *add_group_button = entries[0];
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[1];
+
     if (!GTK_data) {
         printf("GTK_data is NULL\n");
         return;
@@ -116,8 +119,10 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
     if (switch_to_groups) {
         gtk_widget_set_visible(chat_manager->sidebar_users, FALSE);
         gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
+        gtk_widget_set_visible(add_group_button, TRUE);
     } else {
         gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
+        gtk_widget_set_visible(add_group_button, FALSE);
         gtk_widget_set_visible(chat_manager->sidebar_users, TRUE);
     }
 }
@@ -214,6 +219,18 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
     gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
 
+    // Add new group button
+    GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
+    gtk_widget_add_css_class(add_group_button, "add-group-button");
+    gtk_box_append(GTK_BOX(sidebar_background), add_group_button);
+    gtk_widget_set_visible(add_group_button, FALSE);
+
+    // Store login, password entries and error label for callback
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 2);
+    entries[0] = add_group_button;
+    entries[1] = user_data;
+
+
     // --- Sidebar Container Setup ---
     GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
     gtk_widget_add_css_class(sidebar_container, "sidebar-container");
@@ -226,7 +243,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
     gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
 
-    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), GTK_data);    
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
 
     // Center label
     GtkWidget *center_label = gtk_label_new("Chats");
@@ -241,7 +258,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
     gtk_box_append(GTK_BOX(sidebar_container), right_button);
 
-    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), GTK_data);    
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
     
 
     gtk_box_set_homogeneous(GTK_BOX(sidebar_container), TRUE); // Make all children the same size
@@ -310,12 +327,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->input_box = input_box;
     chat_manager->chat_header = chat_header;
     chat_manager->chat_area_background = chat_area_background;
-
-    // Add new group button
-    GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
-    gtk_widget_add_css_class(add_group_button, "add-group-button");
-    gtk_box_append(GTK_BOX(sidebar_background), add_group_button);
-    gtk_widget_set_visible(add_group_button, FALSE);
 
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_widget_add_css_class(send_button, "send-button");
