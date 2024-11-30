@@ -54,21 +54,26 @@ void* recv_msg_handler(void* arg) {
                         g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
 
                         GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
+                        GtkWidget *new_chat_item1 = create_chat_item(nickname, user_id, "None", "", is_online, TRUE, GTK_data->chat_manager);
 
                         GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar_users);
+                        GtkWidget *child1 = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar_groups);
                         gboolean added = FALSE;
                         
                         while (child != NULL) {
                             if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
                                 gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item, gtk_widget_get_prev_sibling(child));
+                                gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar_groups), new_chat_item1, gtk_widget_get_prev_sibling(child1));
                                 added = TRUE;
                                 break;
                             }
                             child = gtk_widget_get_next_sibling(child);
+                            child1 = gtk_widget_get_next_sibling(child1);
                         }
 
                         if (!added) {
                             gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar_users), new_chat_item);
+                            gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar_groups), new_chat_item1);
                         }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }

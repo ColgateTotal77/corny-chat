@@ -98,8 +98,10 @@ void on_erase_button_clicked(GtkButton *button, gpointer user_data) {
 void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
     (void) widget; // if you erase this, GTK_data will be empty
     GtkWidget **entries = (GtkWidget **)user_data;
-    GtkWidget *add_group_button = entries[0];
-    GTK_data_t *GTK_data = (GTK_data_t *)entries[1];
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
+    GtkWidget *add_group_button = entries[1];
+    GtkWidget *sidebar_scroll_groups = entries[2];
+    GtkWidget *sidebar_scroll_users = entries[3];
 
     if (!GTK_data) {
         printf("GTK_data is NULL\n");
@@ -117,14 +119,21 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
     switch_to_groups = !switch_to_groups;
 
     if (switch_to_groups) {
+        gtk_widget_set_visible(sidebar_scroll_users, FALSE);
+        gtk_widget_set_visible(sidebar_scroll_groups, TRUE);
+
         gtk_widget_set_visible(chat_manager->sidebar_users, FALSE);
         gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
         gtk_widget_set_visible(add_group_button, TRUE);
     } else {
+        gtk_widget_set_visible(sidebar_scroll_users, TRUE);
+        gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
+
         gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
         gtk_widget_set_visible(add_group_button, FALSE);
         gtk_widget_set_visible(chat_manager->sidebar_users, TRUE);
     }
+
 }
 
 // Main application window setup
@@ -226,10 +235,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_visible(add_group_button, FALSE);
 
     // Store login, password entries and error label for callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 2);
-    entries[0] = add_group_button;
-    entries[1] = user_data;
-
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 4);
+    entries[0] = user_data; // Here GTK_data
+    entries[1] = add_group_button;
+    entries[2] = sidebar_scroll_groups;
+    entries[3] = sidebar_scroll_users;
+    
 
     // --- Sidebar Container Setup ---
     GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
