@@ -137,6 +137,101 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
 
 }
 
+static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
+    (void) button;
+    GtkWidget **entries = (GtkWidget **)user_data;
+    GtkWidget *dialog = entries[0];
+    GtkWidget *entry = entries[1];
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[2];
+    if (!GTK_data) {
+        printf("GTK_data is NULL\n");
+        return;
+    }
+    
+    // Get the group name
+    const char *group_name = gtk_editable_get_text(GTK_EDITABLE(entry));
+
+    // Debug print
+    // printf("Debug: Entry text retrieved = '%s'\n", group_name ? group_name : "NULL");
+    
+    // Print the group name to console
+    if (group_name && mx_strlen(group_name) > 0) {
+        // printf("New group created: %s\n", group_name);
+        create_chat(GTK_data->call_data->ssl, (char *)group_name);
+    } else {
+        printf("Group name cannot be empty\n");
+    }
+    
+    // Close the dialog - FIXED: Cast to GtkWindow*
+    gtk_window_destroy(GTK_WINDOW(dialog));
+
+    // Free the allocated memory
+    g_free(entries);
+}
+
+void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
+    (void) widget;
+    // (void) data;
+    GTK_data_t *GTK_data = (GTK_data_t *)data;
+
+    // Create a new dialog window
+    GtkWidget *dialog = gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(dialog), "Create New Group");
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
+
+    // Make dialog a transient window of the main window
+    if (GTK_data && GTK_data->window) {
+        gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(GTK_data->window));
+    }
+
+    // Ensure dialog is modal
+    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+
+    // Create a box to hold the content
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_set_margin_top(box, 20);
+    gtk_widget_set_margin_bottom(box, 20);
+    gtk_widget_set_margin_start(box, 20);
+    gtk_widget_set_margin_end(box, 20);
+
+    // Create a label
+    GtkWidget *label = gtk_label_new("Enter Group Name:");
+    gtk_box_append(GTK_BOX(box), label);
+
+    // Create an entry for group name
+    GtkWidget *group_name_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(group_name_entry), "Group name");
+    gtk_box_append(GTK_BOX(box), group_name_entry);
+
+    // Create buttons box
+    GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
+
+    // Create buttons
+    GtkWidget *create_button = gtk_button_new_with_label("Create");
+    GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
+    
+    gtk_box_append(GTK_BOX(button_box), cancel_button);
+    gtk_box_append(GTK_BOX(button_box), create_button);
+    gtk_box_append(GTK_BOX(box), button_box);
+
+    // Set the box as the child of the dialog
+    gtk_window_set_child(GTK_WINDOW(dialog), box);
+
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 3);
+    entries[0] = dialog;
+    entries[1] = group_name_entry;
+    entries[2] = data;
+
+    // Connect button signals
+    g_signal_connect_swapped(cancel_button, "clicked", G_CALLBACK(gtk_window_destroy), dialog);
+    
+    g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_group_clicked), entries);
+
+    // Present the dialog
+    gtk_window_present(GTK_WINDOW(dialog));
+}
+
 // Main application window setup
 static void on_activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
@@ -234,6 +329,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(add_group_button, "add-group-button");
     gtk_box_append(GTK_BOX(sidebar_background), add_group_button);
     gtk_widget_set_visible(add_group_button, FALSE);
+
+    g_signal_connect(add_group_button, "clicked", G_CALLBACK(on_add_group_button_clicked), GTK_data);
 
     // Store login, password entries and error label for callback
     GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 4);

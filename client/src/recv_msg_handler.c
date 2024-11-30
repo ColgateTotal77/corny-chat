@@ -181,7 +181,6 @@ void* recv_msg_handler(void* arg) {
                         }
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
-                    stop_flag = false;
                     continue;
                 }
                     // case 12:
