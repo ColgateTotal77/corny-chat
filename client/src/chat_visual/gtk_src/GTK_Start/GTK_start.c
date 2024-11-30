@@ -167,10 +167,11 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_widget_set_vexpand(sidebar_scroll, TRUE);
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll);
-    
+
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_set_size_request(sidebar, 350, -1);
     gtk_widget_add_css_class(sidebar, "sidebar");
+    gtk_widget_set_hexpand(sidebar, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll), sidebar);
 
     // --- Chat Area Setup ---
@@ -223,7 +224,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->is_editing = g_new(gboolean, 1);
     *chat_manager->is_editing = false;
     chat_manager->cancel_button = cancel_button;
-    GTK_data->user_list = create_user_list();
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");

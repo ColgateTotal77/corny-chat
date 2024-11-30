@@ -51,6 +51,7 @@ typedef struct {
     GHashTable *messages; 
     bool is_show;
     GtkWidget *button;
+    GtkWidget *number_of_unread_messages;
 } chat_data_t;
 
 typedef struct {
@@ -128,9 +129,6 @@ void on_message_edit(GtkGestureClick *gesture);
 void change_message_from_others(chat_data_t *chat, int msg_id, char* new_message);
 void delete_message_from_others(chat_data_t *chat, int msg_id);
 
-
-user_list_t* create_user_list(void);
-void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);
 void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);

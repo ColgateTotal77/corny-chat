@@ -8,7 +8,7 @@ void str_overwrite_stdout(void) {
 void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
     GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
-   
+
     GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
     gboolean added = FALSE;
 
@@ -69,12 +69,23 @@ void* recv_msg_handler(void* arg) {
                         int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
                         char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
                         bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
+                        int unread_messages = cJSON_GetObjectItemCaseSensitive(user, "unread_messages")->valueint;
+
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
 
                         create_user_in_sidebar(user_id, nickname, is_online, GTK_data, new_chat);
                         
+                        if (unread_messages > 0 && unread_messages < 99) {
+                            gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), mx_itoa(unread_messages));
+                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true); 
+                        }
+                        else if(unread_messages > 99) {
+                            gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
+                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true); 
+                        }
+
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
                     stop_flag = false;
@@ -84,7 +95,7 @@ void* recv_msg_handler(void* arg) {
                     chat_data_t *chat = NULL;
                     int all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
                     if (all_mes_qty) {
-                        cJSON *messages = cJSON_GetObjectItemCaseSensitive(parsed_json, "messages");                                
+                        cJSON *messages = cJSON_GetObjectItemCaseSensitive(parsed_json, "messages");                        
                         for (int i = 0;  i < all_mes_qty; i++) {
                             cJSON *message_data = cJSON_GetArrayItem(messages, i);
                             
@@ -99,7 +110,6 @@ void* recv_msg_handler(void* arg) {
                             char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
                             int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
                             char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
-
                             if (owner_id == GTK_data->user_id) {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
                                 add_message(chat->messages_container, message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
@@ -134,7 +144,7 @@ void* recv_msg_handler(void* arg) {
                                     }
                                 }
                             }
-                        }   
+                        }
                     }
                     counter++;
                     continue;
@@ -223,6 +233,11 @@ void* recv_msg_handler(void* arg) {
                             }   
                         } 
                         break;
+
+                    // case 18:
+
+                    //     break;
+
                     case 17:
                         users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                         number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
@@ -316,6 +331,9 @@ void* recv_msg_handler(void* arg) {
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
                             add_message(chat->messages_container, message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat);
+
+                            // gtk_widget_unparent(chat->button);
+                            // gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                         }
                         break;      
                     default:
@@ -342,6 +360,23 @@ void* recv_msg_handler(void* arg) {
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
                         add_message(chat->messages_container, msg, time_str, false, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                         change_sidebar_chat_info(chat, msg, time_str);
+
+                        if  (gtk_widget_get_visible(chat->number_of_unread_messages)) {
+                            int unreaded = atoi(gtk_label_get_text(GTK_LABEL(chat->number_of_unread_messages))) + 1;
+
+                            if (unreaded > 99) {
+                                gtk_label_set_text(GTK_LABEL(chat->number_of_unread_messages), "+99");
+                            }
+                            else {
+                                gtk_label_set_text(GTK_LABEL(chat->number_of_unread_messages), mx_itoa(unreaded));
+                            }
+                        }
+                        else {
+                            gtk_label_set_text(GTK_LABEL(chat->number_of_unread_messages), "1");
+                            gtk_widget_set_visible(chat->number_of_unread_messages, true); 
+                        }
+                        // gtk_widget_unparent(chat->button);
+                        // gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                     }
                     break;
                 }

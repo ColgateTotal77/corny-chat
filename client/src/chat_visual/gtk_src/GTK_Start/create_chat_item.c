@@ -8,8 +8,8 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     
     GtkWidget *grid = gtk_grid_new();
     gtk_widget_add_css_class(grid, "chat-item");
-    gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
-    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 4);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
 
     // Avatar
     GtkWidget *avatar_circle = gtk_image_new_from_file("src/chat_visual/images/person.svg");
@@ -25,6 +25,17 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_add_css_class(name_label, "chat-name");
     gtk_widget_set_halign(name_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(name_box), name_label);
+
+    GtkWidget *number_of_unread_messages = gtk_label_new(NULL);
+    gtk_label_set_text(GTK_LABEL(number_of_unread_messages), "");
+    gtk_widget_add_css_class(number_of_unread_messages, "number_of_unread_messages");
+    gtk_widget_set_halign(number_of_unread_messages, GTK_ALIGN_END);
+    gtk_widget_set_valign(number_of_unread_messages, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(number_of_unread_messages, TRUE);
+    gtk_widget_set_visible(number_of_unread_messages, false); 
+    chat->number_of_unread_messages = number_of_unread_messages;
+    
+    gtk_grid_attach(GTK_GRID(grid), number_of_unread_messages, 3, 1, 1, 1);
 
     // Status indicator
     if (!is_group) { // Only show status indicator if it's not a group
