@@ -66,7 +66,7 @@ void on_next_button_clicked(GtkButton *button, gpointer user_data) {
     update_window_title(stack_children[current_index]);
 
     // Re-enable the button after 2 seconds
-    g_timeout_add(2000, reenable_button_after_delay, button);
+    g_timeout_add(1000, reenable_button_after_delay, button);
     g_timeout_add(500, reset_transition_flag, NULL);
 }
 
@@ -87,7 +87,7 @@ void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
     update_window_title(stack_children[current_index]);
 
     // Add a fallback to reset the flag after the transition duration
-    g_timeout_add(2000, reenable_button_after_delay, button);
+    g_timeout_add(1000, reenable_button_after_delay, button);
     g_timeout_add(500, reset_transition_flag, NULL);
 }
 
@@ -113,7 +113,11 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Profile Form");
+    if (GTK_data->is_admin) {
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);
+    } else {
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 500);
+    }
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 
     GTK_data->profile_window = window;
@@ -158,12 +162,11 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(header_left_box), back_button);
     gtk_box_append(GTK_BOX(header_left_box), name_label);
 
-    g_print("Checking if user is admin...\n");
+    gtk_box_append(GTK_BOX(header_box), header_left_box);
+
 
     GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    if (GTK_data->profile_data->is_admin) {
-    g_print("User is admin. Creating and adding header_right_box.\n");
-
+    if (GTK_data->is_admin) {
     gtk_widget_set_size_request(header_right_box, 300, 50); // Fixed width and height
 
     // Ensure it aligns to the end of the header_box
@@ -196,14 +199,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
     g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
     g_signal_connect(prev_button, "clicked", G_CALLBACK(on_prev_button_clicked), carousel_stack);
 
-    // Add right box to header box
     gtk_box_append(GTK_BOX(header_box), header_right_box);
-
     } else {
-        g_print("User is NOT admin. Skipping header_right_box.\n");
+    g_print("User is NOT admin. Skipping header_right_box.\n");
     }
-
-    gtk_box_append(GTK_BOX(header_box), header_left_box);
     // Add header to main box
     gtk_box_append(GTK_BOX(main_box), header_box);
 
@@ -361,13 +360,13 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(left_box), change_password_box);
 
     GtkWidget *right_box = NULL;
-
-    if (GTK_data->profile_data->is_admin) {
+    
+    if (GTK_data->is_admin) {
     // Right Box (Carousel Content)
     right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(right_box, TRUE);
     gtk_widget_set_size_request(right_box, 300, -1);
-
+    //gtk_widget_set_visible(right_box, GTK_data->is_admin);
 
  
     // Create "Create" Window
@@ -713,49 +712,47 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(right_box), carousel_stack);
     gtk_widget_set_hexpand(right_box, TRUE);
     gtk_widget_set_vexpand(right_box, TRUE);
-    
-    // Error label for displaying login/password issues
-    GtkWidget *error_label = gtk_label_new("");
-    gtk_widget_add_css_class(error_label, "error-label");
-    gtk_widget_set_halign(error_label, GTK_ALIGN_START);
-    gtk_box_append(GTK_BOX(create_box), error_label);
-
-    // Success label for displaying successful account creation
-    GtkWidget *success_label = gtk_label_new("");
-    gtk_widget_add_css_class(success_label, "success-label");
-    gtk_widget_set_halign(success_label, GTK_ALIGN_START);
-    gtk_box_append(GTK_BOX(create_box), success_label);
 
     // Prepare data for the callbacks
     GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 10);
     entries[0] = login_entry;
     entries[1] = password_entry;
-    entries[2] = error_label;
+    entries[2] = GTK_data->profile_data->error_label;
     entries[3] = user_data;
     entries[4] = window;
-    entries[5] = success_label;
+    entries[5] = GTK_data->profile_data->success_label;
     entries[6] = admin_check;
     entries[7] = delete_entry;
-    // entries[7] = old_password_entry;
-    // entries[8] = new_password_entry_1;
-    // entries[9] = new_password_entry_2;
     g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_button_clicked), entries);
     g_signal_connect(delete_button, "clicked", G_CALLBACK(on_deactivate_button_clicked), GTK_data);
     g_signal_connect(activate_button, "clicked", G_CALLBACK(on_activate_button_clicked), GTK_data);
-    //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), GTK_data);
-    //g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), entries);
-    //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), entries);
-    //g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
+
+    // Error label for displaying login/password issues
+    GTK_data->profile_data->error_label = gtk_label_new("");
+    gtk_widget_add_css_class(GTK_data->profile_data->error_label, "error-label");
+    gtk_widget_set_halign(GTK_data->profile_data->error_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(create_box), GTK_data->profile_data->error_label);
+
+    // Success label for displaying successful account creation
+    GTK_data->profile_data->success_label = gtk_label_new("");
+    gtk_widget_add_css_class(GTK_data->profile_data->success_label, "success-label");
+    gtk_widget_set_halign(GTK_data->profile_data->success_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(create_box), GTK_data->profile_data->success_label);
+
+
+    } else {
+    g_print("User is NOT admin. Skipping header_right_box.\n");
     }
+
 
     // Content Box (Horizontal Split)
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
     gtk_widget_set_hexpand(content_box, TRUE);
     gtk_widget_set_vexpand(content_box, TRUE);
     gtk_box_append(GTK_BOX(content_box), left_box);
-    if (right_box) {
-        gtk_box_append(GTK_BOX(content_box), right_box);
-    }
+    gtk_box_append(GTK_BOX(content_box), right_box);
+    
+
 
     // Add header and content box to the main box
     gtk_box_append(GTK_BOX(main_box), header_box);
