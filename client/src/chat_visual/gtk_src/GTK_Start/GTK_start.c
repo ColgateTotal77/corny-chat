@@ -173,6 +173,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(sidebar, "sidebar");
     gtk_widget_set_hexpand(sidebar, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll), sidebar);
+    printf("\nsidebar: %p\n\n", (void *)sidebar);
 
     // --- Chat Area Setup ---
     GtkWidget *chat_area_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);

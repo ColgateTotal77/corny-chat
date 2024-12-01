@@ -9,21 +9,7 @@ void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_dat
     g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
     GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
 
-    GtkWidget *child = gtk_widget_get_first_child(GTK_data->chat_manager->sidebar);
-    gboolean added = FALSE;
-
-    while (child != NULL) {
-        if (GTK_IS_BUTTON(child) && g_strcmp0(gtk_button_get_label(GTK_BUTTON(child)), "Add new group") == 0) {
-            gtk_box_insert_child_after(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item, gtk_widget_get_prev_sibling(child));
-            added = TRUE;
-            break;
-        }
-        child = gtk_widget_get_next_sibling(child);
-    }
-
-    if (!added) {
-        gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
-    }
+    gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 
 void* recv_msg_handler(void* arg) {
@@ -192,6 +178,7 @@ void* recv_msg_handler(void* arg) {
                     cJSON *users;
                     int all_mes_qty;
                     chat_data_t *chat = NULL;
+                    int sender_id;
                     case 24:
                         all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
                         if (all_mes_qty) {
@@ -234,9 +221,11 @@ void* recv_msg_handler(void* arg) {
                         } 
                         break;
 
-                    // case 18:
-
-                    //     break;
+                    case 18:
+                        sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
+                        chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
+                        gtk_widget_set_visible(chat->number_of_unread_messages, false);
+                        break;
 
                     case 17:
                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
@@ -383,9 +372,11 @@ void* recv_msg_handler(void* arg) {
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
                             add_message(chat->messages_container, message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat);
-
-                            // gtk_widget_unparent(chat->button);
-                            // gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                                
+                            g_object_ref(chat->button);
+                            gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                            gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                            g_object_unref(chat->button);
                         }
                         break;      
                     default:
@@ -427,8 +418,10 @@ void* recv_msg_handler(void* arg) {
                             gtk_label_set_text(GTK_LABEL(chat->number_of_unread_messages), "1");
                             gtk_widget_set_visible(chat->number_of_unread_messages, true); 
                         }
-                        // gtk_widget_unparent(chat->button);
-                        // gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                        g_object_ref(chat->button);
+                        gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                        gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                        g_object_unref(chat->button);
                     }
                     break;
                 }
