@@ -58,4 +58,5 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
 
     // Send data to server
     create_new_user(ssl, (char *)login_input, (char *)password_input, is_admin);
+
 }

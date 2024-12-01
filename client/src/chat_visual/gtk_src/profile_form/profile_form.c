@@ -1,94 +1,109 @@
 #include "GTK.h"
 
-const char *stack_children[] = {"create", "change_password", "delete"};
+const char *stack_children[] = {"create", "change_password", "delete", "activate"};
 int current_index = 0;
 
+static gboolean is_transitioning = FALSE;
+
+static GtkWidget *current_window_label = NULL;  // Add this global variable
+
+// Fallback function to reset is_transitioning
+static gboolean reset_transition_flag(gpointer data) {
+    (void)data; // Avoid unused parameter warning
+    is_transitioning = FALSE;
+    return G_SOURCE_REMOVE; // Stop the timeout
+}
+
+// Update the update_window_title function
+void update_window_title(const char *stack_name) {
+    if (!current_window_label) return;
+    
+    const char *title;
+    if (g_strcmp0(stack_name, "create") == 0)
+        title = "Create New User";
+    else if (g_strcmp0(stack_name, "change_password") == 0)
+        title = "Change User Password";
+    else if (g_strcmp0(stack_name, "delete") == 0)
+        title = "Deactivate User";
+    else if (g_strcmp0(stack_name, "activate") == 0)
+        title = "Activate User";
+    else
+        title = "Profile Form";
+        
+    gtk_label_set_text(GTK_LABEL(current_window_label), title);
+    is_transitioning = TRUE; // Set flag for transition
+    g_timeout_add(500, reset_transition_flag, NULL);
+}
+
+void on_transition_done(GtkStack *stack, GParamSpec *pspec, gpointer user_data) {
+    (void)pspec;
+    (void)user_data;
+    // Reset the flag after transition completes
+    is_transitioning = FALSE;
+    const char *current_child = gtk_stack_get_visible_child_name(stack);
+    update_window_title(current_child);
+    g_print("Transition completed to: %s\n", current_child);
+    is_transitioning = TRUE; // Set flag for transition
+    g_timeout_add(500, reset_transition_flag, NULL);
+}
+
 void on_next_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
     GtkStack *stack = GTK_STACK(user_data);
 
-    // Ensure the stack is properly initialized
-    if (!stack || current_index < 0) {
+    if (is_transitioning) {
+        g_print("Transition already in progress. Ignoring button press.\n");
         return;
     }
 
-    // Move to the next child
+    // Disable the button
+    gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+
+    is_transitioning = TRUE;
+
+    // Calculate the next index
     current_index = (current_index + 1) % G_N_ELEMENTS(stack_children);
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
+    update_window_title(stack_children[current_index]);
+
+    // Re-enable the button after 2 seconds
+    g_timeout_add(2000, reenable_button_after_delay, button);
+    g_timeout_add(500, reset_transition_flag, NULL);
 }
 
 void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
     GtkStack *stack = GTK_STACK(user_data);
 
-    // Ensure the stack is properly initialized
-    if (!stack || current_index < 0) {
-        return;
+    if (is_transitioning) {
+        g_print("Transition already in progress. Ignoring button press.\n");
+        return; // Prevent triggering a new transition
     }
 
-    // Move to the previous child
+    is_transitioning = TRUE; // Set flag for transition
+
+    // Calculate the previous index
     current_index = (current_index - 1 + G_N_ELEMENTS(stack_children)) % G_N_ELEMENTS(stack_children);
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
+    update_window_title(stack_children[current_index]);
+
+    // Add a fallback to reset the flag after the transition duration
+    g_timeout_add(2000, reenable_button_after_delay, button);
+    g_timeout_add(500, reset_transition_flag, NULL);
 }
-
-// static void apply_css(void) {
-//     GtkCssProvider *css_provider = gtk_css_provider_new();
-
-//     // Load CSS with only two parameters
-//     gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
-
-//     gtk_style_context_add_provider_for_display(
-//         gdk_display_get_default(),
-//         GTK_STYLE_PROVIDER(css_provider),
-//         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-//     );
-
-//     g_object_unref(css_provider);
-// }
-
-// Callback for the "Deactivate" button
-// void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
-//     (void)button;
-//     GTK_data_t *GTK_data = (GTK_data_t *)user_data;
-//     GtkEntry *deactivate_entry = GTK_ENTRY(GTK_data->profile_data->deactivate_entry);
-//     GtkLabel *error_label = GTK_LABEL(GTK_data->profile_data->deactivate_error_label);
-//     SSL *ssl = GTK_data->call_data->ssl;
-
-//     // Retrieve the text from the entry
-//     const char *user_id_str = gtk_editable_get_text(GTK_EDITABLE(deactivate_entry));
-
-//     // Validate the input
-//     if (!user_id_str || strlen(user_id_str) == 0) {
-//         gtk_label_set_text(error_label, "User ID cannot be empty.");
-//         gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
-//         return;
-//     }
-
-//     // Convert the text to an integer
-//     char *endptr;
-//     int user_id = strtol(user_id_str, &endptr, 10);
-//     if (*endptr != '\0' || user_id <= 0) {
-//         gtk_label_set_text(error_label, "Invalid User ID. Please enter a valid number.");
-//         gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
-//         return;
-//     }
-
-//     // Send the deactivation request to the server
-//     deactivate_user(ssl, user_id);
-
-//     // Provide feedback to the user
-//     gtk_label_set_text(error_label, "Deactivation request sent.");
-//     gtk_widget_set_visible(GTK_WIDGET(error_label), TRUE);
-// }
 
 static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
-    
-    // Cleanup before closing
-    
-    // Apply CSS and close window
-    apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
-    gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
+    if (GTK_data && GTK_IS_WINDOW(GTK_data->profile_window)) {
+        // Cleanup before closing
+        current_window_label = NULL; // Reset global variable
+        is_transitioning = FALSE;    // Reset transition flag
+        
+        // Apply CSS and close window
+        if (GTK_IS_WINDOW(GTK_data->window)) {
+            apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
+        }
+        gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
+    }
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -102,79 +117,101 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 
     GTK_data->profile_window = window;
-    
+
     // Main box
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
     gtk_widget_set_margin_start(main_box, 30);
     gtk_widget_set_margin_end(main_box, 30);
     gtk_widget_set_margin_top(main_box, 20);
     gtk_widget_set_margin_bottom(main_box, 20);
+    gtk_widget_set_hexpand(main_box, TRUE);
+    gtk_widget_set_vexpand(main_box, TRUE);
 
     // Create Stack for Carousel
     GtkWidget *carousel_stack = gtk_stack_new();
     gtk_stack_set_transition_type(GTK_STACK(carousel_stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
     gtk_stack_set_transition_duration(GTK_STACK(carousel_stack), 300);
 
-    // Declare a label for the current window name
-    GtkWidget *current_window_label = gtk_label_new("Create a new profile"); // Default title
-    gtk_widget_add_css_class(current_window_label, "current-window-label");
-    
-    // Header box with Back button, title, and navigation buttons
-    GtkWidget *header_box_with_nav = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 15);
-
-    // Left part of header (Back button and title)
+    // Header section
     GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 15);
+    gtk_widget_set_hexpand(header_box, TRUE);
+    gtk_box_set_homogeneous(GTK_BOX(header_box), FALSE);
+    gtk_widget_add_css_class(header_box, "header_box");
+
+    // Left side of header (Back button and nickname)
+    GtkWidget *header_left_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_set_halign(header_left_box, GTK_ALIGN_START);
+
+    // Back button
     GtkWidget *back_button = gtk_button_new();
     gtk_widget_add_css_class(back_button, "back-button");
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
     gtk_button_set_child(GTK_BUTTON(back_button), back_icon);
     g_signal_connect_swapped(back_button, "clicked", G_CALLBACK(gtk_window_close_wrapper), GTK_data);
 
-    // // Add a label for the username
+    // Nickname label
     GtkWidget *name_label = gtk_label_new(GTK_data->username ? GTK_data->username : "Unknown User");
     gtk_widget_add_css_class(name_label, "header-label");
-
-    // Store the name_label in GTK_data for later updates
     GTK_data->profile_data->name_label = GTK_WIDGET(name_label);
 
-    // Add the name_label to the header-box
-    gtk_box_append(GTK_BOX(header_box), back_button);
-    gtk_box_append(GTK_BOX(header_box), name_label);
+    // Add back button and nickname to left box
+    gtk_box_append(GTK_BOX(header_left_box), back_button);
+    gtk_box_append(GTK_BOX(header_left_box), name_label);
 
-    // Right part of header (Back and Forward icons)
-    GtkWidget *nav_buttons_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10); // Declare and initialize nav_buttons_box
+    g_print("Checking if user is admin...\n");
 
-    // Back Button with Icon
+    GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    if (GTK_data->profile_data->is_admin) {
+    g_print("User is admin. Creating and adding header_right_box.\n");
+
+    gtk_widget_set_size_request(header_right_box, 300, 50); // Fixed width and height
+
+    // Ensure it aligns to the end of the header_box
+    gtk_widget_set_halign(header_right_box, GTK_ALIGN_END);
+    gtk_widget_add_css_class(header_right_box, "header_right_box");
+
+    // Previous button
     GtkWidget *prev_button = gtk_button_new();
     GtkWidget *prev_icon = gtk_image_new_from_file("src/chat_visual/images/back_arrow.svg");
     gtk_button_set_child(GTK_BUTTON(prev_button), prev_icon);
     gtk_widget_add_css_class(prev_button, "nav-button");
 
-    // Forward Button with Icon
+    // Window title
+    current_window_label = gtk_label_new("Create New User");
+    gtk_widget_add_css_class(current_window_label, "window-title");
+    gtk_widget_set_size_request(current_window_label, 300, -1); // Width: 150px, Height: automatic
+
+    // Next button
     GtkWidget *next_button = gtk_button_new();
     GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
     gtk_button_set_child(GTK_BUTTON(next_button), next_icon);
     gtk_widget_add_css_class(next_button, "nav-button");
 
-    // Connect Navigation Buttons
+    // Add navigation elements to right box
+    gtk_box_append(GTK_BOX(header_right_box), prev_button);
+    gtk_box_append(GTK_BOX(header_right_box), current_window_label);
+    gtk_box_append(GTK_BOX(header_right_box), next_button);
+
+    // Connect navigation button signals
     g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
     g_signal_connect(prev_button, "clicked", G_CALLBACK(on_prev_button_clicked), carousel_stack);
 
-    // Append Buttons to Navigation Box
-    gtk_box_append(GTK_BOX(nav_buttons_box), prev_button);
-    gtk_box_append(GTK_BOX(nav_buttons_box), next_button);
+    // Add right box to header box
+    gtk_box_append(GTK_BOX(header_box), header_right_box);
 
-    // Combine header box and nav buttons box in the main header container
-    gtk_box_append(GTK_BOX(header_box_with_nav), header_box);
-    gtk_widget_set_halign(nav_buttons_box, GTK_ALIGN_END);
-    gtk_box_append(GTK_BOX(header_box_with_nav), nav_buttons_box);
+    } else {
+        g_print("User is NOT admin. Skipping header_right_box.\n");
+    }
 
-    // Add header_with_nav to the main_box
-    gtk_box_append(GTK_BOX(main_box), header_box_with_nav);
-        
+    gtk_box_append(GTK_BOX(header_box), header_left_box);
+    // Add header to main box
+    gtk_box_append(GTK_BOX(main_box), header_box);
+
 
     // Left Box (Nickname and Password Sections)
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
+    gtk_widget_set_hexpand(left_box, TRUE);
+    gtk_widget_set_size_request(left_box, 300, -1);
 
     // Nickname Section
     GtkWidget *nickname_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -323,8 +360,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     gtk_box_append(GTK_BOX(left_box), change_password_box);
 
+    GtkWidget *right_box = NULL;
+
+    if (GTK_data->profile_data->is_admin) {
     // Right Box (Carousel Content)
-    GtkWidget *right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
+    right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
+    gtk_widget_set_hexpand(right_box, TRUE);
+    gtk_widget_set_size_request(right_box, 300, -1);
+
 
  
     // Create "Create" Window
@@ -395,6 +438,107 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Add the Create box to the carousel
     gtk_stack_add_titled(GTK_STACK(carousel_stack), create_box, "create", "Create");
 
+    // Create the Admin Change Password section
+    GtkWidget *admin_password_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    // Login input field
+    GtkWidget *login_label1 = gtk_label_new("Enter login:");
+    gtk_widget_set_halign(login_label1, GTK_ALIGN_START);
+    GtkWidget *admin_login_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(admin_login_entry), "Login");
+    gtk_widget_add_css_class(admin_login_entry, "text-entry");
+    GTK_data->profile_data->admin_login_entry = admin_login_entry;
+
+    // New password input field
+    GtkWidget *password_label1 = gtk_label_new("Enter new password:");
+    gtk_widget_set_halign(password_label1, GTK_ALIGN_START);
+    GtkWidget *admin_password_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(admin_password_entry), "New password");
+    gtk_entry_set_visibility(GTK_ENTRY(admin_password_entry), FALSE);
+    gtk_widget_add_css_class(admin_password_entry, "password-entry");
+    GTK_data->profile_data->admin_password_entry = admin_password_entry;
+
+    // Eye icon for the password entry
+    GtkWidget *admin_eye_button = gtk_toggle_button_new();
+    gtk_button_set_icon_name(GTK_BUTTON(admin_eye_button), "view-conceal-symbolic");
+    gtk_widget_set_tooltip_text(admin_eye_button, "Show/Hide Password");
+    g_signal_connect(admin_eye_button, "toggled", G_CALLBACK(on_eye_button_clicked), admin_password_entry);
+    gtk_widget_add_css_class(admin_eye_button, "eye-icon");
+
+    // Password entry box with overlay
+    GtkWidget *admin_password_entry_box = gtk_overlay_new();
+    gtk_overlay_set_child(GTK_OVERLAY(admin_password_entry_box), admin_password_entry);
+    gtk_overlay_add_overlay(GTK_OVERLAY(admin_password_entry_box), admin_eye_button);
+
+    // Fix alignment and positioning of the eye button
+    gtk_widget_set_halign(admin_eye_button, GTK_ALIGN_END); // Align to the end of the entry field
+    gtk_widget_set_valign(admin_eye_button, GTK_ALIGN_CENTER); // Center vertically
+    gtk_widget_set_margin_end(admin_eye_button, 5); // Add some spacing from the edge
+
+    // Change Password button
+    GtkWidget *admin_change_button = gtk_button_new_with_label("Change User Password");
+    gtk_widget_add_css_class(admin_change_button, "change-password-button");
+    g_signal_connect(admin_change_button, "clicked", G_CALLBACK(on_admin_change_password_button_clicked), GTK_data);
+
+    // Admin Login List Background Container
+    GtkWidget *admin_login_list_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    // Scrollable Admin Login List Container
+    GtkWidget *admin_scroll_container = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(admin_scroll_container), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_size_request(admin_scroll_container, -1, 200);
+    gtk_widget_add_css_class(admin_scroll_container, "admin-login-list-container");
+
+    // Admin Login List
+    GtkWidget *admin_login_list = gtk_list_box_new();
+    gtk_widget_set_visible(admin_login_list, TRUE); // Ensure visibility
+    gtk_widget_set_vexpand(admin_login_list, TRUE); // Allow vertical expansion
+    gtk_widget_set_hexpand(admin_login_list, TRUE); // Allow horizontal expansion
+    gtk_widget_add_css_class(admin_login_list, "admin-login-list");
+
+    // Set the admin login list as a child of the scroll container
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(admin_scroll_container), admin_login_list);
+    GTK_data->profile_data->admin_login_list = GTK_LIST_BOX(admin_login_list);
+
+    // Append the scroll container to the admin login list background
+    gtk_box_append(GTK_BOX(admin_login_list_background), admin_scroll_container);
+
+    // Optional: Connect signals to handle row selection or updates
+    // g_signal_connect(admin_login_list, "row-selected", G_CALLBACK(on_admin_login_row_selected), GTK_data);
+
+
+    // Error and success labels
+    GtkWidget *admin_error_label = gtk_label_new("");
+    gtk_widget_add_css_class(admin_error_label, "error-label");
+    GTK_data->profile_data->admin_error_label = admin_error_label;
+
+    GtkWidget *admin_success_label = gtk_label_new("");
+    gtk_widget_add_css_class(admin_success_label, "success-label");
+    GTK_data->profile_data->admin_success_label = admin_success_label;
+
+    GtkEventController *key_controller3 = gtk_event_controller_key_new();
+    g_object_set_data(G_OBJECT(key_controller3), "list-box", admin_login_list);
+    g_signal_connect(key_controller3, "key-pressed", G_CALLBACK(on_key_pressed), admin_login_entry);
+    gtk_widget_add_controller(admin_login_entry, key_controller3);
+    
+    // Assemble the UI for admin_password_box
+    gtk_box_append(GTK_BOX(admin_password_box), login_label1);
+    gtk_box_append(GTK_BOX(admin_password_box), admin_login_entry);
+    gtk_box_append(GTK_BOX(admin_password_box), password_label1);
+    gtk_box_append(GTK_BOX(admin_password_box), admin_password_entry_box);
+    gtk_box_append(GTK_BOX(admin_password_box), admin_change_button);
+    gtk_box_append(GTK_BOX(admin_password_box), admin_error_label);
+    gtk_box_append(GTK_BOX(admin_password_box), admin_success_label);
+
+    // Append the scrollable admin-login-list at the end
+    gtk_box_append(GTK_BOX(admin_password_box), admin_login_list_background);
+
+    g_signal_connect(admin_login_list, "row-selected", G_CALLBACK(on_login_row_selected), admin_login_entry);
+
+    // Add to carousel stack
+    gtk_stack_add_titled(GTK_STACK(carousel_stack), admin_password_box, "change_password", "Change Password");
+
+
     // Create "Delete" Window
     GtkWidget *delete_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
@@ -404,6 +548,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *delete_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
+
+    GTK_data->profile_data->delete_entry = delete_entry;
 
     GtkWidget *delete_button = gtk_button_new_with_label("Deactivation");
     gtk_widget_add_css_class(delete_button, "delete-button");
@@ -461,32 +607,113 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Add login list background to the delete box
     gtk_box_append(GTK_BOX(delete_box), login_list_background);
 
+    // Add error and success labels here
+    GtkWidget *delete_error_label = gtk_label_new("");
+    gtk_widget_add_css_class(delete_error_label, "error-label");
+    gtk_widget_set_halign(delete_error_label, GTK_ALIGN_START);
+    GTK_data->profile_data->error_label = delete_error_label;
+
+    GtkWidget *delete_success_label = gtk_label_new("");
+    gtk_widget_add_css_class(delete_success_label, "success-label");
+    gtk_widget_set_halign(delete_success_label, GTK_ALIGN_START);
+    GTK_data->profile_data->success_label = delete_success_label;
+
+    // Add the labels to the delete_box
+    gtk_box_append(GTK_BOX(delete_box), delete_error_label);
+    gtk_box_append(GTK_BOX(delete_box), delete_success_label);
+
     // Add the Delete box to the carousel
     gtk_stack_add_titled(GTK_STACK(carousel_stack), delete_box, "delete", "Delete");
 
-    // Create "Change Password" Window
-    GtkWidget *password_box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    GtkWidget *password_label1 = gtk_label_new("Change password:");
+    GtkWidget *activate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    // Input field and Activate button
+    GtkWidget *activate_label = gtk_label_new("Enter login to activate:");
+    gtk_widget_set_halign(activate_label, GTK_ALIGN_START);
 
-    GtkWidget *new_password_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(new_password_entry), "Enter new password");
-    gtk_entry_set_visibility(GTK_ENTRY(new_password_entry), FALSE);
+    GtkWidget *activate_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(activate_entry), "Enter login");
 
-    GtkWidget *password_button = gtk_button_new_with_label("Change Password");
-    gtk_box_append(GTK_BOX(password_box1), password_label1);
-    gtk_box_append(GTK_BOX(password_box1), new_password_entry);
-    gtk_box_append(GTK_BOX(password_box1), password_button);
-    gtk_stack_add_titled(GTK_STACK(carousel_stack), password_box1, "change_password", "Change Password");
+    GTK_data->profile_data->activate_entry = activate_entry;
 
+    GtkWidget *activate_button = gtk_button_new_with_label("Activation");
+    gtk_widget_add_css_class(activate_button, "activate-button");
 
-    // Connect Navigation Buttons
-    g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
-    g_signal_connect(prev_button, "clicked", G_CALLBACK(on_prev_button_clicked), carousel_stack);
+    GtkWidget *activate_input_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
+    // Ensure widgets have no parent before appending
+    if (gtk_widget_get_parent(activate_entry)) {
+        gtk_widget_unparent(activate_entry);
+    }
+    if (gtk_widget_get_parent(activate_button)) {
+        gtk_widget_unparent(activate_button);
+    }
 
-    // Add Stack and Navigation to Right Box
+    // Append widgets to the input box
+    gtk_box_append(GTK_BOX(activate_input_box), activate_entry);
+    gtk_box_append(GTK_BOX(activate_input_box), activate_button);
+
+    // Add input box to the activate box
+    gtk_box_append(GTK_BOX(activate_box), activate_label);
+    gtk_box_append(GTK_BOX(activate_box), activate_input_box);
+
+    // Add scrollable list for deactivated users
+    GtkWidget *scroll_container2 = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_container2), 
+                                GTK_POLICY_NEVER, 
+                                GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_size_request(scroll_container2, -1, 200);
+    gtk_widget_add_css_class(scroll_container2, "login-list-background");
+
+    GtkWidget *deactivated_list = gtk_list_box_new();
+    gtk_widget_set_visible(deactivated_list, TRUE);
+    gtk_widget_set_vexpand(deactivated_list, TRUE);
+    gtk_widget_set_hexpand(deactivated_list, TRUE);
+    gtk_widget_add_css_class(deactivated_list, "deactivate-list");
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_container2), deactivated_list);
+    GTK_data->profile_data->deactivated_list = GTK_LIST_BOX(deactivated_list);
+
+    GtkEventController *key_controller2 = gtk_event_controller_key_new();
+    g_object_set_data(G_OBJECT(key_controller2), "list-box", deactivated_list);
+    g_signal_connect(key_controller2, "key-pressed", G_CALLBACK(on_key_pressed), activate_entry);
+    gtk_widget_add_controller(activate_entry, key_controller2);
+
+    // Connect signals
+    g_signal_connect(deactivated_list, "row-selected", G_CALLBACK(on_login_row_selected), activate_entry);
+    //g_signal_connect(activate_button, "clicked", G_CALLBACK(on_activate_button_clicked), GTK_data);
+
+    // Add all widgets to activate_box
+    gtk_box_append(GTK_BOX(activate_box), activate_label);
+    gtk_box_append(GTK_BOX(activate_box), activate_entry);
+    gtk_box_append(GTK_BOX(activate_box), activate_button);
+    gtk_box_append(GTK_BOX(activate_box), scroll_container2);
+
+    // Add error and success labels here
+    GtkWidget *deactivate_error_label = gtk_label_new("");
+    gtk_widget_add_css_class(deactivate_error_label, "error-label");
+    gtk_widget_set_halign(deactivate_error_label, GTK_ALIGN_START);
+    GTK_data->profile_data->deactivate_error_label = deactivate_error_label;
+
+    GtkWidget *deactivate_success_label = gtk_label_new("");
+    gtk_widget_add_css_class(deactivate_success_label, "success-label");
+    gtk_widget_set_halign(deactivate_success_label, GTK_ALIGN_START);
+    GTK_data->profile_data->deactivate_success_label = deactivate_success_label;
+
+    // Add the labels to the delete_box
+    gtk_box_append(GTK_BOX(activate_box), deactivate_error_label);
+    gtk_box_append(GTK_BOX(activate_box), deactivate_success_label);
+
+    gtk_stack_add_titled(GTK_STACK(carousel_stack), activate_box, "activate", "Activate User");
+
+    // After creating carousel_stack
+    gtk_widget_set_hexpand(carousel_stack, TRUE);
+    gtk_widget_set_vexpand(carousel_stack, TRUE);
+    gtk_widget_set_visible(carousel_stack, TRUE);
+
+    // When adding to right_box
     gtk_box_append(GTK_BOX(right_box), carousel_stack);
-
+    gtk_widget_set_hexpand(right_box, TRUE);
+    gtk_widget_set_vexpand(right_box, TRUE);
+    
     // Error label for displaying login/password issues
     GtkWidget *error_label = gtk_label_new("");
     gtk_widget_add_css_class(error_label, "error-label");
@@ -508,20 +735,27 @@ static void activate(GtkApplication *app, gpointer user_data) {
     entries[4] = window;
     entries[5] = success_label;
     entries[6] = admin_check;
-    // entries[6] = delete_entry;
+    entries[7] = delete_entry;
     // entries[7] = old_password_entry;
     // entries[8] = new_password_entry_1;
     // entries[9] = new_password_entry_2;
     g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_button_clicked), entries);
+    g_signal_connect(delete_button, "clicked", G_CALLBACK(on_deactivate_button_clicked), GTK_data);
+    g_signal_connect(activate_button, "clicked", G_CALLBACK(on_activate_button_clicked), GTK_data);
     //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), GTK_data);
     //g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), entries);
     //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), entries);
     //g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
+    }
 
     // Content Box (Horizontal Split)
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
+    gtk_widget_set_hexpand(content_box, TRUE);
+    gtk_widget_set_vexpand(content_box, TRUE);
     gtk_box_append(GTK_BOX(content_box), left_box);
-    gtk_box_append(GTK_BOX(content_box), right_box);
+    if (right_box) {
+        gtk_box_append(GTK_BOX(content_box), right_box);
+    }
 
     // Add header and content box to the main box
     gtk_box_append(GTK_BOX(main_box), header_box);
