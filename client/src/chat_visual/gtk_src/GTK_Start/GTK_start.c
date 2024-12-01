@@ -26,20 +26,26 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     gtk_window_present(GTK_WINDOW(current_window));
 }
 
-void show_all_contacts(GTK_data_t *GTK_data){
-    if (!GTK_data || !GTK_data->chat_manager) {
-        printf("Chat manager is NULL.\n");
+void show_all_contacts(GTK_data_t *GTK_data, gboolean is_group) {
+    if (!GTK_data) {
+        printf("GTK_data is NULL.\n");
         return;
     }
-
-    chat_manager_t *chat_manager = GTK_data->chat_manager;
+    
+    chat_manager_t *manager = is_group ? GTK_data->group_manager : GTK_data->chat_manager;
+    
+    if (!manager) {
+        printf("%s manager is NULL.\n", is_group ? "Group" : "Chat");
+        return;
+    }
+    
     GHashTableIter iter;
     gpointer key, value;
-    g_hash_table_iter_init(&iter, chat_manager->chats);
-    
+    g_hash_table_iter_init(&iter, manager->chats);
+   
     while (g_hash_table_iter_next(&iter, &key, &value)) {
         chat_data_t *chat_data = (chat_data_t *)value;
-        if(!chat_data->is_show){
+        if (!chat_data->is_show) {
             chat_data->is_show = true;
             gtk_widget_set_visible(chat_data->button, TRUE);
         }
@@ -48,32 +54,57 @@ void show_all_contacts(GTK_data_t *GTK_data){
 
 // Function to print chat manager information
 void print_chat_manager_info(GTK_data_t *GTK_data, const char *search_enter) {
-    if (!GTK_data || !GTK_data->chat_manager) {
-        printf("Chat manager is NULL.\n");
+    if (!GTK_data) {
+        printf("GTK_data is NULL.\n");
         return;
     }
-
-    // Print all chats in chat_manager
-    chat_manager_t *chat_manager = GTK_data->chat_manager;
-    GHashTableIter iter;
-    gpointer key, value;
-    g_hash_table_iter_init(&iter, chat_manager->chats);
-
-    int search_length = strlen(search_enter);
-    if(search_length > 0){
-        while (g_hash_table_iter_next(&iter, &key, &value)) {
-            chat_data_t *chat_data = (chat_data_t *)value;
-
-            if(search_enter && mx_strstr(chat_data->contact_name, search_enter) != 0){
-                chat_data->is_show = true;
-                gtk_widget_set_visible(chat_data->button, TRUE);
-            } else {
-                chat_data->is_show = false;
-                gtk_widget_set_visible(chat_data->button, FALSE);
+    
+    // Process chat_manager
+    if (GTK_data->chat_manager) {
+        chat_manager_t *chat_manager = GTK_data->chat_manager;
+        GHashTableIter iter;
+        gpointer key, value;
+        g_hash_table_iter_init(&iter, chat_manager->chats);
+        
+        int search_length = strlen(search_enter);
+        if (search_length > 0) {
+            while (g_hash_table_iter_next(&iter, &key, &value)) {
+                chat_data_t *chat_data = (chat_data_t *)value;
+                if (mx_strstr(chat_data->contact_name, search_enter) != 0) {
+                    chat_data->is_show = true;
+                    gtk_widget_set_visible(chat_data->button, TRUE);
+                } else {
+                    chat_data->is_show = false;
+                    gtk_widget_set_visible(chat_data->button, FALSE);
+                }
             }
+        } else {
+            show_all_contacts(GTK_data, FALSE);
         }
-    }else{
-        show_all_contacts(GTK_data);
+    }
+    
+    // Process group_manager
+    if (GTK_data->group_manager) {
+        chat_manager_t *group_manager = GTK_data->group_manager;
+        GHashTableIter iter;
+        gpointer key, value;
+        g_hash_table_iter_init(&iter, group_manager->chats);
+        
+        int search_length = strlen(search_enter);
+        if (search_length > 0) {
+            while (g_hash_table_iter_next(&iter, &key, &value)) {
+                chat_data_t *chat_data = (chat_data_t *)value;
+                if (mx_strstr(chat_data->contact_name, search_enter) != 0) {
+                    chat_data->is_show = true;
+                    gtk_widget_set_visible(chat_data->button, TRUE);
+                } else {
+                    chat_data->is_show = false;
+                    gtk_widget_set_visible(chat_data->button, FALSE);
+                }
+            }
+        } else {
+            show_all_contacts(GTK_data, TRUE);
+        }
     }
 }
 
@@ -92,7 +123,8 @@ void on_erase_button_clicked(GtkButton *button, gpointer user_data) {
     if (GTK_data->search_bar) {
         gtk_editable_set_text(GTK_EDITABLE(GTK_data->search_bar), ""); // Clear the search bar
     }
-    show_all_contacts(GTK_data);
+    show_all_contacts(GTK_data, true);
+    show_all_contacts(GTK_data, false);
 }
 
 void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
