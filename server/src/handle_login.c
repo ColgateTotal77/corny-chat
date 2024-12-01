@@ -37,7 +37,7 @@ static void create_and_send_succesfull_login_data(call_data_t *call_data, int us
 	cJSON_AddStringToObject(response_json, "login", login);
 	cJSON_AddStringToObject(response_json, "nickname", call_data->client_data->user_data->nickname);
 	cJSON_AddStringToObject(response_json, "session_id", client_session_id);
-	cJSON_AddBoolToObject(response_json, "is_admin", true);
+	cJSON_AddBoolToObject(response_json, "is_admin", call_data->client_data->user_data->is_admin);
     send_to_user_and_delete_json(call_data, &response_json);
 }
 
