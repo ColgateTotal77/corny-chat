@@ -436,6 +436,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(chat_user_label, "header-name");
     gtk_box_append(GTK_BOX(chat_header), chat_user_label);
     chat_manager->chat_user_label = chat_user_label;
+    group_manager->chat_user_label = chat_user_label;
 
     GTK_data->chat_manager = chat_manager;
     GTK_data->group_manager = group_manager;

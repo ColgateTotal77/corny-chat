@@ -201,6 +201,21 @@ void* recv_msg_handler(void* arg) {
 
                         // Create a new chat_data_t for the group
                         chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+
+                        // // Print the details of the new chat to verify
+                        // printf("Inserting new chat:\n");
+                        // printf("Chat Name: %s\n", chat_name);
+                        // printf("Chat ID: %d\n", chat_id);
+                        // printf("New Chat Pointer: %p\n", (void*)new_chat);
+
+                        // // If chat_data_t has specific fields, print them as well
+                        // if (new_chat) {
+                        //     // Assuming chat_data_t has fields like contact_id, last_message_id, etc.
+                        //     printf("Contact ID: %d\n", new_chat->contact_id);
+                        //     printf("Last Message ID: %d\n", new_chat->last_message_id);
+                        //     // Add more fields as necessary
+                        // }
+
                         g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
 
                         // Create a new group item for the sidebar

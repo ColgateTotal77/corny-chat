@@ -63,10 +63,11 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
 
     g_object_set_data(G_OBJECT(button), "chat_id", GINT_TO_POINTER(chat_id));
     if (is_group) {
-        g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
-    }else {
-        g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
+        g_object_set_data(G_OBJECT(button), "is_group", GINT_TO_POINTER(1));
     }
+
+    // Single signal connection for both group and user chats
+    g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
     
     chat->button = button;
 
