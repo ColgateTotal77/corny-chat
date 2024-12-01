@@ -31,6 +31,8 @@ void* recv_login_msg_handler(void* arg) {
                         GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));
                         strncpy(GTK_data->username, nickname, strlen(nickname));
 
+                        GTK_data->is_admin = cJSON_GetObjectItemCaseSensitive(parsed_json, "is_admin")->valueint;
+
                         GTK_data->login_successful = true;
                         stop_login = true;
                     }else{

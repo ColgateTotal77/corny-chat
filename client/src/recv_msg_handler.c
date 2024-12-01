@@ -239,7 +239,7 @@ void* recv_msg_handler(void* arg) {
                     //     break;
 
                     case 17:
-                       users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                         number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
 
                         // Clear existing login lists
@@ -363,11 +363,6 @@ void* recv_msg_handler(void* arg) {
                         cJSON_Delete(json);
                         break;
                     }
-                    case 11:
-                        if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
-                            GTK_data->profile_data->is_admin = cJSON_GetObjectItemCaseSensitive(parsed_json, "is_admin")->valueint;
-                        }
-                    break;
                     case 1:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             int contact_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "contact_id")->valueint;

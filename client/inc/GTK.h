@@ -104,8 +104,7 @@ typedef struct {
     GtkWidget *error_label;       // General error label
     GtkWidget *success_label; 
     GtkWidget *deactivate_success_label; 
-    GtkWidget *right_side_container;
-    bool is_admin;  
+    GtkWidget *right_side_container; 
 } profile_data_t;
 
 typedef struct {
@@ -113,6 +112,7 @@ typedef struct {
     char *username;
     int user_id; 
     char *session_id;
+    bool is_admin; 
     call_data_t *call_data;
     chat_manager_t *chat_manager;
     user_list_t *user_list;
