@@ -46,6 +46,7 @@ void* recv_msg_handler(void* arg) {
                     char* nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
                     GTK_data->username = (char*)calloc(strlen(nickname)+ 1, sizeof(char));
                     strncpy(GTK_data->username, nickname, strlen(nickname));
+                    GTK_data->profile_data->is_admin = cJSON_GetObjectItemCaseSensitive(parsed_json, "is_admin")->valueint;
                     continue;
                 }
                 else if (command_code_json->valueint == 17 && stop_flag) {                 
@@ -229,46 +230,93 @@ void* recv_msg_handler(void* arg) {
                     case 17:
                         users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                         number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
-                        
-                        // Clear existing login list first
-                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
-                            while (child) {
-                                GtkWidget *next = gtk_widget_get_next_sibling(child);
-                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
-                                child = next;
-                            }
-                        }
 
-                        for (int i = 0; i < number_of_users; i++) {
-                            cJSON *user = cJSON_GetArrayItem(users, i);
-                            
-                            int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
-                            const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
-                            //bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
-
-                            // Skip FirstAdmin and inactive users
-                            if (user_id == 1 || g_strcmp0(nickname, "FirstAdmin") == 0) {
-                                continue;
+                        // Clear existing login lists
+                        if (GTK_data->profile_data) {
+                            // Clear login list
+                            if (GTK_data->profile_data->login_list) {
+                                GtkWidget *child;
+                                while ((child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list))) != NULL) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
+                                }
                             }
 
-                            cJSON *active = cJSON_GetObjectItemCaseSensitive(user, "active");
-                            if (!cJSON_IsBool(active) || !cJSON_IsTrue(active)) {
-                                continue;
+                            // Clear users list
+                            if (GTK_data->profile_data->users_list) {
+                                GtkWidget *child;
+                                while ((child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->users_list))) != NULL) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->users_list), child);
+                                }
                             }
 
-                            // Update login list
-                            if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                                GtkWidget *row = gtk_list_box_row_new();
-                                GtkWidget *label = gtk_label_new(nickname);
-                                gtk_widget_set_halign(label, GTK_ALIGN_START);
-                                gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
-                                gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+                            // Clear deactivated users list
+                            if (GTK_data->profile_data->deactivated_list) {
+                                GtkWidget *child;
+                                while ((child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->deactivated_list))) != NULL) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), child);
+                                }
                             }
-                        }
-                        // Ensure login list is visible
-                        if (GTK_data->profile_data && GTK_data->profile_data->login_list) {
-                            gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
+
+                            // Loop through users and populate the lists
+                            cJSON *user;
+                            cJSON_ArrayForEach(user, users) {
+                                int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
+                                const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                                bool is_admin = cJSON_GetObjectItemCaseSensitive(user, "admin")->valueint;
+                                cJSON *active = cJSON_GetObjectItemCaseSensitive(user, "active");
+
+                                // Skip "FirstAdmin"
+                                if (user_id == 1 || g_strcmp0(nickname, "FirstAdmin") == 0) {
+                                    continue;
+                                }
+
+                                if (cJSON_IsBool(active)) {
+                                    if (cJSON_IsTrue(active)) {
+                                        // Handle active users
+                                        // Add non-admin users to the admin-login-list
+                                        if (!is_admin && GTK_data->profile_data->admin_login_list) {
+                                            GtkWidget *row = gtk_list_box_row_new();
+                                            GtkWidget *label = gtk_label_new(nickname);
+                                            gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                            gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), row);
+                                        }
+
+                                        // Add all users to the login list for deletion
+                                        if (GTK_data->profile_data->login_list) {
+                                            GtkWidget *row = gtk_list_box_row_new();
+                                            GtkWidget *label = gtk_label_new(nickname);
+                                            gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                            gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+                                        }
+                                    } else {
+                                        // Handle inactive users
+                                        if (GTK_data->profile_data->deactivated_list) {
+                                            GtkWidget *row = gtk_list_box_row_new();
+                                            GtkWidget *label = gtk_label_new(nickname);
+                                            gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                            gtk_widget_set_margin_start(label, 10);
+                                            gtk_widget_set_margin_end(label, 10);
+                                            gtk_widget_set_margin_top(label, 5);
+                                            gtk_widget_set_margin_bottom(label, 5);
+                                            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                            gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), row);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Ensure lists are visible
+                            if (GTK_data->profile_data->login_list) {
+                                gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->login_list), TRUE);
+                            }
+                            if (GTK_data->profile_data->admin_login_list) {
+                                gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->admin_login_list), TRUE);
+                            }
+                            if (GTK_data->profile_data->deactivated_list) {
+                                gtk_widget_set_visible(GTK_WIDGET(GTK_data->profile_data->deactivated_list), TRUE);
+                            }
                         }
                         break;
                     case 16:{
@@ -297,6 +345,11 @@ void* recv_msg_handler(void* arg) {
                         cJSON_Delete(json);
                         break;
                     }
+                    case 11:
+                        if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            GTK_data->profile_data->is_admin = cJSON_GetObjectItemCaseSensitive(parsed_json, "is_admin")->valueint;
+                        }
+                    break;
                     case 1:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             int contact_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "contact_id")->valueint;
