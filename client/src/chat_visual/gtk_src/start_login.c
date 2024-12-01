@@ -4,28 +4,6 @@
 char* get_name(void);
 bool check_password(char *password);
 
-/* Apply CSS styling to the widget and its children */
-// static void apply_css(char *path,GtkWidget *widget) {
-//     (void)widget;
-//     GtkCssProvider *css_provider = gtk_css_provider_new();
-//     GError *error = NULL;
-    
-//     GFile *file = g_file_new_for_path("src/chat_visual/gtk_src/login.css");
-//     gtk_css_provider_load_from_file(css_provider, file);
-    
-//     if (error) {
-//         g_warning("Error loading CSS: %s", error->message);
-//         g_error_free(error);
-//     } else {
-//         gtk_style_context_add_provider_for_display(gdk_display_get_default(),
-//                                                    GTK_STYLE_PROVIDER(css_provider),
-//                                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-//     }
-    
-//     g_object_unref(file);
-//     g_object_unref(css_provider);
-// }
-
 /* Function to convert login and password to JSON and print */
 static void print_json_data(const char *login, const char *password, call_data_t *call_data) {
     cJSON *json = cJSON_CreateObject();
@@ -54,25 +32,10 @@ bool check_password(char *password) { //Валідація паролю
     return true;
 }
 
-static void apply_css_1(void) {
-    GtkCssProvider *css_provider = gtk_css_provider_new();
-
-    // Load CSS with only two parameters
-    gtk_css_provider_load_from_path(css_provider, "src/chat_visual/gtk_src/GTK_Start/style.css");
-
-    gtk_style_context_add_provider_for_display(
-        gdk_display_get_default(),
-        GTK_STYLE_PROVIDER(css_provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-    );
-
-    g_object_unref(css_provider);
-}
-
 static void login_window_close_wrapper(GTK_data_t *GTK_data) {
-    apply_css_1();
     GTK_start(GTK_data);
 }
+
 void set_error_text(GtkWidget *error_label, bool *error, const char *error_text) {
     gtk_label_set_text(GTK_LABEL(error_label), error_text);
     if (error) {
@@ -121,6 +84,11 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             check_remember_me(entries[5], login_input, password_input);
             gtk_widget_set_visible(window, FALSE);
             login_window_close_wrapper(GTK_data);
+
+            pthread_mutex_destroy(&GTK_data->login_mutex);
+            pthread_cond_destroy(&GTK_data->login_cond);
+            g_free(entries);
+            
             gtk_window_close(GTK_WINDOW(window));
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
@@ -134,6 +102,20 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         gtk_widget_remove_css_class(error_label, "error-label");
     }
 }
+
+    void on_window_destroy(GtkWindow *window, gpointer user_data) {
+        //(void)window;
+        GtkWidget **entries = (GtkWidget **)user_data;
+        GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
+        pthread_mutex_destroy(&GTK_data->login_mutex);
+        pthread_cond_destroy(&GTK_data->login_cond);
+        *(GTK_data->call_data->stop_flag) = true;
+        free(GTK_data);
+        GTK_data = NULL;
+        g_free(entries);
+        
+        gtk_window_destroy(window);
+    }
 
 void on_activate(GtkApplication *app, gpointer GTK_data) {
     
@@ -221,6 +203,7 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     if (pthread_create(&recv_login_msg_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
+    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
 }
 
 void start_login(call_data_t *call_data) {
