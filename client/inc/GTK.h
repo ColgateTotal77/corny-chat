@@ -74,7 +74,11 @@ typedef struct {
 } chat_manager_t;
 
 typedef struct {
+    GtkStack *carousel_stack;
     GtkListBox *login_list;
+    GtkListBox *users_list;
+    GtkListBox *admin_login_list;
+    GtkListBox *deactivated_list;
     GtkWidget *name_label;
     GtkWidget *nickname_entry;
     GtkWidget *nickname_error_label;
@@ -83,12 +87,23 @@ typedef struct {
     GtkWidget *new_password_entry_1;
     GtkWidget *new_password_entry_2;
     GtkWidget *old_password_entry;
-    GtkWidget *deactivate_entry;
+    GtkWidget *activate_entry;
     GtkWidget *deactivate_error_label;
     GtkWidget *create_error_label;  // For create user error messages
     GtkWidget *create_success_label;  // For create user success messages
     GtkWidget *login_entry;         // For login field
     GtkWidget *password_entry;      // For password field
+    GtkWidget *admin_password_entry;
+    GtkWidget *admin_error_label;
+    GtkWidget *admin_success_label;
+    GtkWidget *selected_user_label;
+    GtkWidget *admin_login_entry;
+    GtkWidget *delete_entry;      // Entry field for deactivation
+    GtkWidget *error_label;       // General error label
+    GtkWidget *success_label; 
+    GtkWidget *deactivate_success_label; 
+    GtkWidget *right_side_container;
+    bool is_admin;  
 } profile_data_t;
 
 typedef struct {
@@ -132,7 +147,6 @@ void check_remember_me(GtkWidget *remember_me_check, const char *login, const ch
 void start_login(SSL *ssl);
 void profile_start(GTK_data_t *GTK_data);
 void profile_css(GtkWidget *widget);
-void update_login_list(GtkListBox *login_list, cJSON *parsed_json);
 // Retrieve name and password as a cJSON object for transmission
 cJSON* get_name_password(void);
 
@@ -148,4 +162,9 @@ const char *find_similar_email(const char *input, GtkListBox *list_box);
 gboolean hide_label_after_timeout(gpointer label);
 char *strdup(const char *str);
 void display_ui_message(GTK_data_t *GTK_data, const char *message, bool is_success);
+void request_user_list(SSL *ssl);
+void on_activate_button_clicked(GtkButton *button, gpointer user_data);
+void on_deactivate_button_clicked(GtkButton *button, gpointer user_data);
+gboolean reenable_button_after_delay(gpointer user_data);
+void on_admin_change_password_button_clicked(GtkButton *button, gpointer user_data);
 
