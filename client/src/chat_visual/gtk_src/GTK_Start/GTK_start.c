@@ -17,9 +17,12 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     // Hide the current window
     gtk_widget_set_visible(current_window, FALSE);
 
+    //clear_css();
+
     // Start profile form
     profile_start(GTK_data);
     
+    apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
     // Show the main window again
     gtk_window_present(GTK_WINDOW(current_window));
 }
@@ -173,7 +176,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(sidebar, "sidebar");
     gtk_widget_set_hexpand(sidebar, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll), sidebar);
-    printf("\nsidebar: %p\n\n", (void *)sidebar);
 
     // --- Chat Area Setup ---
     GtkWidget *chat_area_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);

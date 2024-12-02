@@ -16,3 +16,15 @@ void apply_css(GtkWidget *widget, char* path) {
     g_object_unref(css_provider);
 }
 
+void clear_css(void) {
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    
+    gtk_style_context_remove_provider_for_display(
+        gdk_display_get_default(),
+        GTK_STYLE_PROVIDER(css_provider)
+    );
+    
+    // Освобождаем память
+    g_object_unref(css_provider);
+}
+

@@ -6,9 +6,10 @@ void* recv_login_msg_handler(void* arg) {
     call_data_t *call_data = GTK_data->call_data;
     cJSON *parsed_json;
 
-    bool stop_login = false;
+    GTK_data->stop_login = malloc(sizeof(bool));
+    *(GTK_data->stop_login) = false;
 
-    while (!stop_login) {
+    while (!(*(GTK_data->stop_login))) {
         char* message = NULL;
         int bytes_received = recieve_next_response(call_data->ssl, &message);
 
@@ -32,7 +33,7 @@ void* recv_login_msg_handler(void* arg) {
                         strncpy(GTK_data->username, nickname, strlen(nickname));
 
                         GTK_data->login_successful = true;
-                        stop_login = true;
+                        *(GTK_data->stop_login) = true;
                     }else{
                         call_data->ssl = setup_new_connection(call_data->host, call_data->port);
                     }

@@ -228,7 +228,7 @@ void* recv_msg_handler(void* arg) {
                         break;
 
                     case 17:
-                       users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
+                        users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                         number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
 
                         // Clear existing login lists
