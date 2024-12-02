@@ -207,7 +207,7 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     if (pthread_create(&GTK_data1->recv_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
-    //g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
+    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
 }
 
 void start_login(call_data_t *call_data) {
