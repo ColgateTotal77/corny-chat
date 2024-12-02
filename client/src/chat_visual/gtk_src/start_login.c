@@ -43,6 +43,26 @@ void set_error_text(GtkWidget *error_label, bool *error, const char *error_text)
     }
 }
 
+void on_window_destroy(GtkWindow *window, gpointer user_data) {
+    //(void)window;
+    GtkWidget **entries = (GtkWidget **)user_data;
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
+    if(!GTK_data->login_successful){
+        pthread_mutex_destroy(&GTK_data->login_mutex);
+        pthread_cond_destroy(&GTK_data->login_cond);
+        *(GTK_data->stop_login) = true;
+        //pthread_join(GTK_data->recv_thread, NULL);
+        *(GTK_data->call_data->stop_flag) = true;
+        clear_css();
+        free(GTK_data);
+        GTK_data = NULL;
+        g_free(entries);
+        printf("closing the window");
+        gtk_window_destroy(window);
+    }
+}
+
+
 /* Callback function to handle the login button click */
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
@@ -84,11 +104,9 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             check_remember_me(entries[5], login_input, password_input);
             gtk_widget_set_visible(window, FALSE);
             login_window_close_wrapper(GTK_data);
-
-            pthread_mutex_destroy(&GTK_data->login_mutex);
-            pthread_cond_destroy(&GTK_data->login_cond);
+            clear_css();
             g_free(entries);
-            
+            //g_signal_handlers_disconnect_by_func(G_OBJECT(window), (gpointer)on_window_destroy, GTK_data);
             gtk_window_close(GTK_WINDOW(window));
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
@@ -103,21 +121,8 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     }
 }
 
-    void on_window_destroy(GtkWindow *window, gpointer user_data) {
-        //(void)window;
-        GtkWidget **entries = (GtkWidget **)user_data;
-        GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
-        pthread_mutex_destroy(&GTK_data->login_mutex);
-        pthread_cond_destroy(&GTK_data->login_cond);
-        *(GTK_data->call_data->stop_flag) = true;
-        free(GTK_data);
-        GTK_data = NULL;
-        g_free(entries);
-        
-        gtk_window_destroy(window);
-    }
-
 void on_activate(GtkApplication *app, gpointer GTK_data) {
+    GTK_data_t *GTK_data1 = (GTK_data_t*)GTK_data;
     
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
@@ -199,11 +204,10 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     gtk_window_set_child(GTK_WINDOW(window), main_container);
     gtk_window_present(GTK_WINDOW(window));
 
-    pthread_t recv_login_msg_thread;
-    if (pthread_create(&recv_login_msg_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
+    if (pthread_create(&GTK_data1->recv_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
-    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
+    //g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
 }
 
 void start_login(call_data_t *call_data) {

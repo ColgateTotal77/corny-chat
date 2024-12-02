@@ -98,10 +98,8 @@ static void gtk_window_close_wrapper(gpointer user_data) {
         current_window_label = NULL; // Reset global variable
         is_transitioning = FALSE;    // Reset transition flag
         
-        // Apply CSS and close window
-        if (GTK_IS_WINDOW(GTK_data->window)) {
-            apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
-        }
+        clear_css();
+
         gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
     }
 }
@@ -773,6 +771,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
     );
 
+    apply_css(window, "src/chat_visual/gtk_src/profile_form/profile_form.css");
     gtk_window_present(GTK_WINDOW(window));
 }
 
