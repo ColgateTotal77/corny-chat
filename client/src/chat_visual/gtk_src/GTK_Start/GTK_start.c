@@ -194,11 +194,10 @@ static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
         printf("Group name cannot be empty\n");
     }
     
-    // Close the dialog - FIXED: Cast to GtkWindow*
-    gtk_window_destroy(GTK_WINDOW(dialog));
-
     // Free the allocated memory
     g_free(entries);
+    // Close the dialog - FIXED: Cast to GtkWindow*
+    gtk_window_destroy(GTK_WINDOW(dialog));
 }
 
 void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
@@ -438,9 +437,11 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(message_entry, "message-entry");
     gtk_box_append(GTK_BOX(input_box), message_entry);
 
+    chat_data_t *active_chat = NULL;
+
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
-    chat_manager->active_chat = NULL;
+    chat_manager->active_chat = active_chat;
     chat_manager->message_entry = message_entry;
     chat_manager->sidebar = sidebar_users;
     chat_manager->error_label = error_label;
@@ -450,7 +451,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
-    group_manager->active_chat = NULL;
+    group_manager->active_chat = active_chat;
     group_manager->message_entry = message_entry;
     group_manager->sidebar = sidebar_groups;
     group_manager->error_label = error_label;
@@ -474,12 +475,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GTK_data->group_manager = group_manager;
     // printf("chat_manager initialized at: %p\n", (void *)GTK_data->chat_manager);
     // printf("GTK_data address: %p, chat_manager address: %p\n", (void *)GTK_data, (void *)GTK_data->chat_manager);
-    chat_manager->active_chat = NULL;
+    // chat_manager->active_chat = NULL;
     chat_manager->input_box = input_box;
     chat_manager->chat_header = chat_header;
     chat_manager->chat_area_background = chat_area_background;
 
-    group_manager->active_chat = NULL;
+    // group_manager->active_chat = NULL;
     group_manager->input_box = input_box;
     group_manager->chat_header = chat_header;
     group_manager->chat_area_background = chat_area_background;

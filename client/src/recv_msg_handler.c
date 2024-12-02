@@ -399,13 +399,13 @@ void* recv_msg_handler(void* arg) {
                     case 2:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             // Print the parsed_json
-                            char *json_string = cJSON_Print(parsed_json); // Convert cJSON to string
-                            if (json_string) {
-                                printf("\nparsed_json:\n %s\n\n", json_string); // Now it's a char *
-                                free(json_string); // Free the allocated string to avoid memory leaks
-                            } else {
-                                printf("Failed to print JSON\n");
-                            }
+                            // char *json_string = cJSON_Print(parsed_json); // Convert cJSON to string
+                            // if (json_string) {
+                            //     printf("\nparsed_json:\n %s\n\n", json_string); // Now it's a char *
+                            //     free(json_string); // Free the allocated string to avoid memory leaks
+                            // } else {
+                            //     printf("Failed to print JSON\n");
+                            // }
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             char *chat_name = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_name")->valuestring;
 
