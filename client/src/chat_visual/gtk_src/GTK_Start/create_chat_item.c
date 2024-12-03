@@ -1,7 +1,13 @@
 #include "GTK.h"
 
-GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager) {
-    chat_data_t *chat = g_hash_table_lookup(chat_manager->chats, GINT_TO_POINTER(chat_id));
+GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, GTK_data_t *GTK_data) {
+    chat_data_t *chat;
+    if (is_group) {
+        chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+    }else {
+        chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(chat_id));
+    }
+    chat->is_group = is_group;
     
     GtkWidget *button = gtk_button_new();
     gtk_widget_add_css_class(button, "chat-item-button");
@@ -68,7 +74,12 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_button_set_child(GTK_BUTTON(button), grid);
 
     g_object_set_data(G_OBJECT(button), "chat_id", GINT_TO_POINTER(chat_id));
-    g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), chat_manager);
+    if (is_group) {
+        g_object_set_data(G_OBJECT(button), "is_group", GINT_TO_POINTER(1));
+    }
+
+    // Single signal connection for both group and user chats
+    g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
     
     chat->button = button;
 

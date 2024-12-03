@@ -10,6 +10,20 @@
 //#include <time.h>
 
 typedef struct {
+    int id;
+    char *name;
+    int id_owner;
+    char *last_message;
+    char *last_time;
+} group_data_t;
+
+typedef struct {
+    group_data_t **group;
+    int count;
+    int capacity;
+} group_list_t;
+
+typedef struct {
     char *username;
     int id;
     bool is_online;
@@ -52,6 +66,7 @@ typedef struct {
     bool is_show;
     GtkWidget *button;
     GtkWidget *number_of_unread_messages;
+    bool is_group;
 } chat_data_t;
 
 typedef struct {
@@ -114,7 +129,9 @@ typedef struct {
     bool is_admin; 
     call_data_t *call_data;
     chat_manager_t *chat_manager;
+    chat_manager_t *group_manager;
     user_list_t *user_list;
+    group_list_t *group_list;
     profile_data_t *profile_data;
     GtkWidget *window;
     GtkWidget *profile_window;
@@ -134,9 +151,9 @@ void sleep_ms(int milliseconds);
 void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);
 GtkWidget* create_message_container(chat_data_t *chat_data);
-GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, chat_manager_t *chat_manager);
+GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, GTK_data_t *GTK_data);
 chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_data_t *scroll_data);
-void switch_chat(GtkWidget *widget, chat_manager_t *chat_manager);
+void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data);
 void change_sidebar_chat_info(chat_data_t *chat, char *message, char *time);
 void change_status_sidebar_chat(chat_data_t *chat, bool is_online);
 void on_scroll_changed(GtkAdjustment *adjustment, gpointer user_data);
@@ -144,7 +161,10 @@ message_data_t* create_message_data (int message_id, chat_data_t* chat);
 void on_message_edit(GtkGestureClick *gesture);
 void change_message_from_others(chat_data_t *chat, int msg_id, char* new_message);
 void delete_message_from_others(chat_data_t *chat, int msg_id);
-
+user_list_t* create_user_list(void);
+void create_user(user_list_t *list,  char *username, int id, bool is_online, char *last_message,  char *time);
+group_list_t* create_group_list(void);
+void create_group(group_list_t *list, int id, char *name, int id_owner, char *last_message, char *last_time);
 void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);
