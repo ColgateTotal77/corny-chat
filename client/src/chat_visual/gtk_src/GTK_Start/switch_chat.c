@@ -9,31 +9,18 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     // Determine the chat ID and type
     gpointer chat_id_ptr = g_object_get_data(G_OBJECT(widget), "chat_id");
     int chat_id = GPOINTER_TO_INT(chat_id_ptr);
-
-    g_print("DEBUG: Chat ID = %d\n", chat_id);
-    
-    gboolean is_group = g_object_get_data(G_OBJECT(widget), "is_group") != NULL;
-    g_print("DEBUG: Is Group = %d\n", is_group);
-
-    g_print("DEBUG: Switching to Chat ID = %d, Is Group = %d\n", chat_id, is_group);
-    
-    // Detailed checks for group chat switching
-    if (is_group) {
-        g_print("DEBUG: Group Manager = %p\n", (void*)GTK_data->group_manager);
-        g_print("DEBUG: Group Chats Hash Table = %p\n", (void*)GTK_data->group_manager->chats);
-    }
+    gboolean is_group = g_object_get_data(G_OBJECT(widget), "is_group") != NULL;    
 
     chat_manager_t *current_manager = is_group ? GTK_data->group_manager : GTK_data->chat_manager;
     chat_manager_t *other_manager = !is_group ? GTK_data->group_manager : GTK_data->chat_manager;
 
-    // Check if current_manager is NULL
-    if (current_manager == NULL) {
-        printf("ERROR: Current manager is NULL\n");
-        return;
-    }
+    // // Check if current_manager is NULL
+    // if (current_manager == NULL) {
+    //     printf("ERROR: Current manager is NULL\n");
+    //     return;
+    // }
 
     if(current_manager->active_chat == NULL) {
-        printf("\nI'm in\n");
         if(current_manager->select_a_chat_label && other_manager->select_a_chat_label){
             gtk_widget_unparent(current_manager->select_a_chat_label); // відв'язили
             current_manager->select_a_chat_label = NULL;
@@ -59,21 +46,13 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         }
     }
     
-    // Detailed checks for the found chat
     chat_data_t *new_chat = g_hash_table_lookup(current_manager->chats, GINT_TO_POINTER(chat_id));
-    // g_print("DEBUG: New Chat Pointer = %p\n", (void*)new_chat);
 
     // If new_chat is NULL, print more details
     if (new_chat == NULL) {
         printf("ERROR: Chat lookup returned NULL\n");
         return;
     }
-
-    // Check all the pointers in new_chat before using them
-    // g_print("DEBUG: messages_container_wrapper = %p\n", (void*)new_chat->messages_container_wrapper);
-    // g_print("DEBUG: messages_container = %p\n", (void*)new_chat->messages_container);
-    
-    // g_print("DEBUG: Found new chat for ID %d\n", chat_id);
     
     if (new_chat->messages_container_wrapper == NULL || !GTK_IS_WIDGET(new_chat->messages_container_wrapper)) {
         printf("ERROR: messages_container_wrapper for Chat ID %d is invalid\n", chat_id);
@@ -84,29 +63,6 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         printf("ERROR: messages_container for Chat ID %d is invalid\n", chat_id);
         return;
     }
-
-    // Check if current_manager->active_chat is NULL before accessing its members
-    if (current_manager->active_chat != NULL) {
-        printf("--DEBUG: current_manager->active_chat->contact_id: %d & chat_id: %d\n", 
-            (int)current_manager->active_chat->contact_id, chat_id);
-        printf("--DEBUG: current_manager->active_chat->is_group: %d & is_group: %d\n", 
-            (int)current_manager->active_chat->is_group, is_group);
-    } else {
-        printf("--DEBUG: current_manager->active_chat is NULL\n");
-    }
-
-    // Debug prints for the new chat being switched to
-    printf("--DEBUG: Switching to Chat ID = %d\n", chat_id);
-    printf("--DEBUG: Is Group = %d\n", is_group);
-
-    // Check if the new chat is already active, considering the context
-    if (current_manager->active_chat != NULL 
-        && current_manager->active_chat->contact_id == chat_id 
-        && current_manager->active_chat->is_group == is_group) {
-        printf("--DEBUG: Chat ID %d is already active in the correct context\n", chat_id);
-        return;
-    }
-
 
     // Check if the new chat is already active, considering the context
     if (current_manager->active_chat != NULL 
@@ -150,7 +106,6 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
 
     // Clear existing chat area
     if (current_manager->chat_area_background) {
-        g_print("DEBUG: Clearing chat area background\n");
         GtkWidget *current_child = gtk_widget_get_first_child(current_manager->chat_area_background);
         while (current_child != NULL) {
             GtkWidget *next = gtk_widget_get_next_sibling(current_child);
@@ -163,11 +118,9 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     }
 
     // Update active chat
-    g_print("DEBUG: Updating active chat to ID = %d\n", chat_id);
     current_manager->active_chat = new_chat;
-
+    other_manager->active_chat = new_chat;
     // Extract contact name
-    g_print("DEBUG: Extracting contact name from button\n");
     GtkWidget *grid = gtk_button_get_child(GTK_BUTTON(widget));
     if (grid == NULL) {
         printf("ERROR: Could not get grid from button\n");
@@ -187,11 +140,6 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     }
 
     const char *contact_name = gtk_label_get_text(GTK_LABEL(name_label));
-    g_print("DEBUG: Contact name = %s\n", contact_name ? contact_name : "NULL");
-
-    if (is_group) {
-        g_print("DEBUG: Extracting group name...\n");
-    }
 
     // Update chat label
     GtkWidget *chat_user_label = is_group ? 
@@ -218,5 +166,4 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     gtk_box_append(GTK_BOX(current_manager->chat_area_background), new_chat->messages_container_wrapper);
     gtk_widget_set_visible(new_chat->messages_container_wrapper, TRUE);
     gtk_widget_set_visible(new_chat->messages_container, TRUE);
-    g_print("DEBUG: Added messages container to chat area\n\n");
 }
