@@ -65,6 +65,7 @@ typedef struct {
     GHashTable *messages; 
     bool is_show;
     GtkWidget *button;
+    bool is_group;
 } chat_data_t;
 
 typedef struct {

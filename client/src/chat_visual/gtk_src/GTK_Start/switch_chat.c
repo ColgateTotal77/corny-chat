@@ -24,6 +24,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     }
 
     chat_manager_t *current_manager = is_group ? GTK_data->group_manager : GTK_data->chat_manager;
+    chat_manager_t *other_manager = !is_group ? GTK_data->group_manager : GTK_data->chat_manager;
 
     // Check if current_manager is NULL
     if (current_manager == NULL) {
@@ -33,9 +34,8 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
 
     if(current_manager->active_chat == NULL) {
         printf("\nI'm in\n");
-        chat_manager_t *other_manager = !is_group ? GTK_data->group_manager : GTK_data->chat_manager;
         if(current_manager->select_a_chat_label && other_manager->select_a_chat_label){
-            gtk_widget_unparent(current_manager->select_a_chat_label); // Уничтожаем виджет
+            gtk_widget_unparent(current_manager->select_a_chat_label); // відв'язили
             current_manager->select_a_chat_label = NULL;
             other_manager->select_a_chat_label = NULL;
         } else{
@@ -61,7 +61,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     
     // Detailed checks for the found chat
     chat_data_t *new_chat = g_hash_table_lookup(current_manager->chats, GINT_TO_POINTER(chat_id));
-    g_print("DEBUG: New Chat Pointer = %p\n", (void*)new_chat);
+    // g_print("DEBUG: New Chat Pointer = %p\n", (void*)new_chat);
 
     // If new_chat is NULL, print more details
     if (new_chat == NULL) {
@@ -70,10 +70,10 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     }
 
     // Check all the pointers in new_chat before using them
-    g_print("DEBUG: messages_container_wrapper = %p\n", (void*)new_chat->messages_container_wrapper);
-    g_print("DEBUG: messages_container = %p\n", (void*)new_chat->messages_container);
+    // g_print("DEBUG: messages_container_wrapper = %p\n", (void*)new_chat->messages_container_wrapper);
+    // g_print("DEBUG: messages_container = %p\n", (void*)new_chat->messages_container);
     
-    g_print("DEBUG: Found new chat for ID %d\n", chat_id);
+    // g_print("DEBUG: Found new chat for ID %d\n", chat_id);
     
     if (new_chat->messages_container_wrapper == NULL || !GTK_IS_WIDGET(new_chat->messages_container_wrapper)) {
         printf("ERROR: messages_container_wrapper for Chat ID %d is invalid\n", chat_id);
@@ -85,12 +85,36 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         return;
     }
 
+    // Check if current_manager->active_chat is NULL before accessing its members
+    if (current_manager->active_chat != NULL) {
+        printf("--DEBUG: current_manager->active_chat->contact_id: %d & chat_id: %d\n", 
+            (int)current_manager->active_chat->contact_id, chat_id);
+        printf("--DEBUG: current_manager->active_chat->is_group: %d & is_group: %d\n", 
+            (int)current_manager->active_chat->is_group, is_group);
+    } else {
+        printf("--DEBUG: current_manager->active_chat is NULL\n");
+    }
 
-    // // If the chat is already active, do nothing
-    // if (new_chat == current_manager->active_chat) {
-    //     g_print("DEBUG: Chat ID %d is already active\n", chat_id);
-    //     return;
-    // }
+    // Debug prints for the new chat being switched to
+    printf("--DEBUG: Switching to Chat ID = %d\n", chat_id);
+    printf("--DEBUG: Is Group = %d\n", is_group);
+
+    // Check if the new chat is already active, considering the context
+    if (current_manager->active_chat != NULL 
+        && current_manager->active_chat->contact_id == chat_id 
+        && current_manager->active_chat->is_group == is_group) {
+        printf("--DEBUG: Chat ID %d is already active in the correct context\n", chat_id);
+        return;
+    }
+
+
+    // Check if the new chat is already active, considering the context
+    if (current_manager->active_chat != NULL 
+        && current_manager->active_chat->contact_id == chat_id 
+        && current_manager->active_chat->is_group == is_group) {
+        g_print("-DEBUG: Chat ID %d is already active in the correct context\n", chat_id);
+        return;
+    }
 
     // g_print("DEBUG: select_a_chat_label = %p\n", (void *)current_manager->select_a_chat_label);
 

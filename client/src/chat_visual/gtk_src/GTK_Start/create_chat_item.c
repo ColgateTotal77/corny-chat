@@ -7,6 +7,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     }else {
         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(chat_id));
     }
+    chat->is_group = is_group;
     
     GtkWidget *button = gtk_button_new();
     gtk_widget_add_css_class(button, "chat-item-button");
