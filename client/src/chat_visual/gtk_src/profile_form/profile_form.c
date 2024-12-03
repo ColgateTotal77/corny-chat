@@ -17,7 +17,7 @@ static gboolean reset_transition_flag(gpointer data) {
 // Update the update_window_title function
 void update_window_title(const char *stack_name) {
     if (!current_window_label) return;
-    
+
     const char *title;
     if (g_strcmp0(stack_name, "create") == 0)
         title = "Create New User";
@@ -38,7 +38,7 @@ void update_window_title(const char *stack_name) {
 void on_transition_done(GtkStack *stack, GParamSpec *pspec, gpointer user_data) {
     (void)pspec;
     (void)user_data;
-    // Reset the flag after transition completes
+
     is_transitioning = FALSE;
     const char *current_child = gtk_stack_get_visible_child_name(stack);
     update_window_title(current_child);
@@ -56,13 +56,10 @@ void on_next_button_clicked(GtkButton *button, gpointer user_data) {
     }
     
     is_transitioning = TRUE;
-
-    // Calculate the next index
     current_index = (current_index + 1) % G_N_ELEMENTS(stack_children);
     gtk_stack_set_visible_child_name(stack, stack_children[current_index]);
     update_window_title(stack_children[current_index]);
 
-    // Re-enable the button after 2 seconds
     g_timeout_add(1000, reenable_button_after_delay, button);
     g_timeout_add(500, reset_transition_flag, NULL);
 }
@@ -161,7 +158,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     gtk_box_append(GTK_BOX(header_box), header_left_box);
 
-
     GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     if (GTK_data->is_admin) {
     gtk_widget_set_size_request(header_right_box, 300, 50); // Fixed width and height
@@ -203,7 +199,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Add header to main box
     gtk_box_append(GTK_BOX(main_box), header_box);
 
-
     // Left Box (Nickname and Password Sections)
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(left_box, TRUE);
@@ -216,6 +211,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *nickname_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(nickname_entry), "Enter nickname");
+    gtk_widget_add_css_class(nickname_entry, "nickname-entry");
     GTK_data->profile_data->nickname_entry = nickname_entry; // Store in profile_data
 
     GtkWidget *update_button = gtk_button_new_with_label("Update");
@@ -353,7 +349,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Connect the Change Password button signal
     g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password_button_clicked), GTK_data);
 
-
     gtk_box_append(GTK_BOX(left_box), change_password_box);
 
     GtkWidget *right_box = NULL;
@@ -363,9 +358,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(right_box, TRUE);
     gtk_widget_set_size_request(right_box, 300, -1);
-    //gtk_widget_set_visible(right_box, GTK_data->is_admin);
 
- 
     // Create "Create" Window
     GtkWidget *create_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
@@ -374,6 +367,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_halign(login_label, GTK_ALIGN_START);
     GtkWidget *login_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(login_entry), "Enter login");
+    gtk_widget_add_css_class(login_entry, "login-entry");
 
     // Password input with eye icon
     GtkWidget *password_label = gtk_label_new("Password:");
@@ -499,10 +493,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Append the scroll container to the admin login list background
     gtk_box_append(GTK_BOX(admin_login_list_background), admin_scroll_container);
 
-    // Optional: Connect signals to handle row selection or updates
-    // g_signal_connect(admin_login_list, "row-selected", G_CALLBACK(on_admin_login_row_selected), GTK_data);
-
-
     // Error and success labels
     GtkWidget *admin_error_label = gtk_label_new("");
     gtk_widget_add_css_class(admin_error_label, "error-label");
@@ -534,7 +524,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Add to carousel stack
     gtk_stack_add_titled(GTK_STACK(carousel_stack), admin_password_box, "change_password", "Change Password");
 
-
     // Create "Delete" Window
     GtkWidget *delete_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
@@ -544,7 +533,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *delete_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
-
+    gtk_widget_add_css_class(delete_entry, "delete-entry");
     GTK_data->profile_data->delete_entry = delete_entry;
 
     GtkWidget *delete_button = gtk_button_new_with_label("Deactivation");
@@ -595,7 +584,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Connect signal for row selection to delete_entry only
     g_signal_connect(login_list, "row-selected", G_CALLBACK(on_login_row_selected), delete_entry);
-    //g_signal_connect(delete_button, "clicked", G_CALLBACK(on_deactivate_button_clicked), GTK_data);
 
     // Append scroll container to the background container
     gtk_box_append(GTK_BOX(login_list_background), scroll_container);
@@ -628,7 +616,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *activate_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(activate_entry), "Enter login");
-
+    gtk_widget_add_css_class(activate_entry, "activate-entry");
     GTK_data->profile_data->activate_entry = activate_entry;
 
     GtkWidget *activate_button = gtk_button_new_with_label("Activation");
@@ -675,7 +663,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Connect signals
     g_signal_connect(deactivated_list, "row-selected", G_CALLBACK(on_login_row_selected), activate_entry);
-    //g_signal_connect(activate_button, "clicked", G_CALLBACK(on_activate_button_clicked), GTK_data);
 
     // Add all widgets to activate_box
     gtk_box_append(GTK_BOX(activate_box), activate_label);
@@ -736,11 +723,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_halign(GTK_data->profile_data->success_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(create_box), GTK_data->profile_data->success_label);
 
-
     } else {
     g_print("User is NOT admin. Skipping header_right_box.\n");
     }
-
 
     // Content Box (Horizontal Split)
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
@@ -749,15 +734,16 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(content_box), left_box);
     gtk_box_append(GTK_BOX(content_box), right_box);
     
-
-
     // Add header and content box to the main box
     gtk_box_append(GTK_BOX(main_box), header_box);
     gtk_box_append(GTK_BOX(main_box), content_box);
-
+    if (GTK_data->is_admin) {
     cJSON *command = cJSON_CreateObject();
     cJSON_AddNumberToObject(command, "command_code", 17);
     send_and_delete_json(ssl, &command);
+    } else {
+    g_print("User is NOT admin. Skipping header_right_box.\n");
+    }
 
     gtk_window_set_child(GTK_WINDOW(window), main_box);
     gtk_window_present(GTK_WINDOW(window));

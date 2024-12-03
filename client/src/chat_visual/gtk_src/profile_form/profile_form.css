@@ -20,18 +20,6 @@ label {
     color: black;
 }
 
-/* Entry fields */
-entry {
-    background: #e0e0e0;
-    border-radius: 25px;
-    padding: 12px 16px;
-    margin: 5px 0;
-    min-height: 20px;
-    min-width: 250px;
-    color: black;
-    font-size: 16px;
-}
-
 /* Styling for nickname label and input */
 #nickname-box label {
     color: white;

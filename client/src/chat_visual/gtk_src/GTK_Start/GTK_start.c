@@ -275,7 +275,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
 
-
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();
     gtk_widget_set_margin_top(main_grid, 20);
@@ -320,6 +319,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *erase_button = gtk_button_new_with_label("X");
     gtk_widget_add_css_class(erase_button, "search-erase-button");
+    gtk_button_set_has_frame(GTK_BUTTON(erase_button), FALSE);
     gtk_widget_set_size_request(erase_button, 28, 28);
     gtk_box_append(GTK_BOX(search_container), erase_button);
 

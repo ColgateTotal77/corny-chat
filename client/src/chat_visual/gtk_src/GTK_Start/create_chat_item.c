@@ -46,7 +46,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     // Status indicator
     if (!is_group) { // Only show status indicator if it's not a group
         GtkWidget *status_indicator = gtk_drawing_area_new();
-        gtk_widget_set_size_request(status_indicator, 8, 8);
+        gtk_widget_set_size_request(status_indicator, 10, 10);
         gtk_widget_add_css_class(status_indicator, is_online ? "status-online" : "status-offline");
         gtk_box_append(GTK_BOX(name_box), status_indicator);
         chat->status_indicator = status_indicator;
