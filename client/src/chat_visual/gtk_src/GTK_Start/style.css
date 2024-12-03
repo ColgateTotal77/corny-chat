@@ -1,3 +1,4 @@
+/* GTK start WINDOW */
 window {
     background-color: #333333;
 }
@@ -69,19 +70,17 @@ window {
     border-radius: 25px;
 }
 
-/* done*/
 .status-online {
-    background-color: #00cc00;
+    background-color: #00CC00;
     border-radius: 50%;
-    margin-top: 7px;
-    margin-bottom: 7px;
+    margin-top: 11px;
+    margin-bottom: 11px;
 }
-
 .status-offline {
     background-color: #888888;
     border-radius: 50%;
-    margin-top: 7px;
-    margin-bottom: 7px;
+    margin-top: 11px;
+    margin-bottom: 11px;
 }
 
 
@@ -152,6 +151,7 @@ button.settings-button:active {
     color: #555555; /* Text color */
     min-width: 280px;
     min-height: 30px;
+    margin-top: 10px;
 }
 
 .contact-button {
@@ -184,32 +184,33 @@ button.add-group-button {
     background-color: #D9D9D9; /* Initial background color */
     background: #D9D9D9; /* Ensures background is set */
     background-image: none; /* Remove any default background image */
-    color: #666767; /* Text color */
+    color: black; /* Changed to black */
     font-size: 25px;
     padding: 15px;
     border-radius: 40px;
-    min-width: 180px; /* Set desired button width */
-    min-height: 40px; /* Set desired button height */
+    min-width: 180px;
+    min-height: 40px;
     margin-top: 20px;
     border: none;
-    transition: background-color 0.3s ease; /* Smooth color transition */
+    transition: all 0.3s ease; /* Added transition for all properties */
 }
 
-/* done*/
 /* Hover effect */
 button.add-group-button:hover {
-    background-color: #BEBEBE ; /* Slightly darker color on hover */
+    background-color: #BEBEBE;
+    color: black; /* Ensure color stays black on hover */
 }
 
-/* done*/
 /* Active (pressed) state */
 button.add-group-button:active {
-    background-color: #A0A0A0 ; /* Darker color to indicate button press */
-    transform: scale(0.98); /* Slightly shrink for a pressed effect */
+    background-color: #A0A0A0;
+    color: black; /* Ensure color stays black when pressed */
+    transform: scale(0.98);
 }
-
-
-
+/* Specifically target the label inside the button */
+button.add-group-button > label {
+    color: black; /* Set text color to black explicitly */
+}
 
 /* Header styling */
 .chat-header {
@@ -346,11 +347,7 @@ button.send-button:active {
     transform: scale(0.98); /* Slightly shrink for a pressed effect */
 }
 
-.error-label {
-    color: red;
-    font-weight: bold;
-    margin-top: 5px;
-}
+
 
 .placeholder-message {
     margin: 0;
@@ -376,23 +373,33 @@ button.send-button:active {
     background-color: #a3a3a3;
 }
 
-.search-erase-button{
+button.search-erase-button {
     background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    background-color: transparent;
-    color: #555555; /* Text color */
+    color: black;
     font-size: 28px;
-    font-weight: bold;
 }
+
+button.search-erase-button > label {
+    color: black;
+}
+
+.search-erase-button {
+    background: none;  /* Remove background */
+    border: none;      /* Remove border */
+    padding: 0;        /* Remove padding */
+    margin: 0;         /* Remove margin */
+    color: black;      /* Black X */
+    font-size: 35px;   /* Size of X */
+    font-weight: bold; /* Make X bold */
+}
+
+/* For GTK4, use :hover and :active without !important */
 .search-erase-button:hover {
-    color: #909090; /* Text color */
+    color: #404040;    /* Darker shade on hover */
 }
 
 .search-erase-button:active {
-    color: #a3a3a3;
+    color: #606060;    /* Even darker when clicked */
 }
 
 .message-edited {
@@ -410,6 +417,7 @@ button.send-button:active {
     font-size: 12px;
 }
 
+/* profile_form WINDOW */
 /* Window and basic setup */
 window {
     background-color: #2b2b2b;
@@ -432,8 +440,64 @@ label {
     color: black;
 }
 
-/* Entry fields */
+/* Entry fields
 entry {
+    background: #e0e0e0;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 20px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+} */
+
+/* Label styles for "Login" and "Password" */
+.login-entry{
+    background: #e0e0e0;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 20px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+}
+
+.nickname_entry{
+    background: #e0e0e0;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 20px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+}
+
+.text-entry{
+    background: #e0e0e0;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 20px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+}
+
+.delete-entry{
+    background: #e0e0e0;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 20px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+}
+
+.activate-entry{
     background: #e0e0e0;
     border-radius: 25px;
     padding: 12px 16px;
@@ -466,7 +530,6 @@ entry {
     color: #ffffff;
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
 }
 
 /* Label styles for "Enter login to delete" */
@@ -478,11 +541,14 @@ entry {
 }
 
 /* Label styles for "Login" and "Password" */
-.form-label {
-    color: #ffffff;
+.login-entry{
+    background: #D9D9D9;
+    border-radius: 25px;
+    padding: 10px 15px;
+    min-width: 250px;
+    color: black;
     font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 8px;
+    min-height: 40px;
 }
 
 /* Back button styling with SVG icon */
@@ -515,32 +581,19 @@ button.back-button {
     background-color: #a0a0a0; /* Darker color on press */
 }
 
-/* Button styling with smooth transitions */
-button {
-    border-radius: 25px;
-    padding: 12px;
-    margin: 5px 0;
-    border: none;
-    min-height: 20px;
-    font-size: 16px; /* Increased font size */
-    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions for all buttons */
-}
-
-button:hover {
-    background-color: #333; /* Adjusted to give visual feedback */
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
 /* Update button */
 .update-button {
     background: #47a3b5;
     color: white;
-    min-width: 100px;
-    font-size: 16px; /* Increased font size */
+    min-width: 80px;
     transition: background-color 0.3s ease;
+    border-radius: 25px;
+    padding: 12px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px; /* Increased font size */
+    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions for all buttons */
+    margin-bottom: 10px;
 }
 
 .update-button:hover {
@@ -692,6 +745,16 @@ scrolledwindow {
     color: white; /* Ensure contrast */
 }
 
+.nickname-box {
+    background-color: #D9D9D9;
+    border-radius: 25px;
+    padding: 8px 16px;
+    margin: 5px 0;
+    min-height: 30px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+}
 
 .password-entry {
     background-color: #D9D9D9;
@@ -891,6 +954,7 @@ button.next-button {
     font-size: 22px;
 }
 
+/* LOGIN WINDOW */
 /* Window styling */
 window {
     background: #333333;
@@ -988,10 +1052,4 @@ entry {
 .remember-me-box .login-button:active {
     transform: translateY(1px);
     box-shadow: none;
-}
-
-.error-label {
-    color: red;
-    font-size: small;
-    margin-left: 10px;
 }

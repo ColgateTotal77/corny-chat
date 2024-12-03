@@ -31,5 +31,5 @@ void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
     g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->success_label);
 
     // Add a 1-second delay before re-enabling the button
-    g_timeout_add(500, reenable_button_after_delay, button);
+    g_timeout_add(1000, reenable_button_after_delay, button);
 }
