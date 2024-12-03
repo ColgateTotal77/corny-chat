@@ -1,6 +1,16 @@
 #include "create_json.h"
 #include "sql.h"
+#include "command_codes.h"
 
+static cJSON *user_deactivated_notification(int user_id, char *user_login, char *user_nickname) {
+    cJSON *notification_json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(notification_json, "event_code", USER_WAS_DEACTIVATED);
+    cJSON_AddNumberToObject(notification_json, "user_id", user_id);
+    cJSON_AddStringToObject(notification_json, "login", user_login);
+    cJSON_AddStringToObject(notification_json, "nickname", user_nickname);
+
+    return notification_json;
+}
 
 cJSON *handle_deactivate_user(call_data_t *call_data, cJSON *json) {
     if (!cJSON_HasObjectItem(json, "login")) {
@@ -48,6 +58,12 @@ cJSON *handle_deactivate_user(call_data_t *call_data, cJSON *json) {
     
     deactivated_user_data->user_data->is_active = false;
 
+    cJSON *user_deactivated_notif = user_deactivated_notification(
+        deactivated_user_data->user_data->user_id,
+        deactivated_user_data->user_data->login,
+        deactivated_user_data->user_data->nickname
+    );
+    send_to_another_ids_and_delete_json(call_data, &user_deactivated_notif);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

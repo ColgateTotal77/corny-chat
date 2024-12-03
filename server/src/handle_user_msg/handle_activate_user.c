@@ -1,5 +1,17 @@
 #include "create_json.h"
 #include "sql.h"
+#include "command_codes.h"
+
+
+static cJSON *user_activated_notification(int user_id, char *user_login, char *user_nickname) {
+    cJSON *notification_json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(notification_json, "event_code", USER_WAS_ACTIVATED);
+    cJSON_AddNumberToObject(notification_json, "user_id", user_id);
+    cJSON_AddStringToObject(notification_json, "login", user_login);
+    cJSON_AddStringToObject(notification_json, "nickname", user_nickname);
+
+    return notification_json;
+}
 
 
 cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
@@ -48,6 +60,13 @@ cJSON *handle_activate_user(call_data_t *call_data, cJSON *json) {
 
 
     activated_user_data->user_data->is_active = true;
+
+    cJSON *user_activated_notif = user_activated_notification(
+        activated_user_data->user_data->user_id,
+        activated_user_data->user_data->login,
+        activated_user_data->user_data->nickname
+    );
+    send_to_another_ids_and_delete_json(call_data, &user_activated_notif);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
