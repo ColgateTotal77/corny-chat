@@ -454,7 +454,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->is_editing = g_new(gboolean, 1);
     chat_manager->cancel_button = cancel_button;
     *chat_manager->is_editing = false;
-    GTK_data->user_list = create_user_list();
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
@@ -465,13 +464,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->is_editing = g_new(gboolean, 1);
     group_manager->cancel_button = cancel_button;
     *group_manager->is_editing = false;
-    GTK_data->group_list = create_group_list();
-    
-    create_user(GTK_data->user_list, "John Doe", 1, true, "Hello!", "12:30");
-    create_user(GTK_data->user_list, "Jane Smith", 2, false, "See you later", "11:45");
-    create_user(GTK_data->user_list, "Team Alpha", 3, true, "Meeting at 2 PM", "10:15");
-    create_user(GTK_data->user_list, "Bob Wilson", 4, true, "Thanks!", "09:30");
-    create_user(GTK_data->user_list, "Project Beta", 5, true, "Updates ready", "08:45");
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");

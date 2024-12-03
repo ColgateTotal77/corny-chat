@@ -7,16 +7,16 @@ void str_overwrite_stdout(void) {
 
 void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
-    GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data->chat_manager);
+    GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data);
 
     gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 
 void create_group_in_sidebar(int chat_id, char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
-    g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
-    GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data->chat_manager);
+    g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
+    GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data);
 
-    gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_group_item);
+    gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
 }
 
 void* recv_msg_handler(void* arg) {
@@ -247,7 +247,7 @@ void* recv_msg_handler(void* arg) {
                     int sender_id;
 
                     case 26:
-                        if(cJSON_IsBool(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
                             GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->deactivated_list));
                             while (child != NULL) {
@@ -275,10 +275,10 @@ void* recv_msg_handler(void* arg) {
                         break;
 
                     case 25:
-                        if(cJSON_IsBool(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
                             GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
-                            while ( child != NULL) {
+                            while (child != NULL) {
                                 const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
                                 if(strcmp(current_login, login) == 0) {
                                     gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
@@ -390,12 +390,12 @@ void* recv_msg_handler(void* arg) {
                             cJSON *user;
                             cJSON_ArrayForEach(user, users) {
                                 int user_id = cJSON_GetObjectItemCaseSensitive(user, "id")->valueint;
-                                const char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
+                                const char *login = cJSON_GetObjectItemCaseSensitive(user, "login")->valuestring;
                                 bool is_admin = cJSON_GetObjectItemCaseSensitive(user, "admin")->valueint;
                                 cJSON *active = cJSON_GetObjectItemCaseSensitive(user, "active");
 
                                 // Skip "FirstAdmin"
-                                if (user_id == 1 || g_strcmp0(nickname, "FirstAdmin") == 0) {
+                                if (user_id == 1 || g_strcmp0(login, "FirstAdmin") == 0) {
                                     continue;
                                 }
 
@@ -405,7 +405,7 @@ void* recv_msg_handler(void* arg) {
                                         // Add non-admin users to the admin-login-list
                                         if (!is_admin && GTK_data->profile_data->admin_login_list) {
                                             GtkWidget *row = gtk_list_box_row_new();
-                                            GtkWidget *label = gtk_label_new(nickname);
+                                            GtkWidget *label = gtk_label_new(login);
                                             gtk_widget_set_halign(label, GTK_ALIGN_START);
                                             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
                                             gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), row);
@@ -414,7 +414,7 @@ void* recv_msg_handler(void* arg) {
                                         // Add all users to the login list for deletion
                                         if (GTK_data->profile_data->login_list) {
                                             GtkWidget *row = gtk_list_box_row_new();
-                                            GtkWidget *label = gtk_label_new(nickname);
+                                            GtkWidget *label = gtk_label_new(login);
                                             gtk_widget_set_halign(label, GTK_ALIGN_START);
                                             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
                                             gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
@@ -423,7 +423,7 @@ void* recv_msg_handler(void* arg) {
                                         // Handle inactive users
                                         if (GTK_data->profile_data->deactivated_list) {
                                             GtkWidget *row = gtk_list_box_row_new();
-                                            GtkWidget *label = gtk_label_new(nickname);
+                                            GtkWidget *label = gtk_label_new(login);
                                             gtk_widget_set_halign(label, GTK_ALIGN_START);
                                             gtk_widget_set_margin_start(label, 10);
                                             gtk_widget_set_margin_end(label, 10);
@@ -596,15 +596,6 @@ void* recv_msg_handler(void* arg) {
                     if(chat != NULL) {
                         change_status_sidebar_chat(chat, false);
                     }
-                    break;
-                }
-                case 55: {
-                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "id")->valueint;
-                    char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
-                    scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
-                    scroll_data->ssl = call_data->ssl;
-                    chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
-                    create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
                     break;
                 }
                 case 55: {

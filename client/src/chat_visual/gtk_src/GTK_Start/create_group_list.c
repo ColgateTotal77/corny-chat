@@ -1,14 +1,5 @@
 #include "GTK.h"
 
-// Function to create a new group list
-group_list_t* create_group_list(void) {
-    group_list_t *list = malloc(sizeof(group_list_t));
-    list->capacity = 10; // Initial capacity
-    list->count = 0; // Initial count
-    list->group = malloc(sizeof(group_data_t*) * list->capacity); // Allocate memory for groups
-    return list;
-}
-
 // Function to create a new group and add it to the group list
 void create_group(group_list_t *list, int id, char *name, int id_owner, char *last_message, char *last_time) {
     // Check if we need to increase the capacity
