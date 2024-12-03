@@ -69,10 +69,10 @@ void* recv_msg_handler(void* arg) {
                         }
                         else if(unread_messages > 99) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
-                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true); 
+                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true);
                         }
 
-                        get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
+                        get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, unread_messages + 15);
                     }
                     stop_flag = false;
                     continue;
@@ -179,6 +179,69 @@ void* recv_msg_handler(void* arg) {
                     int all_mes_qty;
                     chat_data_t *chat = NULL;
                     int sender_id;
+
+                    case 26:
+                        if(cJSON_IsBool(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->deactivated_list));
+                            while (child != NULL) {
+                                const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+                                printf("\nlogin: %s, child: %s \n", login, current_login);
+                                if(strcmp(current_login, login) == 0) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), child);
+
+                                    GtkWidget *row = gtk_list_box_row_new();
+                                    GtkWidget *label = gtk_label_new(login);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), row);
+
+                                    row = gtk_list_box_row_new();
+                                    label = gtk_label_new(login);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+                        }
+                        break;
+
+                    case 25:
+                        if(cJSON_IsBool(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
+                            while ( child != NULL) {
+                                const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+                                if(strcmp(current_login, login) == 0) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+                            child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->admin_login_list));
+                            while (child != NULL) {
+                                const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+                                if(strcmp(current_login, login) == 0) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), child);
+                                    
+                                    GtkWidget *row = gtk_list_box_row_new();
+                                    GtkWidget *label = gtk_label_new(login);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_widget_set_margin_start(label, 10);
+                                    gtk_widget_set_margin_end(label, 10);
+                                    gtk_widget_set_margin_top(label, 5);
+                                    gtk_widget_set_margin_bottom(label, 5);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), row);
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+                        }
+                        break;
+
                     case 24:
                         all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
                         if (all_mes_qty) {
@@ -242,10 +305,10 @@ void* recv_msg_handler(void* arg) {
                             }
 
                             // Clear users list
-                            if (GTK_data->profile_data->users_list) {
+                            if (GTK_data->profile_data->admin_login_list) {
                                 GtkWidget *child;
-                                while ((child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->users_list))) != NULL) {
-                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->users_list), child);
+                                while ((child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->admin_login_list))) != NULL) {
+                                    gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), child);
                                 }
                             }
 
@@ -334,11 +397,24 @@ void* recv_msg_handler(void* arg) {
                                     display_ui_message(GTK_data, "Account successfully created!", true);
 
                                     int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
-                                    char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
+                                    char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
                                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                                     scroll_data->ssl = call_data->ssl;
-                                    chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
-                                    create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
+                                    chat_data_t *new_chat = create_chat_data(login, user_id, scroll_data);
+                                    create_user_in_sidebar(user_id, login, false, GTK_data, new_chat);
+
+                                    GtkWidget *row = gtk_list_box_row_new();
+                                    GtkWidget *label = gtk_label_new(login);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), row);
+
+                                    row = gtk_list_box_row_new();
+                                    label = gtk_label_new(login);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+                                    
                                 } else {
                                     // Error case
                                     cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(json, "err_msg");

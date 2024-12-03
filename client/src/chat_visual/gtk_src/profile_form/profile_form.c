@@ -54,10 +54,7 @@ void on_next_button_clicked(GtkButton *button, gpointer user_data) {
         g_print("Transition already in progress. Ignoring button press.\n");
         return;
     }
-
-    // Disable the button
-    gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
-
+    
     is_transitioning = TRUE;
 
     // Calculate the next index
@@ -97,8 +94,6 @@ static void gtk_window_close_wrapper(gpointer user_data) {
         // Cleanup before closing
         current_window_label = NULL; // Reset global variable
         is_transitioning = FALSE;    // Reset transition flag
-        
-        clear_css();
 
         gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
     }
@@ -120,6 +115,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GTK_data->profile_window = window;
 
+    // To center the window in GTK4
+    gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
+    gtk_window_set_modal(GTK_WINDOW(window), TRUE);
+    
     // Main box
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
     gtk_widget_set_margin_start(main_box, 30);
@@ -761,21 +760,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     send_and_delete_json(ssl, &command);
 
     gtk_window_set_child(GTK_WINDOW(window), main_box);
-
-    // Load CSS
-    GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_path(provider, "src/chat_visual/gtk_src/profile_form/profile_form.css");
-    gtk_style_context_add_provider_for_display(
-        gdk_display_get_default(),
-        GTK_STYLE_PROVIDER(provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-    );
-
-    apply_css(window, "src/chat_visual/gtk_src/profile_form/profile_form.css");
     gtk_window_present(GTK_WINDOW(window));
 }
-
-
 
 void profile_start(GTK_data_t *GTK_data) {
     GtkApplication *app = gtk_application_new("com.example.ProfileForm", G_APPLICATION_NON_UNIQUE);

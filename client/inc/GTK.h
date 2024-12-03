@@ -78,7 +78,6 @@ typedef struct {
 typedef struct {
     GtkStack *carousel_stack;
     GtkListBox *login_list;
-    GtkListBox *users_list;
     GtkListBox *admin_login_list;
     GtkListBox *deactivated_list;
     GtkWidget *name_label;
@@ -128,8 +127,7 @@ typedef struct {
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
-void apply_css(GtkWidget *widget, char* path);
-void clear_css(void);
+void apply_css(char* path);
 void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
 void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
 void sleep_ms(int milliseconds);

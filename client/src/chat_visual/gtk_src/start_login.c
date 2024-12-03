@@ -53,7 +53,6 @@ void on_window_destroy(GtkWindow *window, gpointer user_data) {
         *(GTK_data->stop_login) = true;
         //pthread_join(GTK_data->recv_thread, NULL);
         *(GTK_data->call_data->stop_flag) = true;
-        clear_css();
         free(GTK_data);
         GTK_data = NULL;
         g_free(entries);
@@ -104,9 +103,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             check_remember_me(entries[5], login_input, password_input);
             gtk_widget_set_visible(window, FALSE);
             login_window_close_wrapper(GTK_data);
-            clear_css();
             g_free(entries);
-            //g_signal_handlers_disconnect_by_func(G_OBJECT(window), (gpointer)on_window_destroy, GTK_data);
             gtk_window_close(GTK_WINDOW(window));
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
@@ -199,7 +196,7 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     
     gtk_box_append(GTK_BOX(main_container), vbox);
     
-    apply_css(window ,"src/chat_visual/gtk_src/login.css");
+    apply_css("src/chat_visual/gtk_src/GTK_Start/style.css");
 
     gtk_window_set_child(GTK_WINDOW(window), main_container);
     gtk_window_present(GTK_WINDOW(window));

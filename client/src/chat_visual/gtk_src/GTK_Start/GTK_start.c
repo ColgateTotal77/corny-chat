@@ -15,16 +15,15 @@ static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     if (!current_window) return;
     
     // Hide the current window
-    gtk_widget_set_visible(current_window, FALSE);
+    //gtk_widget_set_visible(current_window, true);
 
-    //clear_css();
 
     // Start profile form
     profile_start(GTK_data);
     
-    apply_css(GTK_data->window, "src/chat_visual/gtk_src/GTK_Start/style.css");
+    //apply_css("src/chat_visual/gtk_src/GTK_Start/style.css");
     // Show the main window again
-    gtk_window_present(GTK_WINDOW(current_window));
+    //gtk_window_present(GTK_WINDOW(current_window));
 }
 
 void show_all_contacts(GTK_data_t *GTK_data){
@@ -106,10 +105,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
-    // Apply CSS to window
 
-    apply_css(window, "src/chat_visual/gtk_src/GTK_Start/style.css");
-    // Show the main window again
 
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();

@@ -27,12 +27,9 @@ void on_activate_button_clicked(GtkButton *button, gpointer user_data) {
     // Clear the entry field
     gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->activate_entry), "");
 
-    // Request updated user list from server
-    request_user_list(GTK_data->call_data->ssl);
-
     // Add timeout to hide the success label
     g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->deactivate_success_label);
 
     // Add a 1-second delay before re-enabling the button
-    g_timeout_add(2000, reenable_button_after_delay, button);
+    g_timeout_add(500, reenable_button_after_delay, button);
 }
