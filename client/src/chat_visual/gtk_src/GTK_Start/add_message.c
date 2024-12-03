@@ -100,7 +100,7 @@ void on_message_edit(GtkGestureClick *gesture) {
     gtk_popover_popup(GTK_POPOVER(popover));
 }
 
-void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
+void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
@@ -139,13 +139,13 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
 
         message_data->alignment_box = alignment_box;
         message_data->message_label = message_label;
-        message_data->message_entry = chat_manager->message_entry;
-        message_data->is_editing = chat_manager->is_editing;
+        message_data->message_entry = manager->message_entry;
+        message_data->is_editing = manager->is_editing;
         message_data->own_is_editing = false;
-        message_data->send_button = chat_manager->send_button;
+        message_data->send_button = manager->send_button;
         message_data->ssl = ssl;
         message_data->messages = chat->messages;
-        message_data->cancel_button = chat_manager->cancel_button;
+        message_data->cancel_button = manager->cancel_button;
         gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
 
         g_object_set_data(G_OBJECT(alignment_box), "message_data", message_data);
@@ -161,10 +161,10 @@ void add_message(GtkWidget *messages_container, const char *message_text, const 
     }
     
     // Prepend message_box to the top of the container
-    gtk_box_append(GTK_BOX(messages_container), alignment_box);
+    gtk_box_append(GTK_BOX(chat->messages_container), alignment_box);
     
     if(is_sent) {
-        scroll_to_bottom(messages_container);
+        scroll_to_bottom(chat->messages_container);
     }
 }
 

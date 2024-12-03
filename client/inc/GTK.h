@@ -10,20 +10,6 @@
 //#include <time.h>
 
 typedef struct {
-    int id;
-    char *name;
-    int id_owner;
-    char *last_message;
-    char *last_time;
-} group_data_t;
-
-typedef struct {
-    group_data_t **group;
-    int count;
-    int capacity;
-} group_list_t;
-
-typedef struct {
     char *username;
     int id;
     bool is_online;
@@ -143,7 +129,7 @@ typedef struct {
 
 //extern GtkWidget *messages_container;
 void apply_css(char* path);
-void add_message(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
+void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
 void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
 void sleep_ms(int milliseconds);
 void scroll_to_bottom(GtkWidget *container);
@@ -160,7 +146,6 @@ void on_message_edit(GtkGestureClick *gesture);
 void change_message_from_others(chat_data_t *chat, int msg_id, char* new_message);
 void delete_message_from_others(chat_data_t *chat, int msg_id);
 
-void create_group(group_list_t *list, int id, char *name, int id_owner, char *last_message, char *last_time);
 void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);
 void check_remember_me(GtkWidget *remember_me_check, const char *login, const char *password);

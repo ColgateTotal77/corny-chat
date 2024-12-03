@@ -79,7 +79,6 @@ void* recv_msg_handler(void* arg) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
                             gtk_widget_set_visible(new_chat->number_of_unread_messages, true);
                         }
-
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, unread_messages + 15);
                     }
                     continue;
@@ -105,7 +104,7 @@ void* recv_msg_handler(void* arg) {
                             char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
                             if (owner_id == GTK_data->user_id) {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                add_message(chat->messages_container, message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                add_message(message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
@@ -122,7 +121,7 @@ void* recv_msg_handler(void* arg) {
                             }
                             else {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                add_message(chat->messages_container, message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                add_message(message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
@@ -142,7 +141,6 @@ void* recv_msg_handler(void* arg) {
                     counter++;
                     continue;
                 }else if(command_code_json->valueint == 30 && stop_flag){
-                    // printf("\nAAAAAAAAAAAAAAA\n\n");
                     cJSON *groups = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups");
                     int groups_count = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups_count")->valueint;
 
@@ -150,53 +148,23 @@ void* recv_msg_handler(void* arg) {
                         cJSON *group = cJSON_GetArrayItem(groups, i);
 
                         int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
-                        const char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
-                        const char *createdAt = cJSON_GetObjectItemCaseSensitive(group, "createdAt")->valuestring;
-                        // int owner_id = cJSON_GetObjectItemCaseSensitive(group, "owner_id")->valueint;
-
-                        // Create a new scroll_data_t for the group
+                        char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
+                        int unread_messages = cJSON_GetObjectItemCaseSensitive(group, "unread_mes_qty")->valueint;
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
-                        scroll_data->ssl = call_data->ssl; // Assuming GTK_data has a valid SSL pointer
-
-                        // Create a new chat_data_t for the group
+                        scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                        create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
 
-                        // // Print the details of the new chat to verify
-                        // printf("Inserting new chat:\n");
-                        // printf("Chat Name: %s\n", chat_name);
-                        // printf("Chat ID: %d\n", chat_id);
-                        // printf("New Chat Pointer: %p\n", (void*)new_chat);
-
-                        // // If chat_data_t has specific fields, print them as well
-                        // if (new_chat) {
-                        //     // Assuming chat_data_t has fields like contact_id, last_message_id, etc.
-                        //     printf("Contact ID: %d\n", new_chat->contact_id);
-                        //     printf("Last Message ID: %d\n", new_chat->last_message_id);
-                        //     // Add more fields as necessary
-                        // }
-
-                        g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
-
-                        // Create a new group item for the sidebar
-                        GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", createdAt, false, true, GTK_data);
-
-                        // Insert the new group item into the sidebar
-                        GtkWidget *child_group = gtk_widget_get_first_child(GTK_data->group_manager->sidebar);
-                        gboolean added = FALSE;
-
-                        while (child_group != NULL) {
-                            if (GTK_IS_BUTTON(child_group)) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item, gtk_widget_get_prev_sibling(child_group));
-                                added = TRUE;
-                                break;
-                            }
-                            child_group = gtk_widget_get_next_sibling(child_group);
+                        if (unread_messages > 0 && unread_messages < 99) {
+                            gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), mx_itoa(unread_messages));
+                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true); 
+                        }
+                        else if(unread_messages > 99) {
+                            gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
+                            gtk_widget_set_visible(new_chat->number_of_unread_messages, true);
                         }
 
-                        if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
-                        }
-                        get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
+                        //get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
                     stop_flag = false;
                     continue;
@@ -547,14 +515,38 @@ void* recv_msg_handler(void* arg) {
                             adjusted_time = localtime(&time_value);
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
-                            add_message(chat->messages_container, message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat);
+                            add_message(message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat);
                                 
                             g_object_ref(chat->button);
                             gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                             gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                             g_object_unref(chat->button);
                         }
-                        break;      
+                        break;
+
+                    case 0:  
+                        if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                            int message_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                            // char *created_at = cJSON_GetObjectItemCaseSensitive(parsed_json, "time_reached_server")->valuestring;
+                            char *message = cJSON_GetObjectItemCaseSensitive(parsed_json, "message")->valuestring;
+                            chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+
+                            // strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                            // time_t time_value = mktime(&message_time);
+                            // time_value += time_zone; 
+                            // adjusted_time = localtime(&time_value);
+                            // strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                            
+                            add_message(message, time_to_send, true, false, GTK_data->group_manager, call_data->ssl, message_id, chat);
+                                
+                            g_object_ref(chat->button);
+                            gtk_box_remove(GTK_BOX(GTK_data->group_manager->sidebar), chat->button);
+                            gtk_box_prepend(GTK_BOX(GTK_data->group_manager->sidebar), chat->button);
+                            g_object_unref(chat->button);
+                        }
+                        break; 
+                        
                     default:
 
                         break;
@@ -577,7 +569,7 @@ void* recv_msg_handler(void* arg) {
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                        add_message(chat->messages_container, msg, time_str, false, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                        add_message(msg, time_str, false, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
                         change_sidebar_chat_info(chat, msg, time_str);
 
                         if  (gtk_widget_get_visible(chat->number_of_unread_messages)) {
@@ -599,6 +591,15 @@ void* recv_msg_handler(void* arg) {
                         gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                         g_object_unref(chat->button);
                     }
+                    break;
+                }
+                case 52: { 
+                    int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                    char *chat_name = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_name")->valuestring;
+                    scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
+                    scroll_data->ssl = call_data->ssl;
+                    chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                    create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
                     break;
                 }
                 case 53: {

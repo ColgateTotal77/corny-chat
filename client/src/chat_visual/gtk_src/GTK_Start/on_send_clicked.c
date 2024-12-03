@@ -28,8 +28,12 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
         gtk_widget_set_visible(GTK_data->chat_manager->error_label, FALSE);
         GDateTime *now = g_date_time_new_now_local();
         char *time_str = g_date_time_format(now, "%H:%M");
-        
-        send_to_user(GTK_data->call_data->ssl, GTK_data->chat_manager->active_chat->contact_id, (char *)message_text);
+        if (!GTK_data->chat_manager->active_chat->is_group) {
+            send_to_user(GTK_data->call_data->ssl, GTK_data->chat_manager->active_chat->contact_id, (char *)message_text);
+        }
+        else {
+            send_to_chat(GTK_data->call_data->ssl, GTK_data->chat_manager->active_chat->contact_id, (char *)message_text);
+        }
         //add_message(GTK_data->chat_manager->active_chat->messages_container, message_text, time_str, TRUE, GTK_data->chat_manager);
         change_sidebar_chat_info(GTK_data->chat_manager->active_chat, (char *)message_text, time_str);
 
