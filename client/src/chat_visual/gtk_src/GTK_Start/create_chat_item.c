@@ -22,7 +22,8 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_set_size_request(avatar_circle, 60, 60);
     //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_grid_attach(GTK_GRID(grid), avatar_circle, 0, 0, 1, 2);
-
+    chat->avatar_circle = avatar_circle;
+    
     // Horizontal box to hold name label and status indicator
     GtkWidget *name_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
@@ -74,9 +75,8 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_button_set_child(GTK_BUTTON(button), grid);
 
     g_object_set_data(G_OBJECT(button), "chat_id", GINT_TO_POINTER(chat_id));
-    if (is_group) {
-        g_object_set_data(G_OBJECT(button), "is_group", GINT_TO_POINTER(1));
-    }
+    // Store the is_group state in the button
+    g_object_set_data(G_OBJECT(button), "is_group", GINT_TO_POINTER(is_group ? 1 : 0));
 
     // Single signal connection for both group and user chats
     g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);

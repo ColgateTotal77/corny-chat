@@ -12,7 +12,7 @@ void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_dat
     gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 
-void create_group_in_sidebar(int chat_id, char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
+void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
     GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data);
 
@@ -64,12 +64,15 @@ void* recv_msg_handler(void* arg) {
                         char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
                         bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
                         int unread_messages = cJSON_GetObjectItemCaseSensitive(user, "unread_messages")->valueint;
+                        bool is_active = cJSON_GetObjectItemCaseSensitive(user, "active")->valueint;
 
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
 
+                        new_chat->is_active = is_active;
                         create_user_in_sidebar(user_id, nickname, is_online, GTK_data, new_chat);
+                        if (!is_active) gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/RIP.svg");
                         
                         if (unread_messages > 0 && unread_messages < 99) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), mx_itoa(unread_messages));
@@ -146,15 +149,17 @@ void* recv_msg_handler(void* arg) {
 
                     for (int i = 0; i < groups_count; i++) {
                         cJSON *group = cJSON_GetArrayItem(groups, i);
-
                         int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
                         char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
                         int unread_messages = cJSON_GetObjectItemCaseSensitive(group, "unread_mes_qty")->valueint;
+                        
+                        // Create a new scroll_data_t for the group
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
                         create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
-
+                        gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
+                        
                         if (unread_messages > 0 && unread_messages < 99) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), mx_itoa(unread_messages));
                             gtk_widget_set_visible(new_chat->number_of_unread_messages, true); 
@@ -498,6 +503,7 @@ void* recv_msg_handler(void* arg) {
                             scroll_data->ssl = call_data->ssl;
                             chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
                             create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
+                            gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
                             // create_group_in_sidebar(chat_id, chat_name, GTK_data);
                         }
                         break;

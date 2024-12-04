@@ -53,6 +53,8 @@ typedef struct {
     GtkWidget *button;
     GtkWidget *number_of_unread_messages;
     bool is_group;
+    GtkWidget *avatar_circle;
+    bool is_active;
 } chat_data_t;
 
 typedef struct {
@@ -74,6 +76,7 @@ typedef struct {
     GtkWidget *chat_header;
     GtkWidget *select_a_chat_label;
     GtkWidget *cancel_button;
+    GtkWidget *avatar_circle;
 } chat_manager_t;
 
 typedef struct {
