@@ -463,7 +463,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->error_label = error_label;
     group_manager->is_editing = g_new(gboolean, 1);
     group_manager->cancel_button = cancel_button;
-    *group_manager->is_editing = false;
+    group_manager->is_editing = chat_manager->is_editing;
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");
