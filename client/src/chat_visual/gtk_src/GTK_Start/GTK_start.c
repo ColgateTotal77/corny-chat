@@ -417,6 +417,11 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
+    GtkWidget *avatar_circle_group = gtk_image_new_from_file("src/chat_visual/images/group.svg");
+    gtk_widget_set_size_request(avatar_circle_group, 60, 60);
+    //gtk_widget_add_css_class(avatar_circle_group, "avatar-circle");
+    gtk_box_append(GTK_BOX(chat_header), avatar_circle_group);
+
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
     gtk_widget_set_margin_top(input_container, 10);
 
@@ -454,6 +459,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->is_editing = g_new(gboolean, 1);
     chat_manager->cancel_button = cancel_button;
     *chat_manager->is_editing = false;
+    chat_manager->avatar_circle = avatar_circle;
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
@@ -464,6 +470,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->is_editing = g_new(gboolean, 1);
     group_manager->cancel_button = cancel_button;
     *group_manager->is_editing = false;
+    group_manager->avatar_circle = avatar_circle_group;
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");

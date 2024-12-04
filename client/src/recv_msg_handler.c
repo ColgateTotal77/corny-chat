@@ -12,7 +12,7 @@ void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_dat
     gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 
-void create_group_in_sidebar(int chat_id, char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
+void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
     GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data);
 
@@ -64,12 +64,15 @@ void* recv_msg_handler(void* arg) {
                         char *nickname = cJSON_GetObjectItemCaseSensitive(user, "nickname")->valuestring;
                         bool is_online = cJSON_GetObjectItemCaseSensitive(user, "online")->valueint;
                         int unread_messages = cJSON_GetObjectItemCaseSensitive(user, "unread_messages")->valueint;
+                        bool is_active = cJSON_GetObjectItemCaseSensitive(user, "active")->valueint;
 
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
                         chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
 
+                        new_chat->is_active = is_active;
                         create_user_in_sidebar(user_id, nickname, is_online, GTK_data, new_chat);
+                        if (!is_active) gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/RIP.svg");
                         
                         if (unread_messages > 0 && unread_messages < 99) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), mx_itoa(unread_messages));
@@ -149,9 +152,9 @@ void* recv_msg_handler(void* arg) {
                     for (int i = 0; i < groups_count; i++) {
                         cJSON *group = cJSON_GetArrayItem(groups, i);
 
-                        int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
+                        const int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
                         const char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
-                        const char *createdAt = cJSON_GetObjectItemCaseSensitive(group, "createdAt")->valuestring;
+                        // const char *createdAt = cJSON_GetObjectItemCaseSensitive(group, "createdAt")->valuestring;
                         // int owner_id = cJSON_GetObjectItemCaseSensitive(group, "owner_id")->valueint;
 
                         // Create a new scroll_data_t for the group
@@ -161,42 +164,27 @@ void* recv_msg_handler(void* arg) {
                         // Create a new chat_data_t for the group
                         chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
 
-                        // // Print the details of the new chat to verify
-                        // printf("Inserting new chat:\n");
-                        // printf("Chat Name: %s\n", chat_name);
-                        // printf("Chat ID: %d\n", chat_id);
-                        // printf("New Chat Pointer: %p\n", (void*)new_chat);
+                        create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
+                        gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
+                        
 
-                        // // If chat_data_t has specific fields, print them as well
-                        // if (new_chat) {
-                        //     // Assuming chat_data_t has fields like contact_id, last_message_id, etc.
-                        //     printf("Contact ID: %d\n", new_chat->contact_id);
-                        //     printf("Last Message ID: %d\n", new_chat->last_message_id);
-                        //     // Add more fields as necessary
+                        // // Insert the new group item into the sidebar
+                        // GtkWidget *child_group = gtk_widget_get_first_child(GTK_data->group_manager->sidebar);
+                        // gboolean added = FALSE;
+
+                        // while (child_group != NULL) {
+                        //     if (GTK_IS_BUTTON(child_group)) {
+                        //         gtk_box_insert_child_after(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item, gtk_widget_get_prev_sibling(child_group));
+                        //         added = TRUE;
+                        //         break;
+                        //     }
+                        //     child_group = gtk_widget_get_next_sibling(child_group);
                         // }
 
-                        g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
-
-                        // Create a new group item for the sidebar
-                        GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", createdAt, false, true, GTK_data);
-
-                        // Insert the new group item into the sidebar
-                        GtkWidget *child_group = gtk_widget_get_first_child(GTK_data->group_manager->sidebar);
-                        gboolean added = FALSE;
-
-                        while (child_group != NULL) {
-                            if (GTK_IS_BUTTON(child_group)) {
-                                gtk_box_insert_child_after(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item, gtk_widget_get_prev_sibling(child_group));
-                                added = TRUE;
-                                break;
-                            }
-                            child_group = gtk_widget_get_next_sibling(child_group);
-                        }
-
-                        if (!added) {
-                            gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
-                        }
-                        get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
+                        // if (!added) {
+                        //     gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
+                        // }
+                        // get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
                     }
                     stop_flag = false;
                     continue;
@@ -530,6 +518,7 @@ void* recv_msg_handler(void* arg) {
                             scroll_data->ssl = call_data->ssl;
                             chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
                             create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
+                            gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
                             // create_group_in_sidebar(chat_id, chat_name, GTK_data);
                         }
                         break;

@@ -152,6 +152,22 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         printf("ERROR: Chat user label is not a valid GTK label\n");
     }
 
+    if(is_group){
+        gtk_widget_set_visible(GTK_data->chat_manager->avatar_circle, FALSE);
+        gtk_widget_set_visible(GTK_data->group_manager->avatar_circle, TRUE);
+    } else{
+        const char *image_path = current_manager->active_chat->is_active ? "src/chat_visual/images/person.svg" : "src/chat_visual/images/RIP.svg";
+        gtk_image_set_from_file(GTK_IMAGE(GTK_data->chat_manager->avatar_circle), image_path);
+        gtk_widget_set_visible(GTK_data->group_manager->avatar_circle, FALSE);
+        gtk_widget_set_visible(GTK_data->chat_manager->avatar_circle, TRUE);
+    }
+
+    if (GTK_IS_LABEL(chat_user_label)) {
+        gtk_label_set_text(GTK_LABEL(chat_user_label), contact_name);
+    } else {
+        printf("ERROR: Chat user label is not a valid GTK label\n");
+    }
+
     // Add new chat's messages container wrapper
     if (new_chat->messages_container_wrapper == NULL) {
         printf("ERROR: New chat's messages_container_wrapper is NULL\n");
