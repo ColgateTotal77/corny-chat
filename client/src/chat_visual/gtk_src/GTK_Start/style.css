@@ -1131,3 +1131,87 @@ entry {
     transform: translateY(1px);
     box-shadow: none;
 }
+
+/* Page Controller Container */
+.settings_page_controller {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    min-width: 500px;
+}
+
+/* Slider Container */
+.settings_slider-container {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Entry Container */
+.settings_entry-container {
+    margin-bottom: 10px;
+}
+
+.settings_name-entry {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* Add Button */
+.settings_add-button {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+.settings_add-button:hover {
+    background-color: #45a049;
+}
+
+/* Names Scroll */
+.settings_names-scroll {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 200px;
+}
+
+.settings_names-list {
+    background-color: white;
+}
+
+/* Name List Items */
+.settings_name-list-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.settings_name-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Page Controller Container */
+.settings_page_controller_container {
+    background-color: #f0f0f0;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Center Label */
+.settings_center-label {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Left and Right Buttons */
+.settings_left-button,
+.settings_right-button {
+    background-color: transparent;
+    padding: 5px;
+}
+
+.settings_left-button:hover,
+.settings_right-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
