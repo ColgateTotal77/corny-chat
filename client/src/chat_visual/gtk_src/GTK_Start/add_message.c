@@ -100,7 +100,7 @@ void on_message_edit(GtkGestureClick *gesture) {
     gtk_popover_popup(GTK_POPOVER(popover));
 }
 
-void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat) {
+void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat, char *nicknake) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
@@ -114,8 +114,17 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
     // Create a new box for alignment  
     GtkWidget *alignment_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_add_css_class(alignment_box, "alignment-bubble"); 
-    gtk_box_append(GTK_BOX(alignment_box), message_box);   
+      
+    if (chat->is_group && !is_sent) {
+        GtkWidget *nick_label = gtk_label_new(nicknake);
+        gtk_widget_add_css_class(nick_label, "message-sender");
+        gtk_label_set_xalign(GTK_LABEL(nick_label), 0.0);
+        gtk_label_set_max_width_chars(GTK_LABEL(nick_label), 15);
+        gtk_label_set_ellipsize(GTK_LABEL(nick_label), PANGO_ELLIPSIZE_END); 
+        gtk_box_append(GTK_BOX(alignment_box), nick_label);   
+    }
 
+    gtk_box_append(GTK_BOX(alignment_box), message_box); 
     GtkWidget *edited_label = gtk_label_new("edited");
     gtk_widget_add_css_class(edited_label, "message-edited");
     

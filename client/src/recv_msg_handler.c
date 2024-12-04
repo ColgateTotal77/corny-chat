@@ -35,10 +35,11 @@ void* recv_msg_handler(void* arg) {
     struct tm *adjusted_time;
 
     int number_of_users;
+    int groups_count = 0;
     get_all_clients_userslist(call_data->ssl);
-    get_my_groups(call_data->ssl);
+    
     int counter = 0;
-
+    int group_counter = 0;
     while (!*(call_data->stop_flag)) {
         //bzero(message, 1024);
         char* message = NULL;
@@ -107,7 +108,7 @@ void* recv_msg_handler(void* arg) {
                             char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
                             if (owner_id == GTK_data->user_id) {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                add_message(message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                add_message(message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat, chat->contact_name);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
@@ -124,7 +125,7 @@ void* recv_msg_handler(void* arg) {
                             }
                             else {
                                 chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                add_message(message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                add_message(message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat, chat->contact_name);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
@@ -142,11 +143,14 @@ void* recv_msg_handler(void* arg) {
                         }
                     }
                     counter++;
+                    if (counter == number_of_users) {
+                        get_my_groups(call_data->ssl);
+                    }
                     continue;
-                }else if(command_code_json->valueint == 30 && stop_flag){
+                }
+                else if (command_code_json->valueint == 30 && stop_flag){
                     cJSON *groups = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups");
-                    int groups_count = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups_count")->valueint;
-
+                    groups_count = cJSON_GetObjectItemCaseSensitive(parsed_json, "groups_count")->valueint;
                     for (int i = 0; i < groups_count; i++) {
                         cJSON *group = cJSON_GetArrayItem(groups, i);
                         int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
@@ -168,49 +172,54 @@ void* recv_msg_handler(void* arg) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
                             gtk_widget_set_visible(new_chat->number_of_unread_messages, true);
                         }
-
-                        //get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, 15);
+                        get_num_of_msgs_from_group(call_data->ssl, chat_id, new_chat->last_message_id, unread_messages + 15);
                     }
                     stop_flag = false;
                     continue;
                 }
-                    // case 12:
-                    //     unreaded_chats_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "unreaded_chats_qty")->valueint;
-                    //     if (unreaded_chats_qty) {
-                    //         cJSON *unread_chats_array = cJSON_GetObjectItemCaseSensitive(parsed_json, "unread_chats_data");
-                    //         for (int i = 0; i < unreaded_chats_qty; i++) {
-                    //             cJSON *unread_chat = cJSON_GetArrayItem(unread_chats_array, i);
-                    //             int sender_id = cJSON_GetObjectItemCaseSensitive(unread_chat, "sender")->valueint;
-                    //             chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
-                    //             int all_msgs_qty = cJSON_GetObjectItemCaseSensitive(unread_chat, "all_msgs_qty")->valueint;
-                    //             cJSON *last_messages_array = cJSON_GetObjectItemCaseSensitive(unread_chat, "last_messages");                                
-                    //             for (int j = 0; j < all_msgs_qty; j++) {
-                    //                 cJSON *last_message = cJSON_GetArrayItem(last_messages_array, j);
+                else if (command_code_json->valueint == 27 && group_counter < groups_count) {
+                    chat_data_t *chat = NULL;
+                    int all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
+                    if (all_mes_qty) {
+                        cJSON *messages = cJSON_GetObjectItemCaseSensitive(parsed_json, "messages");
+                        for (int i = 0;  i < all_mes_qty; i++) {
+                            cJSON *message_data = cJSON_GetArrayItem(messages, i);
+                            
+                            char *created_at = cJSON_GetObjectItemCaseSensitive(message_data, "created_at")->valuestring;
 
-                    //                 char *created_at = cJSON_GetObjectItemCaseSensitive(last_message, "created_at")->valuestring;
-                    //                 strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
-                    //                 time_t time_value = mktime(&message_time);
-                    //                 time_value += time_zone; 
-                    //                 adjusted_time = localtime(&time_value);
-                    //                 strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
-                    //                 int owner_id = cJSON_GetObjectItemCaseSensitive(last_message, "owner_id")->valueint;
-                    //                 char *message = cJSON_GetObjectItemCaseSensitive(last_message, "message")->valuestring;
-                    //                 add_message(chat->messages_container, message, time_to_send, sender_id != owner_id);
-                    //                 if(j == all_msgs_qty - 1) {
-                    //                     if (local_time->tm_mday > adjusted_time->tm_mday) {
-                    //                         strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
-                    //                         change_sidebar_chat_info(chat, message, time_to_send);
-                    //                     }
-                    //                     else {
-                    //                         strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
-                    //                         change_sidebar_chat_info(chat, message, time_to_send);
-                    //                     }
-                    //                 }
-                    //             }
-                    //         }   
-                    //     }
-                    //     stop_flag = false;
-                    //     break;
+                            strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                            time_t time_value = mktime(&message_time);
+                            time_value += time_zone; 
+                            adjusted_time = localtime(&time_value);
+                            strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+
+                            int target_group_id = cJSON_GetObjectItemCaseSensitive(message_data, "target_group_id")->valueint;
+                            char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
+                            int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                            char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
+                            chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(target_group_id));
+                            int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
+
+                            add_message(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
+                            if (i == 0) {
+                                chat->last_message_id = msg_id;
+                            }
+                            else if(i == all_mes_qty - 1) {
+                                if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                    strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
+                                    change_sidebar_chat_info(chat, message, time_to_send);
+                                }
+                                else {
+                                    strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                                    change_sidebar_chat_info(chat, message, time_to_send);
+                                }
+                            }
+                        }
+                    }
+                    group_counter++;
+                    continue;
+                }
+
                 if(!stop_flag && counter == number_of_users){
                     switch (command_code_json->valueint)
                     {
@@ -218,7 +227,42 @@ void* recv_msg_handler(void* arg) {
                     int all_mes_qty;
                     chat_data_t *chat = NULL;
                     int sender_id;
+                    int group_id;
+                    case 31:
+                        group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                        chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
+                        gtk_widget_set_visible(chat->number_of_unread_messages, false);
+                        break;
+                    case 27:
+                        all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
+                        if (all_mes_qty) {
+                            cJSON *messages = cJSON_GetObjectItemCaseSensitive(parsed_json, "messages");
+                            for (int i = 0;  i < all_mes_qty; i++) {
+                                cJSON *message_data = cJSON_GetArrayItem(messages, i);
+                                
+                                char *created_at = cJSON_GetObjectItemCaseSensitive(message_data, "created_at")->valuestring;
 
+                                strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                                time_t time_value = mktime(&message_time);
+                                time_value += time_zone; 
+                                adjusted_time = localtime(&time_value);
+                                strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+
+                                int target_group_id = cJSON_GetObjectItemCaseSensitive(message_data, "target_group_id")->valueint;
+                                char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
+                                int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
+                                char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
+                                int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
+                                chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(target_group_id));
+
+                                //add_message(message, time_to_send, false, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
+                                if (i == 0) {
+                                    chat->last_message_id = msg_id;
+                                }
+                                    add_message_to_top(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
+                                }
+                            }
+                        break;
                     case 26:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                         // Extract the login string from the JSON
@@ -299,7 +343,7 @@ void* recv_msg_handler(void* arg) {
                         // Free parsed JSON after processing
                         cJSON_Delete(parsed_json);
                     }
-                    break;
+                        break;
                     case 24:
                         all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
                         if (all_mes_qty) {
@@ -332,13 +376,13 @@ void* recv_msg_handler(void* arg) {
 
                                 if (owner_id == GTK_data->user_id) {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(target_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                    add_message_to_top(message, time_to_send, true, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat, "NULL");
                                 }
                                 else {
                                     chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(owner_id));
-                                    add_message_to_top(chat->messages_container, message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                                    add_message_to_top(message, time_to_send, false, (*changed) ? true : false, GTK_data->chat_manager, call_data->ssl, msg_id, chat, "NULL");
                                 }
-                            }   
+                            }
                         } 
                         break;
 
@@ -347,7 +391,6 @@ void* recv_msg_handler(void* arg) {
                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
                         gtk_widget_set_visible(chat->number_of_unread_messages, false);
                         break;
-
                     case 17:
                         users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                         number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
@@ -521,7 +564,7 @@ void* recv_msg_handler(void* arg) {
                             adjusted_time = localtime(&time_value);
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
-                            add_message(message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat);
+                            add_message(message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat, "None");
                                 
                             g_object_ref(chat->button);
                             gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
@@ -543,8 +586,7 @@ void* recv_msg_handler(void* arg) {
                             // time_value += time_zone; 
                             // adjusted_time = localtime(&time_value);
                             // strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
-                            
-                            add_message(message, time_to_send, true, false, GTK_data->group_manager, call_data->ssl, message_id, chat);
+                            add_message(message, time_to_send, true, false, GTK_data->group_manager, call_data->ssl, message_id, chat, "None");
                                 
                             g_object_ref(chat->button);
                             gtk_box_remove(GTK_BOX(GTK_data->group_manager->sidebar), chat->button);
@@ -575,7 +617,7 @@ void* recv_msg_handler(void* arg) {
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                        add_message(msg, time_str, false, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat);
+                        add_message(msg, time_str, false, false, GTK_data->chat_manager, call_data->ssl, msg_id, chat, "None");
                         change_sidebar_chat_info(chat, msg, time_str);
 
                         if  (gtk_widget_get_visible(chat->number_of_unread_messages)) {
@@ -604,7 +646,8 @@ void* recv_msg_handler(void* arg) {
                         char time_str[6];
                         strftime(time_str, sizeof(time_str), "%H:%M", local_time);
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                        add_message(msg, time_str, false, false, GTK_data->group_manager, call_data->ssl, msg_id, chat);
+                        char *sender_nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_nickname")->valuestring;
+                        add_message(msg, time_str, false, false, GTK_data->group_manager, call_data->ssl, msg_id, chat, sender_nickname);
                         change_sidebar_chat_info(chat, msg, time_str);
 
                         if  (gtk_widget_get_visible(chat->number_of_unread_messages)) {
@@ -622,8 +665,8 @@ void* recv_msg_handler(void* arg) {
                             gtk_widget_set_visible(chat->number_of_unread_messages, true); 
                         }
                         g_object_ref(chat->button);
-                        gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
-                        gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
+                        gtk_box_remove(GTK_BOX(GTK_data->group_manager->sidebar), chat->button);
+                        gtk_box_prepend(GTK_BOX(GTK_data->group_manager->sidebar), chat->button);
                         g_object_unref(chat->button);
                     }
                     break;
@@ -663,18 +706,35 @@ void* recv_msg_handler(void* arg) {
                     break;
                 }
                 case 57: {
-                    int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
-                    int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                    char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
-                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
-                    change_message_from_others(chat, msg_id, new_message);
+                    if(!cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint) {
+                        int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(group_id));
+                        change_message_from_others(chat, msg_id, new_message);
+                    }
+                    else {
+                        int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(sender_id));
+                        change_message_from_others(chat, msg_id, new_message);
+                    }
                     break;
                 }
                 case 58: {
-                    int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
-                    int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
-                    delete_message_from_others(chat, msg_id);
+                    if(!cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint) {
+                        int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
+                        delete_message_from_others(chat, msg_id);
+                    }
+                    else {
+                        int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
+                        delete_message_from_others(chat, msg_id);
+                    }
                     break;
                 }
             }

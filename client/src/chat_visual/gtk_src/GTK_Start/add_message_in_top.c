@@ -1,6 +1,6 @@
 #include "GTK.h"
 
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat) {
+void add_message_to_top(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat, char *nicknake) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
@@ -14,8 +14,17 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
     // Create a new box for alignment  
     GtkWidget *alignment_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_add_css_class(alignment_box, "alignment-bubble"); 
-    gtk_box_append(GTK_BOX(alignment_box), message_box);   
+      
+    if (chat->is_group && !is_sent) {
+        GtkWidget *nick_label = gtk_label_new(nicknake);
+        gtk_widget_add_css_class(nick_label, "message-sender");
+        gtk_label_set_xalign(GTK_LABEL(nick_label), 0.0);
+        gtk_label_set_max_width_chars(GTK_LABEL(nick_label), 15);
+        gtk_label_set_ellipsize(GTK_LABEL(nick_label), PANGO_ELLIPSIZE_END); 
+        gtk_box_append(GTK_BOX(alignment_box), nick_label);   
+    }
 
+    gtk_box_append(GTK_BOX(alignment_box), message_box); 
     GtkWidget *edited_label = gtk_label_new("edited");
     gtk_widget_add_css_class(edited_label, "message-edited");
     
@@ -25,11 +34,11 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
 
     gtk_box_append(GTK_BOX(alignment_box), edited_label);
     gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
-        
+
     if (!changed) {
         gtk_widget_set_visible(edited_label, false);
     }
-    
+
     message_data->alignment_box = alignment_box;
     message_data->message_label = message_label;
     message_data->edited_label = edited_label;
@@ -39,12 +48,13 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
 
         message_data->alignment_box = alignment_box;
         message_data->message_label = message_label;
-        message_data->message_entry = chat_manager->message_entry;
-        message_data->is_editing = chat_manager->is_editing;
+        message_data->message_entry = manager->message_entry;
+        message_data->is_editing = manager->is_editing;
         message_data->own_is_editing = false;
-        message_data->send_button = chat_manager->send_button;
+        message_data->send_button = manager->send_button;
         message_data->ssl = ssl;
         message_data->messages = chat->messages;
+        message_data->cancel_button = manager->cancel_button;
         gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
 
         g_object_set_data(G_OBJECT(alignment_box), "message_data", message_data);
@@ -64,7 +74,7 @@ void add_message_to_top(GtkWidget *messages_container, const char *message_text,
     //gdouble upper = gtk_adjustment_get_upper(adjustment); // Максимальне становище скролла
     //gdouble page_size = gtk_adjustment_get_page_size(chat->adjustment); // Висота видимої області
 
-    gtk_box_prepend(GTK_BOX(messages_container), alignment_box);
+    gtk_box_prepend(GTK_BOX(chat->messages_container), alignment_box);
 
     // gtk_adjustment_set_value(chat->adjustment, value);
 }

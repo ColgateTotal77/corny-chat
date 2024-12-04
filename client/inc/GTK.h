@@ -132,8 +132,8 @@ typedef struct {
 
 //extern GtkWidget *messages_container;
 void apply_css(char* path);
-void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
-void add_message_to_top(GtkWidget *messages_container, const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *chat_manager, SSL* ssl, int msg_id, chat_data_t *chat);
+void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat, char *nicknake);
+void add_message_to_top(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat, char *nicknake);
 void sleep_ms(int milliseconds);
 void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);

@@ -354,6 +354,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *sidebar_groups = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_set_size_request(sidebar_groups, 350, -1);
     gtk_widget_add_css_class(sidebar_groups, "sidebar");
+    gtk_widget_set_hexpand(sidebar_groups, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
     gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
 
@@ -472,7 +473,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->error_label = error_label;
     group_manager->is_editing = g_new(gboolean, 1);
     group_manager->cancel_button = cancel_button;
-    *group_manager->is_editing = false;
+    group_manager->is_editing = chat_manager->is_editing;
     group_manager->avatar_circle = avatar_circle_group;
 
     GtkWidget *chat_user_label = gtk_label_new("");
