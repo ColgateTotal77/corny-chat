@@ -7,6 +7,7 @@ static void free_chats_cache(ht_t *chats) {
 	for (int i = 0; i < chats_count; i++) {
 		entry_t *entry = chat_hash_slots[i];
         chat_t *chat_data = entry->value;
+		pthread_mutex_destroy(&chat_data->mutex);
 		free(chat_data->users_id);
 		free(chat_data);
 		free(entry);
@@ -23,6 +24,7 @@ static void free_clients_cache(ht_t *clients) {
 	for (int i = 0; i < cached_clients_count; i++) {
 		entry_t *entry = clients_hash_slots[i];
         client_t *client_data = entry->value;
+		pthread_mutex_destroy(&client_data->user_data->mutex);
 		free(client_data->user_data->contacts_id);
 		free(client_data->user_data->groups_id);
 		free(client_data->user_data);
@@ -31,6 +33,7 @@ static void free_clients_cache(ht_t *clients) {
             SSL_free(client_data->ssl);
 	    }
 		//shutdown(client_data->sockfd, SHUT_RDWR);
+		pthread_mutex_destroy(&client_data->mutex);
 		free(client_data);
 		free(entry);
 	}

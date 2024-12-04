@@ -44,6 +44,7 @@ user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname,
 	user_data->is_online = is_online;
 	user_data->is_admin = is_admin;
 	user_data->is_active = is_active;
+	pthread_mutex_init(&user_data->mutex, NULL);
 
 	return user_data;
 }

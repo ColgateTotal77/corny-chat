@@ -12,6 +12,7 @@ void add_offline_user_to_server_cache(sqlite3 *db, ht_t *clients, ht_str_t *logi
 	//client_data->sockfd = -1;
     client_data->ssl = NULL;
 	client_data->user_data = user_data;
+    pthread_mutex_init(&client_data->mutex, NULL);
 
 	ht_set(clients, user_data->user_id, (void*)client_data);
 	ht_str_set(login_to_id, login, user_id);

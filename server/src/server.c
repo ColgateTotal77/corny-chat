@@ -33,32 +33,37 @@ SSL_CTX *init_ssl_context(void) {
 }
 
 void free_client_data(call_data_t *call_data) {
-	general_data_t *general_data = call_data->general_data;
 	client_t *client_data = call_data->client_data;
 
 	if (client_data != NULL) {
         if (client_data->ssl != NULL) {
+            // Critical resource access: CLIENT CONNECTION DATA. Start
+	        pthread_mutex_lock(&client_data->mutex);
             SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
             SSL_free(call_data->client_data->ssl);
             client_data->ssl = NULL;
+            pthread_mutex_unlock(&client_data->mutex);
+	        // Critical resource access: CLIENT CONNECTION DATA. End
+
             printf("freeing ssl here\n");
             fflush(stdout);
         }
         
 		if (client_data->user_data != NULL) {
+            // Critical resource access: CLIENT USER DATA. Start
+	        pthread_mutex_lock(&client_data->user_data->mutex);
             client_data->user_data->is_online = false;
+            pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+	        // Critical resource access: CLIENT USER DATA. End
 	    }
 	}
 	
-    *(general_data->online_count) = *(general_data->online_count) - 1;
 	free(call_data);
 }
 
 void *handle_client(void *arg) {
 	call_data_t *call_data = (call_data_t*)arg;
 	general_data_t *general_data = call_data->general_data;
-	
-	*(general_data->online_count) = *(general_data->online_count) + 1;
 
 	char str_json_login_password[BUF_SIZE];
 	bzero(str_json_login_password, BUF_SIZE);
@@ -81,8 +86,20 @@ void *handle_client(void *arg) {
 
 	char buff_out[BUF_SIZE];
 	bzero(buff_out, BUF_SIZE);
+    bool is_active;
 
-    while (!leave_flag && call_data->client_data->user_data->is_active) {
+    if (call_data->client_data == NULL) {
+        is_active = false;
+    }
+    else {
+        // Critical resource access: CLIENT USER DATA. Start
+	    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
+	    is_active = call_data->client_data->user_data->is_active;
+        pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+	    // Critical resource access: CLIENT USER DATA. End
+    }
+
+    while (!leave_flag && is_active && !general_data->server_stoped) {
         int bytes_received = SSL_read(call_data->client_data->ssl, buff_out, BUF_SIZE);
         if (bytes_received <= 0) {
             int err = SSL_get_error(call_data->client_data->ssl, bytes_received);
@@ -94,6 +111,12 @@ void *handle_client(void *arg) {
         }
         handle_user_msg(bytes_received, &leave_flag, buff_out, call_data);
         bzero(buff_out, BUF_SIZE);
+
+        // Critical resource access: CLIENT USER DATA. Start
+	    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
+	    is_active = call_data->client_data->user_data->is_active;
+        pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+	    // Critical resource access: CLIENT USER DATA. End
     }
     
     free_client_data(call_data);
@@ -105,6 +128,12 @@ void *handle_client(void *arg) {
 void catch_ctrl_c_and_exit(int sig) {
 	stop_server = true;
 	printf("catched %d signal\n", sig);
+}
+
+void append_thread_to_array(pthread_t** arr, int* arr_size, pthread_t *thread_id) {
+    *arr = (pthread_t*)realloc(*arr, (*arr_size + 1) * sizeof(pthread_t));
+    (*arr)[*arr_size] = *thread_id;
+    *arr_size = *arr_size + 1;
 }
 
 int main(int argc, char * argv[]) {
@@ -143,13 +172,18 @@ int main(int argc, char * argv[]) {
 	pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t chats_mutex = PTHREAD_MUTEX_INITIALIZER;
 	pthread_mutex_t db_mutex = PTHREAD_MUTEX_INITIALIZER;
-	//pthread_mutex_t general_data_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t login_to_id_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t session_id_to_id_mutex = PTHREAD_MUTEX_INITIALIZER;
+
     general_data->clients_mutex = &clients_mutex;
 	general_data->chats_mutex = &chats_mutex;
 	general_data->db_mutex = &db_mutex;
-	//general_data->general_data_mutex = general_data_mutex;
+    general_data->login_to_id_mutex = &login_to_id_mutex;
+    general_data->session_id_to_id_mutex = &session_id_to_id_mutex;
+    general_data->server_stoped = false;
 	
-    pthread_t new_thread_id;
+    pthread_t *threads_ids = malloc(0);
+    int threads_count = 0;
     int connfd = 0;
 
 
@@ -161,8 +195,8 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
-        if ((online_count + 1) == MAX_CLIENTS) {
-            printf("Max clients reached. New connection rejected");
+        if (general_data->server_stoped) {
+            printf("Server is stopping. New connection rejected");
             close(connfd);
             continue;
 		}
@@ -193,7 +227,11 @@ int main(int argc, char * argv[]) {
 		call_data->general_data = general_data;    
         call_data->client_data->ssl = ssl;
 
+        pthread_t new_thread_id;
+
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
+
+        append_thread_to_array(&threads_ids, &threads_count, &new_thread_id);
 
 		/* Reduce CPU usage */
 		sleep(1);
@@ -202,8 +240,20 @@ int main(int argc, char * argv[]) {
 	printf("Gracefully stoping\n");
 	fflush(stdout);
 
+    general_data->server_stoped = true;
+
+    printf("Waiting for clients to disconnect\n");
+	fflush(stdout);
+      
+
+    for(int i = 0; i < threads_count; i++) {
+        pthread_join(threads_ids[i], NULL);
+    }
+    free(threads_ids);
+    
+
     free_general_data(general_data);
-    SSL_CTX_free(ctx);  
+    SSL_CTX_free(ctx);
 
     return EXIT_SUCCESS;
 }

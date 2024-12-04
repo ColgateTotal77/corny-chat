@@ -3,6 +3,7 @@
 
 
 static void free_server_group(chat_t **chat_data) {
+    pthread_mutex_destroy(&(*chat_data)->mutex);
     free((*chat_data)->users_id);
     free(*chat_data);
 }

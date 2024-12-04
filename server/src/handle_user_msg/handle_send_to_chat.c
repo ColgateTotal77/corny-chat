@@ -8,7 +8,8 @@ static cJSON *create_incoming_group_message_json(char *message,
                                                  int sender_id,
                                                  char *sender_nickname,
                                                  int chat_id,
-                                                 char *chat_name) {
+                                                 char *chat_name,
+                                                 char *time_string) {
     cJSON *message_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(message_json, "event_code", INCOMING_MESSAGE);
     cJSON_AddNumberToObject(message_json, "message_type", GROUP_MESSAGE);
@@ -18,7 +19,7 @@ static cJSON *create_incoming_group_message_json(char *message,
     cJSON_AddStringToObject(message_json, "message", message);
     cJSON_AddStringToObject(message_json, "sender_nickname", sender_nickname);
     cJSON_AddStringToObject(message_json, "chat_name", chat_name);
-
+    cJSON_AddStringToObject(message_json, "time", time_string);
 
     return message_json;
 }
@@ -54,13 +55,16 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
         return error_response;
     }
 
+    char *time_string = get_string_time();
+
     cJSON *message_data_json = create_incoming_group_message_json(
         message_json->valuestring,
         message_id,
         call_data->client_data->user_data->user_id,
         call_data->client_data->user_data->nickname,
         chat_id,
-        chat->name
+        chat->name,
+        time_string
     );
     
     send_to_chat_and_delete_json(call_data, &message_data_json, chat_id);
@@ -70,6 +74,9 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
     cJSON_AddNumberToObject(response_json, "message_id", message_id);
     cJSON_AddStringToObject(response_json, "message", message_json->valuestring);
+    cJSON_AddStringToObject(response_json, "time", time_string);
+
+    free(time_string);
 
     return response_json;
 }

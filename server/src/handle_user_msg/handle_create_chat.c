@@ -9,6 +9,7 @@ static chat_t *init_server_group(int chat_id, char *name, int owner_id) {
     new_chat->chat_id = chat_id;
     strcpy(new_chat->name, name);
     new_chat->owner_id = owner_id;
+    pthread_mutex_init(&new_chat->mutex, NULL);
 
     append_to_intarr(&new_chat->users_id, &new_chat->users_count, owner_id);
 

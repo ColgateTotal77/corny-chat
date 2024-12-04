@@ -66,6 +66,7 @@ static chat_t *init_new_group_and_update_users_data(s_group group_data, ht_t *cl
     strcpy(group->createdAt, group_data.createdAt);
     group->users_count = 0;
     group->users_id = malloc(0);
+    pthread_mutex_init(&group->mutex, NULL);
 
     for (int i = 0; i < group_data.occupants_num; i++) {
         int occupant_id = group_data.occupants[i];

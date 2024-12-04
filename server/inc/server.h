@@ -33,6 +33,7 @@ typedef struct {
     char createdAt[20];
     int chat_id;
     int owner_id;
+    pthread_mutex_t mutex;
 } chat_t;
 
 typedef struct {
@@ -46,13 +47,14 @@ typedef struct {
     bool is_online;
     bool is_admin;
     bool is_active;
+    pthread_mutex_t mutex;
 } user_t;
 
 typedef struct {
 	char time_created_session_id[20];
-	//int sockfd;
     SSL *ssl;
 	user_t* user_data;
+    pthread_mutex_t mutex;
 } client_t;
 
 typedef struct {
@@ -63,8 +65,11 @@ typedef struct {
     pthread_mutex_t *clients_mutex;
     pthread_mutex_t *chats_mutex;
     pthread_mutex_t *db_mutex;
+    pthread_mutex_t *login_to_id_mutex;
+    pthread_mutex_t *session_id_to_id_mutex;
     int *online_count;
     sqlite3* db;
+    bool server_stoped;
 } general_data_t;
 
 typedef struct {
@@ -114,6 +119,8 @@ bool is_user_group_owner(call_data_t *call_data, int group_id);
 void append_to_users_contacts(user_t *user_data, int contact_id);
 void remove_from_group_users(chat_t *chat_data, int user_id);
 void remove_from_users_groups(user_t *user_data, int chat_id);
+bool get_group_data_and_lock_group_mutex(call_data_t *call_data, int group_id, 
+                                         chat_t **chat_data);
 
 // send_msg_functions
 void send_message_to_id(call_data_t *call_data, char *message, int user_id);
@@ -126,6 +133,7 @@ void send_to_chat_and_delete_json(call_data_t *call_data, cJSON **json, int chat
 void send_to_another_ids_and_delete_json(call_data_t *call_data, cJSON **json);
 void send_user_returned_msg(call_data_t *call_data);
 void send_user_exit_msg(call_data_t *call_data);
+void send_to_client_and_delete_json(cJSON **json, client_t* client_data);
 
 cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
 
