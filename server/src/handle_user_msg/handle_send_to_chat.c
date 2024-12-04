@@ -15,7 +15,7 @@ static cJSON *create_incoming_group_message_json(char *message,
     cJSON_AddNumberToObject(message_json, "message_type", GROUP_MESSAGE);
     cJSON_AddNumberToObject(message_json, "sender_id", sender_id);
     cJSON_AddNumberToObject(message_json, "chat_id", chat_id);
-    cJSON_AddNumberToObject(message_json, "chat_id", message_id);
+    cJSON_AddNumberToObject(message_json, "message_id", message_id);
     cJSON_AddStringToObject(message_json, "message", message);
     cJSON_AddStringToObject(message_json, "sender_nickname", sender_nickname);
     cJSON_AddStringToObject(message_json, "chat_name", chat_name);
