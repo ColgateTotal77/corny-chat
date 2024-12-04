@@ -156,6 +156,7 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
     if (switch_to_groups) {
         gtk_widget_set_visible(sidebar_scroll_users, FALSE);
         gtk_widget_set_visible(sidebar_scroll_groups, TRUE);
+        gtk_label_set_text(GTK_LABEL(entries[4]), "Groups");
 
         // gtk_widget_set_visible(chat_manager->sidebar, FALSE);
         // gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
@@ -163,6 +164,7 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
     } else {
         gtk_widget_set_visible(sidebar_scroll_users, TRUE);
         gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
+        gtk_label_set_text(GTK_LABEL(entries[4]), "Chats");
 
         // gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
         gtk_widget_set_visible(add_group_button, FALSE);
@@ -364,7 +366,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     g_signal_connect(add_group_button, "clicked", G_CALLBACK(on_add_group_button_clicked), GTK_data);
 
     // Store login, password entries and error label for callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 4);
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 5);
     entries[0] = user_data; // Here GTK_data
     entries[1] = add_group_button;
     entries[2] = sidebar_scroll_groups;
@@ -382,13 +384,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
     gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
 
-    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
-
     // Center label
     GtkWidget *center_label = gtk_label_new("Chats");
     gtk_widget_add_css_class(center_label, "center-label");
     gtk_label_set_ellipsize(GTK_LABEL(center_label), PANGO_ELLIPSIZE_END); // Handle overflow gracefully
     gtk_box_append(GTK_BOX(sidebar_container), center_label);
+
+    entries[4] = center_label;
 
     // Right button
     GtkWidget *right_button = gtk_button_new();
@@ -397,7 +399,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
     gtk_box_append(GTK_BOX(sidebar_container), right_button);
 
-    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
     
 
     gtk_box_set_homogeneous(GTK_BOX(sidebar_container), TRUE); // Make all children the same size
