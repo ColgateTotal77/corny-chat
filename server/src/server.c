@@ -246,9 +246,9 @@ int main(int argc, char * argv[]) {
 	fflush(stdout);
       
 
-    for(int i = 0; i < threads_count; i++) {
-        pthread_join(threads_ids[i], NULL);
-    }
+    //for(int i = 0; i < threads_count; i++) {
+    //    pthread_join(threads_ids[i], NULL);
+    //}
     free(threads_ids);
     
 
