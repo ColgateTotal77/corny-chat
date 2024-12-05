@@ -37,6 +37,6 @@ char *read_tls_socket(SSL *ssl);
 void* recv_msg_handler(void* arg);
 void* send_msg_handler(void* arg);
 int recieve_next_response(SSL *ssl, char **buffer);
-SSL *try_to_reconnect(char *session_id, char *host, int port);
+SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expired);
 void* recv_login_msg_handler(void* arg);
 SSL *setup_new_connection(char *host, int port);

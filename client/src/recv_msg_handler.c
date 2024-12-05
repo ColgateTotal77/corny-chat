@@ -754,7 +754,11 @@ void* recv_msg_handler(void* arg) {
                 session_id = NULL;
                 break;
             }
-            SSL* new_ssl = try_to_reconnect(session_id, call_data->host, call_data->port);
+
+            bool session_expired = false;
+
+            SSL* new_ssl = try_to_reconnect(session_id, call_data->host, 
+                                            call_data->port, &session_expired);
 
             if (new_ssl == NULL) {
                 printf("SSL = NULL\nServer disconnected!\n");

@@ -87,7 +87,7 @@ static bool is_login_data_accepted(SSL *ssl) {
  * @param port port to connect to
  * @return On success new SSL connection, elsewise NULL
  */
-SSL *try_to_reconnect(char *session_id, char *host, int port) {
+SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expired) {
     if (session_id == NULL || host == NULL) {
         return NULL;
     }
@@ -120,8 +120,11 @@ SSL *try_to_reconnect(char *session_id, char *host, int port) {
         send_and_delete_json(new_ssl, &reconect_request);
 
         if (is_login_data_accepted(new_ssl)) {
+            *session_expired = false;
             return new_ssl;
         }
+
+        *session_expired = true;
     
         SSL_shutdown(new_ssl);//Закриття SSL з'єднання
         SSL_free(new_ssl);
