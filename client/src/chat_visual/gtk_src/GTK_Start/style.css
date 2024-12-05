@@ -329,6 +329,7 @@ button.send-button {
     min-height: 40px;
     margin-left: 10px;
     margin-top: 10px;
+    margin-bottom: 10px;
     border: none;
     transition: background-color 0.3s ease; /* Smooth color transition */
 }
@@ -422,16 +423,36 @@ button.search-erase-button > label {
     margin-right: 20px;
     margin-left: 25px;
 }
+.left-button,
+.right-button {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Add these additional rules to maintain fixed size */
+.left-button:hover,
+.right-button:hover,
+.left-button:active,
+.right-button:active {
+    min-width: 30px;
+    min-height: 30px;
+
+}
 
 /* Left button styling */
 button.left-button {
+    background: transparent;
     background-color: #C9C9C9; /* Background color for the left button */
-    color: #333333; /* Text color */
+    color: black; /* Text color */
     font-size: 16px; /* Font size */
     padding: 10px 20px; /* Padding for the button */
     border-radius: 20px; /* Rounded corners */
     border: none; /* Remove border */
     transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    min-width: 30px;
+    min-height: 30px;
 }
 
 /* Hover effect for left button */
@@ -441,13 +462,16 @@ button.left-button:hover {
 
 /* Right button styling */
 button.right-button {
+    background: transparent;
     background-color: #C9C9C9; /* Background color for the right button */
-    color: #333333; /* Text color */
+    color: black; /* Text color */
     font-size: 16px; /* Font size */
     padding: 10px 20px; /* Padding for the button */
     border-radius: 20px; /* Rounded corners */
     border: none; /* Remove border */
     transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    min-width: 30px;
+    min-height: 30px;
 }
 
 /* Hover effect for right button */
@@ -457,12 +481,57 @@ button.right-button:hover {
 
 /* Center label styling */
 .center-label {
-    font-size: 20px; /* Font size for the label */
-    color: #333333; /* Text color */
+    font-size: 25px; /* Font size for the label */
+    color: black; /* Text color */
     margin: 0 10px; /* Margin around the label */
 }
 
-/* profile_form WINDOW */
+.popover {
+    background-color: #C9C9C9;
+    border: none;
+    box-shadow: none;
+}
+.popover > contents {
+    background-color: #C9C9C9;
+    border: none;
+    border-radius: 10px;
+    padding: 5px;
+}
+.popover > arrow {
+    background-color: #C9C9C9;
+    border: none;
+    min-width: 0;
+    min-height: 0;
+}
+
+.box-popover{
+    background-color: #C9C9C9;
+}
+
+.edit-button-popover{
+    background: transparent;
+    border: none;
+}
+
+.delete-button-popover{
+    background: transparent;
+    border: none;
+}
+
+button.edit-button-popover > label{
+    background-color: #C9C9C9;
+    color: #000000;
+}
+
+button.delete-button-popover > label{
+    background-color: #C9C9C9;
+    color: #000000;
+}
+/* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE */
+
+
+
+/* profile_form WINDOW *//* profile_form WINDOW *//* profile_form WINDOW *//* profile_form WINDOW *//* profile_form WINDOW *//* profile_form WINDOW */
 /* Window and basic setup */
 window {
     background-color: #2b2b2b;
@@ -485,9 +554,98 @@ label {
     color: black;
 }
 
-/* Entry fields
-entry {
+/* Back button styling with SVG icon */
+button.back-button {
+    border-radius: 50%;
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
     background: #e0e0e0;
+    transition: background-color 0.3s ease;
+    font-size: 14px; /* Adjusted font size */
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.back-button {
+    background-color: #e0e0e0; /* Initial color */
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+    transition: background-color 0.3s ease; /* Smooth transition */
+    font-size: 14px; /* Adjusted font size */
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.back-button:hover {
+    background-color: #d0d0d0; /* Slightly darker on hover */
+}
+
+.back-button:active {
+    background-color: #a0a0a0; /* Darker color on press */
+}
+.nav-button{
+    background-color: #e0e0e0; /* Initial color */
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+    transition: background-color 0.3s ease; /* Smooth transition */
+    font-size: 14px; /* Adjusted font size */
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+/* Common styling for navigation buttons */
+button.nav-button {
+    border-radius: 50%;
+    min-width: 40px;
+    min-height: 40px;
+    background: #e0e0e0; /* Light gray background */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    border: none; /* No border */
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+/* Prev button */
+button.prev-button {
+    background-color: #e0e0e0;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+
+.prev-button:hover {
+    background-color: #d0d0d0; /* Slightly darker on hover */
+}
+
+.prev-button:active {
+    background-color: #a0a0a0; /* Darker on press */
+    transform: scale(0.95); /* Slightly shrink on press */
+}
+
+/* Next button */
+button.next-button {
+    background-color: #e0e0e0;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.next-button:hover {
+    background-color: #d0d0d0; /* Slightly darker on hover */
+}
+
+.next-button:active {
+    background-color: #a0a0a0; /* Darker on press */
+    transform: scale(0.95); /* Slightly shrink on press */
+}
+
+.nickname-entry{
+    background: #D9D9D9;
     border-radius: 25px;
     padding: 12px 16px;
     margin: 5px 0;
@@ -495,11 +653,99 @@ entry {
     min-width: 250px;
     color: black;
     font-size: 16px;
-} */
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Styling for nickname label and input */
+#nickname-box label {
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+
+}
+
+#nickname-box entry {
+    background: #D9D9D9;
+    border-radius: 25px;
+    padding: 10px 15px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Style for the separator under the nickname entry */
+.nickname-separator {
+    background-color: #cccccc; /* Light gray color */
+    min-height: 3px; /* Thickness of the separator */
+    margin-bottom: 10px;
+    border-radius: 5px; /* Slightly rounded edges */
+    border: none;
+}
+
+/* Update button */
+.update-button {
+    background: #47a3b5;
+    color: white;
+    min-width: 80px;
+    transition: background-color 0.3s ease;
+    border-radius: 25px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px; /* Increased font size */
+    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions for all buttons */
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.update-button:hover {
+    background-color: #3b8b9c;
+}
+
+.update-button:active {
+    background-color: #2e6f7e;
+}
+
+.change-password-button {
+    background-color: #47a3b5; /* Same blue color as update button */
+    color: white;
+    background: #47a3b5;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.change-password-button:hover {
+    background-color: #3b8b9c; /* Slightly darker on hover */
+}
+
+.change-password-button:active {
+    background-color: #2e6;
+}
+
+.password-entry {
+    background-color: #D9D9D9;
+    border-radius: 25px;
+    padding: 8px 16px;
+    margin: 5px 0;
+    min-height: 30px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+    padding-right: 40px; /* Add space for the eye button */
+}
 
 /* Label styles for "Login" and "Password" */
-.login-entry{
-    background: #e0e0e0;
+.login-entry1{
+    background: #D9D9D9;
     border-radius: 25px;
     padding: 12px 16px;
     margin: 5px 0;
@@ -507,10 +753,23 @@ entry {
     min-width: 250px;
     color: black;
     font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.nickname_entry{
-    background: #e0e0e0;
+#login-entry1 entry {
+    background: #D9D9D9;
+    border-radius: 25px;
+    padding: 10px 15px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+/* Label styles for "Login" and "Password" */
+.login-entry2{
+    background: #D9D9D9;
     border-radius: 25px;
     padding: 12px 16px;
     margin: 5px 0;
@@ -518,7 +777,52 @@ entry {
     min-width: 250px;
     color: black;
     font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
+
+#login-entry2 entry {
+    background: #D9D9D9;
+    border-radius: 25px;
+    padding: 10px 15px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Create button matching Password and Login fields */
+.create-button {
+    background: #44c767;
+    color: white;
+    min-width: 280px; /* Match the min-width of entry fields */
+    min-height: 20px; /* Match the height of entry fields */
+    border-radius: 25px;
+    padding: 12px 16px;
+    font-size: 16px; /* Ensure the font size matches */
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.create-button:hover {
+    background-color: #3cb05d; /* Slightly darker green on hover */
+}
+
+.create-button:active {
+    background-color: #349e53; /* Even darker green when pressed */
+    transition: background-color 0.1s ease;
+}
+
+.create-button:hover {
+    background-color: #3cb05d; /* Slightly darker green on hover */
+}
+
+.create-button:active {
+    background-color: #349e53; /* Even darker green when pressed */
+    transition: background-color 0.1s ease; /* Faster transition when pressing */
+}
+
 
 .text-entry{
     background: #e0e0e0;
@@ -553,23 +857,6 @@ entry {
     font-size: 16px;
 }
 
-/* Styling for nickname label and input */
-#nickname-box label {
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 5px;
-}
-
-#nickname-box entry {
-    background: #D9D9D9;
-    border-radius: 25px;
-    padding: 10px 15px;
-    min-width: 250px;
-    color: black;
-    font-size: 16px;
-}
-
 /* Label styles for "Enter new nickname" */
 .nickname-label {
     color: #ffffff;
@@ -585,75 +872,12 @@ entry {
     margin-bottom: 10px;
 }
 
-/* Label styles for "Login" and "Password" */
-.login-entry{
-    background: #D9D9D9;
-    border-radius: 25px;
-    padding: 10px 15px;
-    min-width: 250px;
-    color: black;
-    font-size: 16px;
-    min-height: 40px;
-}
-
-/* Back button styling with SVG icon */
-button.back-button {
-    border-radius: 50%;
-    padding: 8px;
-    min-width: 40px;
-    min-height: 40px;
-    background: #e0e0e0;
-    transition: background-color 0.3s ease;
-    font-size: 14px; /* Adjusted font size */
-}
-
-.back-button {
-    background-color: #e0e0e0; /* Initial color */
-    border: none;
-    border-radius: 50%;
-    padding: 8px;
-    min-width: 40px;
-    min-height: 40px;
-    transition: background-color 0.3s ease; /* Smooth transition */
-    font-size: 14px; /* Adjusted font size */
-}
-
-.back-button:hover {
-    background-color: #d0d0d0; /* Slightly darker on hover */
-}
-
-.back-button:active {
-    background-color: #a0a0a0; /* Darker color on press */
-}
-
-/* Update button */
-.update-button {
-    background: #47a3b5;
-    color: white;
-    min-width: 80px;
-    transition: background-color 0.3s ease;
-    border-radius: 25px;
-    padding: 12px;
-    border: none;
-    min-height: 20px;
-    font-size: 16px; /* Increased font size */
-    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions for all buttons */
-    margin-bottom: 10px;
-}
-
-.update-button:hover {
-    background-color: #3b8b9c;
-}
-
-.update-button:active {
-    background-color: #2e6f7e;
-}
 
 /* Delete button */
 .delete-button {
     background: #ff0000;
     color: white;
-    min-width: 100px;
+    min-width: 120px;
     border-radius: 25px;
     padding: 12px;
     margin: 5px 0;
@@ -718,36 +942,6 @@ checkbutton:focus-visible box {
     outline: 2px solid #44c767; /* Add focus outline */
 }
 
-/* Create button matching Password and Login fields */
-.create-button {
-    background: #44c767;
-    color: white;
-    min-width: 250px; /* Match the min-width of entry fields */
-    min-height: 20px; /* Match the height of entry fields */
-    border-radius: 25px;
-    padding: 12px 16px;
-    font-size: 16px; /* Ensure the font size matches */
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.create-button:hover {
-    background-color: #3cb05d; /* Slightly darker green on hover */
-}
-
-.create-button:active {
-    background-color: #349e53; /* Even darker green when pressed */
-    transition: background-color 0.1s ease;
-}
-
-.create-button:hover {
-    background-color: #3cb05d; /* Slightly darker green on hover */
-}
-
-.create-button:active {
-    background-color: #349e53; /* Even darker green when pressed */
-    transition: background-color 0.1s ease; /* Faster transition when pressing */
-}
 
 /* Make the scrolled window background transparent */
 scrolledwindow {
@@ -796,22 +990,11 @@ scrolledwindow {
     padding: 8px 16px;
     margin: 5px 0;
     min-height: 30px;
-    min-width: 250px;
+    min-width: 200px;
     color: black;
     font-size: 16px;
 }
 
-.password-entry {
-    background-color: #D9D9D9;
-    border-radius: 25px;
-    padding: 8px 16px;
-    margin: 5px 0;
-    min-height: 30px;
-    min-width: 250px;
-    color: black;
-    font-size: 16px;
-    padding-right: 40px; /* Add space for the eye button */
-}
 button.eye-icon{
     background: transparent;
 }
@@ -841,19 +1024,10 @@ button.eye-icon{
     margin-left: 60px;
 }
 
-/* Style for the separator under the nickname entry */
-.nickname-separator {
-    background-color: #cccccc; /* Light gray color */
-    min-height: 2px; /* Thickness of the separator */
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border-radius: 1px; /* Slightly rounded edges */
-}
-
 .activate-button {
     background: #4CAF50;  /* Green color for activate */
     color: white;
-    min-width: 100px;
+    min-width: 120px;
     border-radius: 25px;
     padding: 12px;
     margin: 5px 0;
@@ -870,48 +1044,6 @@ button.eye-icon{
     background-color: #3d8b40;
     transform: scale(0.98);
     transition: background-color 0.1s ease, transform 0.1s ease;
-}
-
-/* Common styling for navigation buttons */
-button.nav-button {
-    border-radius: 50%;
-    padding: 8px;
-    min-width: 40px;
-    min-height: 40px;
-    background: #e0e0e0; /* Light gray background */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
-    font-size: 14px;
-    border: none; /* No border */
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-/* Prev button */
-button.prev-button {
-    background-color: #e0e0e0;
-}
-
-.prev-button:hover {
-    background-color: #d0d0d0; /* Slightly darker on hover */
-}
-
-.prev-button:active {
-    background-color: #a0a0a0; /* Darker on press */
-    transform: scale(0.95); /* Slightly shrink on press */
-}
-
-/* Next button */
-button.next-button {
-    background-color: #e0e0e0;
-}
-
-.next-button:hover {
-    background-color: #d0d0d0; /* Slightly darker on hover */
-}
-
-.next-button:active {
-    background-color: #a0a0a0; /* Darker on press */
-    transform: scale(0.95); /* Slightly shrink on press */
 }
 
 /* Admin Login List - Similar to Login List */
@@ -991,7 +1123,8 @@ button.next-button {
     background-color: #C9C9C9;
     color: #C9C9C9;
     border-radius: 25px;
-    margin-left: 200px;
+    /* margin-left: 200px; */
+    min-height: 60px;
 }
 
 .window-title{
@@ -999,7 +1132,8 @@ button.next-button {
     font-size: 22px;
 }
 
-/* LOGIN WINDOW */
+
+/* LOGIN WINDOW *//* LOGIN WINDOW *//* LOGIN WINDOW *//* LOGIN WINDOW *//* LOGIN WINDOW *//* LOGIN WINDOW *//* LOGIN WINDOW */
 /* Window styling */
 window {
     background: #333333;

@@ -83,16 +83,20 @@ void on_message_edit(GtkGestureClick *gesture) {
     GtkWidget *alignment_box = GTK_WIDGET(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
 
     GtkWidget *popover = gtk_popover_new();
+    gtk_widget_add_css_class(popover, "popover");
     
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_popover_set_child(GTK_POPOVER(popover), box);
+    gtk_widget_add_css_class(box, "box-popover");
 
     GtkWidget *edit_button = gtk_button_new_with_label("Change");
     gtk_box_append(GTK_BOX(box), edit_button);
+    gtk_widget_add_css_class(edit_button, "edit-button-popover");
     g_signal_connect(edit_button, "clicked", G_CALLBACK(on_edit_button_clicked), alignment_box);
 
     GtkWidget *delete_button = gtk_button_new_with_label("Delete");
     gtk_box_append(GTK_BOX(box), delete_button);
+    gtk_widget_add_css_class(delete_button, "delete-button-popover");
     g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), alignment_box);
     
     gtk_widget_set_parent(popover, alignment_box);
