@@ -28,12 +28,13 @@ void* recv_msg_handler(void* arg) {
     bool stop_flag = true;
 
     time_t now = time(NULL);
-    struct tm *local_time = localtime(&now);
+    struct tm *local_time = malloc(sizeof(struct tm));
+    memcpy(local_time, localtime(&now), sizeof(struct tm));
     int time_zone = local_time->__tm_gmtoff;
     struct tm message_time = {0};
     char time_to_send[12];
     struct tm *adjusted_time;
-
+    printf("local_time: %d-%d-%d %d:%d:%d\n", local_time->tm_year, local_time->tm_mon, local_time->tm_mday, local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
     int number_of_users;
     int groups_count = 0;
     get_all_clients_userslist(call_data->ssl);
@@ -113,7 +114,9 @@ void* recv_msg_handler(void* arg) {
                                     chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
-                                    if (local_time->tm_mday < adjusted_time->tm_mday) {
+                                    if (local_time->tm_year > adjusted_time->tm_year || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
                                         strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
                                         change_sidebar_chat_info(chat, message, time_to_send);
                                     }
@@ -130,7 +133,9 @@ void* recv_msg_handler(void* arg) {
                                     chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
-                                    if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                    if (local_time->tm_year > adjusted_time->tm_year || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
                                         strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
                                         change_sidebar_chat_info(chat, message, time_to_send);
                                     }
@@ -199,13 +204,15 @@ void* recv_msg_handler(void* arg) {
                             char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
                             chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(target_group_id));
                             int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
-
-                            add_message(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
+                            char *nickname = cJSON_GetObjectItemCaseSensitive(message_data, "nickname")->valuestring;
+                            add_message(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, nickname);
                             if (i == 0) {
                                 chat->last_message_id = msg_id;
                             }
                             else if(i == all_mes_qty - 1) {
-                                if (local_time->tm_mday > adjusted_time->tm_mday) {
+                                if (local_time->tm_year > adjusted_time->tm_year || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
+                                    (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
                                     strftime(time_to_send, sizeof(time_to_send), "%Y-%m-%d", adjusted_time);
                                     change_sidebar_chat_info(chat, message, time_to_send);
                                 }
@@ -254,14 +261,13 @@ void* recv_msg_handler(void* arg) {
                                 char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
                                 int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
                                 chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(target_group_id));
-
-                                //add_message(message, time_to_send, false, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
+                                char *nickname = cJSON_GetObjectItemCaseSensitive(message_data, "nickname")->valuestring;
+                                add_message_to_top(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, nickname);
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
-                                    add_message_to_top(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, "owner_id");
-                                }
                             }
+                        }
                         break;
                     case 26:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
