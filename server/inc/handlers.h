@@ -32,4 +32,5 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json);
 cJSON *handle_delete_message(call_data_t *call_data, cJSON *json);
 cJSON *handle_get_my_groups(call_data_t *call_data);
 cJSON *handle_mark_group_msgs_as_readed(call_data_t *call_data, cJSON *json);
+cJSON *handle_get_chat_users(call_data_t *call_data, cJSON *json);
 

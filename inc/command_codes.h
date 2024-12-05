@@ -32,6 +32,7 @@
 #define DELETE_MESSAGE 29
 #define GET_MY_GROUPS 30
 #define MARK_GROUP_MSGS_AS_READED 31
+#define GET_CHAT_USERS 32
 
 
 

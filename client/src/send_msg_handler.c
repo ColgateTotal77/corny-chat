@@ -78,7 +78,8 @@ void* send_msg_handler(void* arg) {
                       "UPDATE_MESSAGE 28\n"
                       "DELETE_MESSAGE 29\n"
                       "GET_MY_GROUPS 30\n"
-                      "MARK_GROUP_MSGS_AS_READED 31\n";
+                      "MARK_GROUP_MSGS_AS_READED 31\n"
+                      "GET_CHAT_USERS 32\n";
     printf("%s", help_info);
     printf("Enter command code and follow the instructions. This is for test\n");
     fflush(stdout);
@@ -442,6 +443,16 @@ void* send_msg_handler(void* arg) {
             chat_id = atoi(message);
 
             mark_group_msgs_as_readed(call_data->ssl, chat_id);
+            break;
+        case GET_CHAT_USERS:
+            bzero(message, BUF_SIZE);
+            printf("Enter chat id: ");
+            fflush(stdout);
+            fgets(message, BUF_SIZE, stdin);
+            str_del_newline(message, BUF_SIZE);
+            chat_id = atoi(message);
+
+            get_chat_users(call_data->ssl, chat_id);
             break;
         default:
             printf("Wrong command code\n");

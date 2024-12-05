@@ -36,6 +36,7 @@ void update_message(SSL *ssl, int message_id, char *new_message);
 void delete_message(SSL *ssl, int message_id);
 void get_my_groups(SSL *ssl);
 void mark_group_msgs_as_readed(SSL *ssl, int group_id);
+void get_chat_users(SSL *ssl, int chat_id);
 
 
 void send_and_delete_json(SSL *ssl, cJSON **json);

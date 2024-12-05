@@ -106,6 +106,9 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case MARK_GROUP_MSGS_AS_READED:
         response_json = handle_mark_group_msgs_as_readed(call_data, msg_json);
         break;
+    case GET_CHAT_USERS:
+        response_json = handle_get_chat_users(call_data, msg_json);
+        break;
     default:
         response_json = create_error_json("Wrond command code was given!!!");
         command = ERROR;
