@@ -185,7 +185,7 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
         g_object_unref(user_chat->user_list_for_delete);
     }
     g_list_free(user_list);
-    
+    send_exit_command(GTK_data->call_data->ssl);
     *(GTK_data->call_data->stop_flag) = true;
     free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
     GTK_data = NULL;
