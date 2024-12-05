@@ -1,6 +1,7 @@
 #include "GTK.h"
 
 bool switch_to_groups;
+bool switch_settings_in_group;
 
 static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
     (void) entry;
@@ -158,17 +159,13 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
         gtk_widget_set_visible(sidebar_scroll_groups, TRUE);
         gtk_label_set_text(GTK_LABEL(entries[4]), "Groups");
 
-        // gtk_widget_set_visible(chat_manager->sidebar, FALSE);
-        // gtk_widget_set_visible(chat_manager->sidebar_groups, TRUE);
         gtk_widget_set_visible(add_group_button, TRUE);
     } else {
         gtk_widget_set_visible(sidebar_scroll_users, TRUE);
         gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
         gtk_label_set_text(GTK_LABEL(entries[4]), "Chats");
 
-        // gtk_widget_set_visible(chat_manager->sidebar_groups, FALSE);
         gtk_widget_set_visible(add_group_button, FALSE);
-        // gtk_widget_set_visible(chat_manager->sidebar, TRUE);
     }
 
 }
@@ -265,6 +262,290 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
 
     // Present the dialog
     gtk_window_present(GTK_WINDOW(dialog));
+}
+
+void switch_between_settings_in_group(GtkWidget *widget, gpointer user_data) {
+    (void) widget; // if you erase this, GTK_data will be empty
+    GtkWidget **entries = (GtkWidget **)user_data;
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
+    GtkWidget *slider_inner_container_1 = entries[1];
+    GtkWidget *slider_inner_container_2 = entries[2];
+
+    if (!GTK_data) {
+        printf("GTK_data is NULL\n");
+        return;
+    }
+
+    // Toggle visibility
+    switch_settings_in_group = !switch_settings_in_group;
+
+    if (switch_settings_in_group) {
+        gtk_widget_set_visible(slider_inner_container_1, FALSE);
+        gtk_widget_set_visible(slider_inner_container_2, TRUE);
+        gtk_label_set_text(GTK_LABEL(entries[3]), "Delete users");
+    } else {
+        gtk_widget_set_visible(slider_inner_container_1, TRUE);
+        gtk_widget_set_visible(slider_inner_container_2, FALSE);
+        gtk_label_set_text(GTK_LABEL(entries[3]), "Add users");
+    }
+
+}
+
+static void delete_name_from_list(GtkWidget *button, gpointer user_data) {
+    // Get the entry widget from which we'll read the name to delete
+    GtkWidget *entry = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "entry"));
+    GtkWidget *list_box = GTK_WIDGET(user_data);
+   
+    // Get the text from the entry
+    const char *name_to_delete = gtk_editable_get_text(GTK_EDITABLE(entry));
+    printf("name_to_delete: %s\n", name_to_delete);
+   
+    // Only proceed if name is not empty
+    if (strlen(name_to_delete) > 0) {
+        // Get the first child of the list box
+        GtkWidget *child = gtk_widget_get_first_child(list_box);
+       
+        // Iterate through all children
+        while (child != NULL) {
+            // Store the next child before potentially removing the current one
+            GtkWidget *next_child = gtk_widget_get_next_sibling(child);
+           
+            // Check if this child is a GtkListBoxRow
+            if (GTK_IS_LIST_BOX_ROW(child)) {
+                // Get the label inside the row
+                GtkWidget *label = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
+                
+                // Check if we got a label
+                if (label && GTK_IS_LABEL(label)) {
+                    const char *current_name = gtk_label_get_text(GTK_LABEL(label));
+                    printf("current_name: %s\n", current_name);
+                   
+                    // If names match, remove this row
+                    if (strcmp(current_name, name_to_delete) == 0) {
+                        gtk_list_box_remove(GTK_LIST_BOX(list_box), child);
+                       
+                        // Clear the entry after deletion
+                        gtk_editable_set_text(GTK_EDITABLE(entry), "");
+                       
+                        // Exit the loop after deletion
+                        break;
+                    }
+                }
+            }
+           
+            // Move to the next child
+            child = next_child;
+        }
+    }
+}
+
+static void add_name_to_list(GtkWidget *button, gpointer user_data) {
+    GtkWidget *entry = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "entry"));
+    GtkWidget *list_box = GTK_WIDGET(user_data);
+    
+    // Get the text from the entry
+    const char *name = gtk_editable_get_text(GTK_EDITABLE(entry));
+    
+    // Only add non-empty names
+    if (strlen(name) > 0) {
+        GtkWidget *row = gtk_label_new(name);
+        gtk_widget_add_css_class(row, "settings_name-list-item");
+        gtk_list_box_append(GTK_LIST_BOX(list_box), row);
+        
+        // Clear the entry after adding
+        gtk_editable_set_text(GTK_EDITABLE(entry), "");
+    }
+}
+
+void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
+    (void)button;
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+
+    // Create a new window
+    GtkWidget *settings_window = gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
+    gtk_window_set_default_size(GTK_WINDOW(settings_window), 400, 300);
+
+    // Set the new window as transient for the main window
+    if (GTK_data && GTK_data->window) {
+        gtk_window_set_transient_for(GTK_WINDOW(settings_window), GTK_WINDOW(GTK_data->window));
+    }
+
+    // Create a grid to organize the layout
+    GtkWidget *grid = gtk_grid_new();
+    gtk_widget_set_margin_start(grid, 10); // Optional: set margins
+    gtk_widget_set_margin_end(grid, 10);
+    gtk_widget_set_margin_top(grid, 10);
+    gtk_widget_set_margin_bottom(grid, 10);
+    gtk_window_set_child(GTK_WINDOW(settings_window), grid); // Use gtk_window_set_child instead of gtk_container_add
+
+    // Set the grid to be homogeneous
+    gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE); // Set to FALSE to allow different row heights
+    gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+
+    // Create main content area (for example, a label or a text entry)
+    // GtkWidget *main_content = gtk_label_new("Main Content Goes Here");
+    GtkWidget *main_grid = gtk_grid_new();
+    gtk_grid_attach(GTK_GRID(grid), main_grid, 0, 0, 1, 1); // Attach to grid at (0, 0)
+    gtk_widget_set_hexpand(main_grid, TRUE); // Allow horizontal expansion
+    gtk_widget_set_vexpand(main_grid, TRUE); // Allow vertical expansion
+
+    GtkWidget *page_controller_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_add_css_class(page_controller_container, "settings_page_controller");
+    gtk_grid_attach(GTK_GRID(main_grid), page_controller_container, 0, 2, 1, 1);
+    gtk_widget_set_hexpand(page_controller_container, TRUE); // Allow horizontal expansion
+    gtk_widget_set_vexpand(page_controller_container, FALSE); // Disable vertical expansion
+    gtk_box_set_homogeneous(GTK_BOX(page_controller_container), TRUE); // Make all children the same size
+
+    // Page controller container
+    gtk_widget_set_margin_top(page_controller_container, 30);
+    gtk_widget_set_margin_bottom(page_controller_container, 30);
+    gtk_widget_set_margin_start(page_controller_container, 30);
+    gtk_widget_set_margin_end(page_controller_container, 30);
+
+
+    // Left button
+    GtkWidget *left_button = gtk_button_new();
+    gtk_widget_add_css_class(left_button, "left-button");
+    gtk_box_append(GTK_BOX(page_controller_container), left_button);
+    GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
+    gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
+
+    // Center label
+    GtkWidget *center_label = gtk_label_new("Add users");
+    gtk_widget_add_css_class(center_label, "center-label");
+    gtk_label_set_ellipsize(GTK_LABEL(center_label), PANGO_ELLIPSIZE_END); // Handle overflow gracefully
+    gtk_box_append(GTK_BOX(page_controller_container), center_label);
+
+    // Right button
+    GtkWidget *right_button = gtk_button_new();
+    gtk_widget_add_css_class(right_button, "right-button");
+    GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
+    gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
+    gtk_box_append(GTK_BOX(page_controller_container), right_button);
+    
+    // Slider container
+    GtkWidget *slider_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_add_css_class(slider_container, "settings_slider-container");
+    gtk_grid_attach(GTK_GRID(main_grid), slider_container, 0, 3, 1, 1);
+    gtk_widget_set_hexpand(slider_container, TRUE);
+    gtk_widget_set_vexpand(slider_container, TRUE);
+
+    // Slider container
+    gtk_widget_set_margin_top(slider_container, 30);
+    gtk_widget_set_margin_bottom(slider_container, 30);
+    gtk_widget_set_margin_start(slider_container, 30);
+    gtk_widget_set_margin_end(slider_container, 30);
+
+    GtkWidget *slider_inner_container_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_append(GTK_BOX(slider_container), slider_inner_container_1);
+
+    // Top container with entry and add button
+    GtkWidget *entry_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_add_css_class(entry_container, "settings_entry-container");
+    gtk_widget_set_hexpand(entry_container, TRUE); // Allow horizontal expansion
+    
+    // Entry field
+    GtkWidget *name_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(name_entry), "Enter user name");
+    gtk_widget_add_css_class(name_entry, "settings_name-entry");
+    gtk_box_append(GTK_BOX(entry_container), name_entry);
+    gtk_widget_set_hexpand(name_entry, TRUE); // Allow horizontal expansion
+    
+    // Add button
+    GtkWidget *add_button = gtk_button_new_with_label("Add");
+    gtk_widget_add_css_class(add_button, "settings_add-button");
+    gtk_box_append(GTK_BOX(entry_container), add_button);
+    
+    // Append entry container to slider container
+    gtk_box_append(GTK_BOX(slider_inner_container_1), entry_container);
+
+    // Scrollable list of names
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    gtk_widget_add_css_class(scrolled_window, "settings_names-scroll");
+    gtk_widget_set_vexpand(scrolled_window, TRUE);
+    
+    GtkWidget *list_box = gtk_list_box_new();
+    gtk_widget_add_css_class(list_box, "settings_names-list");
+    
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), list_box);
+    gtk_box_append(GTK_BOX(slider_inner_container_1), scrolled_window);
+
+    
+    GtkWidget *slider_inner_container_2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_append(GTK_BOX(slider_container), slider_inner_container_2);
+    gtk_widget_set_visible(slider_inner_container_2, FALSE);
+
+    // Top container with entry and add button
+    GtkWidget *entry_container_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_add_css_class(entry_container_2, "settings_entry-container");
+    gtk_widget_set_hexpand(entry_container_2, TRUE); // Allow horizontal expansion
+    
+    // Entry field
+    GtkWidget *name_entry_2 = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(name_entry_2), "Enter user name");
+    gtk_widget_add_css_class(name_entry_2, "settings_name-entry");
+    gtk_box_append(GTK_BOX(entry_container_2), name_entry_2);
+    gtk_widget_set_hexpand(name_entry_2, TRUE); // Allow horizontal expansion
+    
+    // Add button
+    GtkWidget *del_button = gtk_button_new_with_label("Delete");
+    gtk_widget_add_css_class(del_button, "settings_del-button");
+    gtk_box_append(GTK_BOX(entry_container_2), del_button);
+    
+    // Append entry container to slider container
+    gtk_box_append(GTK_BOX(slider_inner_container_2), entry_container_2);
+
+    // Scrollable list of names
+    GtkWidget *scrolled_window_2 = gtk_scrolled_window_new();
+    gtk_widget_add_css_class(scrolled_window_2, "settings_names-scroll");
+    gtk_widget_set_vexpand(scrolled_window_2, TRUE);
+    
+    GtkWidget *list_box_2 = gtk_list_box_new();
+    gtk_widget_add_css_class(list_box_2, "settings_names-list");
+    
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window_2), list_box_2);
+    gtk_box_append(GTK_BOX(slider_inner_container_2), scrolled_window_2);
+
+    // for slider bellow
+    // gtk_widget_set_hexpand(page_controller_container, TRUE); // Allow horizontal expansion
+    // gtk_widget_set_vexpand(page_controller_container, TRUE); // Allow vertical expansion
+
+    // Create a small button
+    GtkWidget *small_button = gtk_button_new_with_label("Delete group");
+    gtk_grid_attach(GTK_GRID(grid), small_button, 0, 1, 1, 1); // Attach to grid at (0, 1)
+    gtk_widget_set_hexpand(small_button, TRUE); // Allow horizontal expansion
+    gtk_widget_set_vexpand(small_button, FALSE); // Do not allow vertical expansion
+    gtk_widget_set_size_request(small_button, -1, 70); // Set a fixed height for the button
+
+    // Small button
+    gtk_widget_set_margin_top(small_button, 30);
+    gtk_widget_set_margin_bottom(small_button, 30);
+    gtk_widget_set_margin_start(small_button, 30);
+    gtk_widget_set_margin_end(small_button, 30);
+
+    // Store login, password entries and error label for callback
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 4);
+    entries[0] = user_data; // Here GTK_data
+    entries[1] = slider_inner_container_1;
+    entries[2] = slider_inner_container_2;
+    entries[3] = center_label;
+
+    // Add buttons connections
+    //Functioal buttons
+    g_object_set_data(G_OBJECT(add_button), "entry", name_entry);
+    g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), list_box_2);
+    g_object_set_data(G_OBJECT(del_button), "entry", name_entry_2);
+    g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), list_box_2);
+    //Controller:
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
+
+    // Show the new window
+    gtk_window_present(GTK_WINDOW(settings_window));
+
+    // Connect the destroy signal to close the window properly
+    g_signal_connect(settings_window, "destroy", G_CALLBACK(gtk_window_destroy), NULL);
 }
 
 // Main application window setup
@@ -365,13 +646,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_visible(add_group_button, FALSE);
 
     g_signal_connect(add_group_button, "clicked", G_CALLBACK(on_add_group_button_clicked), GTK_data);
-
-    // Store login, password entries and error label for callback
-    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 5);
-    entries[0] = user_data; // Here GTK_data
-    entries[1] = add_group_button;
-    entries[2] = sidebar_scroll_groups;
-    entries[3] = sidebar_scroll_users;
     
     // --- Sidebar Container Setup ---
     GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
@@ -416,8 +690,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_valign(center_label, GTK_ALIGN_CENTER); // Center-align the label vertically
     gtk_box_append(GTK_BOX(sidebar_container), center_label);
 
-    entries[4] = center_label;
-
     // Right button
     GtkWidget *right_button = gtk_button_new();
     gtk_widget_add_css_class(right_button, "right-button");
@@ -451,6 +723,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_size_request(avatar_circle_group, 60, 60);
     //gtk_widget_add_css_class(avatar_circle_group, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle_group);
+
+    // Create the settings button
+    GtkWidget *settings_group_button = gtk_button_new();
+    gtk_widget_add_css_class(settings_group_button, "settings-group-button");
+    gtk_box_append(GTK_BOX(chat_header), settings_group_button);
+    GtkWidget *settings_group_icon = gtk_image_new_from_file("src/chat_visual/images/settings.svg");
+    gtk_button_set_child(GTK_BUTTON(settings_group_button), settings_group_icon);
+    gtk_widget_set_visible(settings_group_button, FALSE);
 
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
     gtk_widget_set_margin_top(input_container, 10);
@@ -499,6 +779,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->cancel_button = cancel_button;
     *chat_manager->is_editing = false;
     chat_manager->avatar_circle = avatar_circle;
+    chat_manager->settings_group_button = NULL;
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
@@ -510,6 +791,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->cancel_button = cancel_button;
     group_manager->is_editing = chat_manager->is_editing;
     group_manager->avatar_circle = avatar_circle_group;
+    group_manager->settings_group_button = settings_group_button;
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");
@@ -553,6 +835,19 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_visible(select_a_chat_label, true);
     chat_manager->select_a_chat_label = select_a_chat_label;
     group_manager->select_a_chat_label = select_a_chat_label;
+
+    // Store login, password entries and error label for callback
+    GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 5);
+    entries[0] = user_data; // Here GTK_data
+    entries[1] = add_group_button;
+    entries[2] = sidebar_scroll_groups;
+    entries[3] = sidebar_scroll_users;
+    entries[4] = center_label;
+
+    // Buttons connects functions
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries); 
+    g_signal_connect(settings_group_button, "clicked", G_CALLBACK(on_settings_group_button_clicked), user_data);   
     
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);
@@ -579,6 +874,7 @@ void GTK_start(GTK_data_t *GTK_data) {
 
     if (app == NULL) {
         switch_to_groups = false;
+        switch_settings_in_group = false;
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
         

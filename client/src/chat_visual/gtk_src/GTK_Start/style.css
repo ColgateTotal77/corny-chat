@@ -119,6 +119,39 @@ button.settings-button:active {
     min-height: 24px;
 }
 
+
+button.settings-group-button {
+    background-color: #D9D9D9; /* Initial background color */
+    background: #D9D9D9; /* Ensures background is set */
+    background-image: none; /* Remove any default background image */
+    color: #333333; /* Icon color */
+    border-radius: 50%; /* Circular shape */
+    min-width: 35px;
+    min-height: 35px;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 10px;
+}
+
+/* Hover effect */
+button.settings-group-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* Active (pressed) state */
+button.settings-group-button:active {
+    background-color: #A0A0A0; /* Darker shade to indicate press */
+    transform: scale(0.95); /* Slightly shrink for a pressed effect */
+}
+
+.settings-group-button img {
+    min-width: 24px; /* Icon size */
+    min-height: 24px;
+}
+
+
 /* done*/
 .search-container {
     background-color: #D9D9D9; /* Light gray background */
@@ -1239,4 +1272,88 @@ entry {
 .remember-me-box .login-button:active {
     transform: translateY(1px);
     box-shadow: none;
+}
+
+/* Page Controller Container */
+.settings_page_controller {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    min-width: 500px;
+}
+
+/* Slider Container */
+.settings_slider-container {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Entry Container */
+.settings_entry-container {
+    margin-bottom: 10px;
+}
+
+.settings_name-entry {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* Add Button */
+.settings_add-button {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+.settings_add-button:hover {
+    background-color: #45a049;
+}
+
+/* Names Scroll */
+.settings_names-scroll {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 200px;
+}
+
+.settings_names-list {
+    background-color: white;
+}
+
+/* Name List Items */
+.settings_name-list-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.settings_name-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Page Controller Container */
+.settings_page_controller_container {
+    background-color: #f0f0f0;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Center Label */
+.settings_center-label {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Left and Right Buttons */
+.settings_left-button,
+.settings_right-button {
+    background-color: transparent;
+    padding: 5px;
+}
+
+.settings_left-button:hover,
+.settings_right-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }

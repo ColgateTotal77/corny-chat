@@ -77,6 +77,7 @@ typedef struct {
     GtkWidget *select_a_chat_label;
     GtkWidget *cancel_button;
     GtkWidget *avatar_circle;
+    GtkWidget *settings_group_button;
 } chat_manager_t;
 
 typedef struct {

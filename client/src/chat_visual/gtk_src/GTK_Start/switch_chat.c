@@ -155,10 +155,12 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     if(is_group){
         gtk_widget_set_visible(GTK_data->chat_manager->avatar_circle, FALSE);
         gtk_widget_set_visible(GTK_data->group_manager->avatar_circle, TRUE);
+        gtk_widget_set_visible(GTK_data->group_manager->settings_group_button, TRUE);
     } else{
         const char *image_path = current_manager->active_chat->is_active ? "src/chat_visual/images/person.svg" : "src/chat_visual/images/RIP.svg";
         gtk_image_set_from_file(GTK_IMAGE(GTK_data->chat_manager->avatar_circle), image_path);
         gtk_widget_set_visible(GTK_data->group_manager->avatar_circle, FALSE);
+        gtk_widget_set_visible(GTK_data->group_manager->settings_group_button, FALSE);
         gtk_widget_set_visible(GTK_data->chat_manager->avatar_circle, TRUE);
     }
 
