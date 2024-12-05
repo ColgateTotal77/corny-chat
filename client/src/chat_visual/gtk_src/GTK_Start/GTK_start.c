@@ -170,6 +170,30 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
 
 }
 
+static void on_window_destroy(GtkWindow *window, gpointer user_data) {
+    //(void)window;
+    GtkWidget **entries = (GtkWidget **)user_data;
+    GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
+
+    GList *user_list = g_hash_table_get_keys(GTK_data->group_manager->chats);
+    GList *iter;
+
+    for (iter = user_list; iter != NULL; iter = iter->next) {
+        gpointer key = iter->data;
+        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->group_manager->chats, key);
+        g_object_unref(user_chat->user_list_for_add);
+        g_object_unref(user_chat->user_list_for_delete);
+    }
+    g_list_free(user_list);
+    
+    *(GTK_data->call_data->stop_flag) = true;
+    free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
+    GTK_data = NULL;
+    g_free(entries); 
+    printf("\nclosing the window\n");
+    gtk_window_destroy(window);
+}
+
 static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
     (void) button;
     GtkWidget **entries = (GtkWidget **)user_data;
@@ -294,7 +318,10 @@ void switch_between_settings_in_group(GtkWidget *widget, gpointer user_data) {
 static void delete_name_from_list(GtkWidget *button, gpointer user_data) {
     // Get the entry widget from which we'll read the name to delete
     GtkWidget *entry = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "entry"));
-    GtkWidget *list_box = GTK_WIDGET(user_data);
+
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+
+    GtkWidget *list_box = GTK_data->group_manager->user_list_for_delete;
    
     // Get the text from the entry
     const char *name_to_delete = gtk_editable_get_text(GTK_EDITABLE(entry));
@@ -307,54 +334,52 @@ static void delete_name_from_list(GtkWidget *button, gpointer user_data) {
        
         // Iterate through all children
         while (child != NULL) {
-            // Store the next child before potentially removing the current one
-            GtkWidget *next_child = gtk_widget_get_next_sibling(child);
-           
-            // Check if this child is a GtkListBoxRow
-            if (GTK_IS_LIST_BOX_ROW(child)) {
-                // Get the label inside the row
-                GtkWidget *label = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
-                
-                // Check if we got a label
-                if (label && GTK_IS_LABEL(label)) {
-                    const char *current_name = gtk_label_get_text(GTK_LABEL(label));
-                    printf("current_name: %s\n", current_name);
-                   
-                    // If names match, remove this row
-                    if (strcmp(current_name, name_to_delete) == 0) {
-                        gtk_list_box_remove(GTK_LIST_BOX(list_box), child);
-                       
-                        // Clear the entry after deletion
-                        gtk_editable_set_text(GTK_EDITABLE(entry), "");
-                       
-                        // Exit the loop after deletion
-                        break;
-                    }
-                }
+            GtkWidget *label = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
+            const char *current_name = gtk_label_get_text(GTK_LABEL(label));                   
+            if (strcmp(current_name, name_to_delete) == 0) {
+                printf("\nchat_id: %d\n\n", GPOINTER_TO_INT(g_object_get_data(G_OBJECT(label), "chat_id")));
+                delete_user_from_group(GTK_data->call_data->ssl, GPOINTER_TO_INT(g_object_get_data(G_OBJECT(label), "user_id")), GPOINTER_TO_INT(g_object_get_data(G_OBJECT(list_box), "chat_id")));
+    
+                gtk_editable_set_text(GTK_EDITABLE(entry), "");
+                break;
             }
-           
-            // Move to the next child
-            child = next_child;
+            child = gtk_widget_get_next_sibling(child);
         }
     }
 }
 
 static void add_name_to_list(GtkWidget *button, gpointer user_data) {
     GtkWidget *entry = GTK_WIDGET(g_object_get_data(G_OBJECT(button), "entry"));
-    GtkWidget *list_box = GTK_WIDGET(user_data);
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    GtkWidget *list_box = GTK_data->group_manager->user_list_for_add;
     
     // Get the text from the entry
     const char *name = gtk_editable_get_text(GTK_EDITABLE(entry));
     
     // Only add non-empty names
     if (strlen(name) > 0) {
-        GtkWidget *row = gtk_label_new(name);
-        gtk_widget_add_css_class(row, "settings_name-list-item");
-        gtk_list_box_append(GTK_LIST_BOX(list_box), row);
-        
-        // Clear the entry after adding
-        gtk_editable_set_text(GTK_EDITABLE(entry), "");
+        GtkWidget *child = gtk_widget_get_first_child(list_box);
+        // Iterate through all children
+        while (child != NULL) {
+            GtkWidget *label = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
+            const char *current_name = gtk_label_get_text(GTK_LABEL(label));                               
+            if (strcmp(current_name, name) == 0) {
+                int user_ids[] = {GPOINTER_TO_INT(g_object_get_data(G_OBJECT(label), "user_id"))};
+                add_many_users_to_group(GTK_data->call_data->ssl, user_ids, 1, GPOINTER_TO_INT(g_object_get_data(G_OBJECT(list_box), "chat_id")));
+
+                gtk_editable_set_text(GTK_EDITABLE(entry), "");
+                break;
+            }
+            child = gtk_widget_get_next_sibling(child);
+        }
     }
+}
+
+void group_delete(GtkWidget *button, gpointer user_data) {
+    (void)button;
+    GTK_data_t *GTK_data = (GTK_data_t*)user_data;
+    int chat_id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(GTK_data->group_manager->user_list_for_add), "chat_id"));
+    delete_group(GTK_data->call_data->ssl, chat_id);
 }
 
 void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
@@ -465,17 +490,15 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_widget_add_css_class(scrolled_window, "settings_names-scroll");
     gtk_widget_set_vexpand(scrolled_window, TRUE);
     
-    GtkWidget *list_box = gtk_list_box_new();
-    gtk_widget_add_css_class(list_box, "settings_names-list");
-    
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), list_box);
-    gtk_box_append(GTK_BOX(slider_inner_container_1), scrolled_window);
+    // GTK_data->group_manager->user_list_for_add = gtk_list_box_new();
 
+    // gtk_widget_add_css_class(GTK_data->group_manager->user_list_for_add , "settings_names-list");
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), GTK_data->group_manager->user_list_for_add );
+    gtk_box_append(GTK_BOX(slider_inner_container_1), scrolled_window);
     
     GtkWidget *slider_inner_container_2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_box_append(GTK_BOX(slider_container), slider_inner_container_2);
     gtk_widget_set_visible(slider_inner_container_2, FALSE);
-
     // Top container with entry and add button
     GtkWidget *entry_container_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_add_css_class(entry_container_2, "settings_entry-container");
@@ -500,13 +523,11 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     GtkWidget *scrolled_window_2 = gtk_scrolled_window_new();
     gtk_widget_add_css_class(scrolled_window_2, "settings_names-scroll");
     gtk_widget_set_vexpand(scrolled_window_2, TRUE);
+    // GTK_data->group_manager->user_list_for_delete = gtk_list_box_new();
+    // gtk_widget_add_css_class(GTK_data->group_manager->user_list_for_delete, "settings_names-list");
     
-    GtkWidget *list_box_2 = gtk_list_box_new();
-    gtk_widget_add_css_class(list_box_2, "settings_names-list");
-    
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window_2), list_box_2);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window_2), GTK_data->group_manager->user_list_for_delete);
     gtk_box_append(GTK_BOX(slider_inner_container_2), scrolled_window_2);
-
     // for slider bellow
     // gtk_widget_set_hexpand(page_controller_container, TRUE); // Allow horizontal expansion
     // gtk_widget_set_vexpand(page_controller_container, TRUE); // Allow vertical expansion
@@ -534,9 +555,12 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     // Add buttons connections
     //Functioal buttons
     g_object_set_data(G_OBJECT(add_button), "entry", name_entry);
-    g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), list_box_2);
+    g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), GTK_data);
     g_object_set_data(G_OBJECT(del_button), "entry", name_entry_2);
-    g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), list_box_2);
+    g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), GTK_data);
+
+    //delete group
+    g_signal_connect(small_button, "clicked", G_CALLBACK(group_delete), GTK_data);
     //Controller:
     g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
     g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
@@ -844,7 +868,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
     g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries); 
     g_signal_connect(settings_group_button, "clicked", G_CALLBACK(on_settings_group_button_clicked), user_data);   
-    
+    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(main_grid), input_container, 1, 2, 1, 1);

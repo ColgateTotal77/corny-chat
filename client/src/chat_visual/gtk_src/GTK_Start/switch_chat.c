@@ -181,6 +181,12 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         return;
     }
 
+    if(new_chat->is_group) {
+
+        GTK_data->group_manager->user_list_for_add = GTK_WIDGET(new_chat->user_list_for_add);
+        GTK_data->group_manager->user_list_for_delete = GTK_WIDGET(new_chat->user_list_for_delete);
+    }
+
     gtk_box_append(GTK_BOX(current_manager->chat_area_background), new_chat->messages_container_wrapper);
     gtk_widget_set_visible(new_chat->messages_container_wrapper, TRUE);
     gtk_widget_set_visible(new_chat->messages_container, TRUE);

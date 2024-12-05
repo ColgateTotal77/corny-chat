@@ -15,7 +15,34 @@ void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_dat
 void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
     GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data);
+    
+    new_chat->user_list_for_add = GTK_LIST_BOX(gtk_list_box_new());
+    new_chat->user_list_for_delete = GTK_LIST_BOX(gtk_list_box_new());
+    g_object_ref(new_chat->user_list_for_add); 
+    g_object_ref(new_chat->user_list_for_delete); 
 
+    GList *user_list = g_hash_table_get_keys(GTK_data->chat_manager->chats);
+    GList *iter;
+
+    for (iter = user_list; iter != NULL; iter = iter->next) {
+        gpointer key = iter->data;
+        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
+        GtkWidget *row = gtk_list_box_row_new();
+        GtkWidget *label = gtk_label_new(user_chat->contact_name);
+        gtk_widget_set_halign(label, GTK_ALIGN_START);
+        gtk_widget_set_margin_start(label, 10);
+        gtk_widget_set_margin_end(label, 10);
+        gtk_widget_set_margin_top(label, 5);
+        gtk_widget_set_margin_bottom(label, 5);
+        gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+        gtk_list_box_append(GTK_LIST_BOX(new_chat->user_list_for_add), row);
+        g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_chat->contact_id));
+    }
+    g_list_free(user_list);
+    
+    g_object_set_data(G_OBJECT(new_chat->user_list_for_add), "chat_id", GINT_TO_POINTER(chat_id));
+    g_object_set_data(G_OBJECT(new_chat->user_list_for_delete), "chat_id", GINT_TO_POINTER(chat_id));
+    
     gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
 }
 
@@ -34,7 +61,6 @@ void* recv_msg_handler(void* arg) {
     struct tm message_time = {0};
     char time_to_send[12];
     struct tm *adjusted_time;
-    printf("local_time: %d-%d-%d %d:%d:%d\n", local_time->tm_year, local_time->tm_mon, local_time->tm_mday, local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
     int number_of_users;
     int groups_count = 0;
     get_all_clients_userslist(call_data->ssl);
@@ -83,7 +109,7 @@ void* recv_msg_handler(void* arg) {
                         else if(unread_messages > 99) {
                             gtk_label_set_text(GTK_LABEL(new_chat->number_of_unread_messages), "+99");
                             gtk_widget_set_visible(new_chat->number_of_unread_messages, true);
-                        }
+                        }                      
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, unread_messages + 15);
                     }
                     continue;
@@ -185,6 +211,8 @@ void* recv_msg_handler(void* arg) {
                 else if (command_code_json->valueint == 27 && group_counter < groups_count) {
                     chat_data_t *chat = NULL;
                     int all_mes_qty = cJSON_GetObjectItemCaseSensitive(parsed_json, "all_mes_qty")->valueint;
+                    int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                    chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
                     if (all_mes_qty) {
                         cJSON *messages = cJSON_GetObjectItemCaseSensitive(parsed_json, "messages");
                         for (int i = 0;  i < all_mes_qty; i++) {
@@ -198,11 +226,9 @@ void* recv_msg_handler(void* arg) {
                             adjusted_time = localtime(&time_value);
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
 
-                            int target_group_id = cJSON_GetObjectItemCaseSensitive(message_data, "target_group_id")->valueint;
                             char *message = cJSON_GetObjectItemCaseSensitive(message_data, "message")->valuestring;
                             int msg_id = cJSON_GetObjectItemCaseSensitive(message_data, "msg_id")->valueint;
                             char *changed = cJSON_GetObjectItemCaseSensitive(message_data, "updated_at")->valuestring;
-                            chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(target_group_id));
                             int owner_id = cJSON_GetObjectItemCaseSensitive(message_data, "owner_id")->valueint;
                             char *nickname = cJSON_GetObjectItemCaseSensitive(message_data, "nickname")->valuestring;
                             add_message(message, time_to_send, owner_id == GTK_data->user_id, (*changed) ? true : false, GTK_data->group_manager, call_data->ssl, msg_id, chat, nickname);
@@ -223,6 +249,7 @@ void* recv_msg_handler(void* arg) {
                             }
                         }
                     }
+                    get_chat_users(GTK_data->call_data->ssl, group_id);
                     group_counter++;
                     continue;
                 }
@@ -235,6 +262,38 @@ void* recv_msg_handler(void* arg) {
                     chat_data_t *chat = NULL;
                     int sender_id;
                     int group_id;
+
+                    case 32: 
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                            chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                            int members_num = cJSON_GetObjectItemCaseSensitive(parsed_json, "members_num")->valueint;
+                            cJSON *members = cJSON_GetObjectItemCaseSensitive(parsed_json, "members");
+                            for (int i = 0;  i < members_num; i++) {
+                                cJSON *member = cJSON_GetArrayItem(members, i);
+                                int user_id = cJSON_GetObjectItemCaseSensitive(member, "id")->valueint;
+                                char *nickname = cJSON_GetObjectItemCaseSensitive(member, "login")->valuestring;
+                                GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_add));
+
+                                while (child != NULL) {
+                                    const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+
+                                    if (strcmp(current_nickname, nickname) == 0) {
+                                        gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_add), child);
+
+                                        GtkWidget *row = gtk_list_box_row_new();
+                                        GtkWidget *label = gtk_label_new(nickname);
+                                        gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                        gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                        gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_delete), row);
+                                        g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                                        break;
+                                    }
+                                    child = gtk_widget_get_next_sibling(child);
+                                }
+                            }  
+                        } 
+                        break;
                     case 31:
                         group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
                         chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
@@ -278,7 +337,6 @@ void* recv_msg_handler(void* arg) {
                         while (child != NULL) {
                             // Get the text of the current child row
                             const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
-                            printf("\nlogin: %s, child: %s \n", login, current_login);
 
                             if (strcmp(current_login, login) == 0) {
                                 // Remove the child row from the list box
@@ -302,8 +360,7 @@ void* recv_msg_handler(void* arg) {
                             }
 
                             // Move to the next child
-                            GtkWidget *next_child = gtk_widget_get_next_sibling(child);
-                            child = next_child;
+                            child = gtk_widget_get_next_sibling(child);
                         }
 
                         // Free the cJSON object if it was dynamically allocated
@@ -392,6 +449,68 @@ void* recv_msg_handler(void* arg) {
                         } 
                         break;
 
+                    case 22:
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                            chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                            g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
+                        }
+                        break;
+
+                    case 21:
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                            
+                            chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                            int user_id = cJSON_GetArrayItem(cJSON_GetObjectItem(parsed_json, "users_id"), 0)->valueint;
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_delete));
+                            while (child != NULL) {
+                                const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+
+                                if (strcmp(current_nickname, "nickname") == 0) {
+
+                                    GtkWidget *row = gtk_list_box_row_new();
+                                    GtkWidget *label = gtk_label_new(current_nickname);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_add), row);
+                                    g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                                    g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
+                                    
+                                    gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_delete), child);
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+                        }
+                        break;
+
+                    case 20:
+                        if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
+                            int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                            chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                            int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                            GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_add));
+                            while (child != NULL) {
+                                const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+
+                                if (strcmp(current_nickname, "nickname") == 0) {
+
+                                    GtkWidget *row = gtk_list_box_row_new();
+                                    GtkWidget *label = gtk_label_new(current_nickname);
+                                    gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_delete), row);
+                                    g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                                    g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
+                                    
+                                    gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_add), child);
+                                    break;
+                                }
+                                child = gtk_widget_get_next_sibling(child);
+                            }
+                        }
+                        break;
                     case 18:
                         sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
@@ -711,6 +830,12 @@ void* recv_msg_handler(void* arg) {
                     create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
                     break;
                 }
+                case 56: {
+                    int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                    g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
+                }
+                    break;
                 case 57: {
                     if(!cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint) {
                         int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
@@ -742,6 +867,11 @@ void* recv_msg_handler(void* arg) {
                         delete_message_from_others(chat, msg_id);
                     }
                     break;
+                }
+                case 62: {
+                    int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
+                    g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
                 }
             }
             cJSON_Delete(parsed_json);

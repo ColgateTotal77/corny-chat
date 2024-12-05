@@ -55,6 +55,9 @@ typedef struct {
     bool is_group;
     GtkWidget *avatar_circle;
     bool is_active;
+
+    GtkListBox *user_list_for_add;
+    GtkListBox *user_list_for_delete;
 } chat_data_t;
 
 typedef struct {
@@ -78,6 +81,9 @@ typedef struct {
     GtkWidget *cancel_button;
     GtkWidget *avatar_circle;
     GtkWidget *settings_group_button;
+
+    GtkWidget *user_list_for_add;
+    GtkWidget *user_list_for_delete;
 } chat_manager_t;
 
 typedef struct {
@@ -129,6 +135,7 @@ typedef struct {
     bool login_successful;
     pthread_t recv_thread;
     bool *stop_login;
+
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;

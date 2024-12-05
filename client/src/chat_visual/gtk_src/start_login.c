@@ -43,7 +43,7 @@ void set_error_text(GtkWidget *error_label, bool *error, const char *error_text)
     }
 }
 
-void on_window_destroy(GtkWindow *window, gpointer user_data) {
+static void on_window_destroy(GtkWindow *window, gpointer user_data) {
     //(void)window;
     GtkWidget **entries = (GtkWidget **)user_data;
     GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
@@ -56,7 +56,7 @@ void on_window_destroy(GtkWindow *window, gpointer user_data) {
         free(GTK_data);
         GTK_data = NULL;
         g_free(entries);
-        printf("closing the window");
+        printf("\nclosing the window\n");
         gtk_window_destroy(window);
     }
 }
