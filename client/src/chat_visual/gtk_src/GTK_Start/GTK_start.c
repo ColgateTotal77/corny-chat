@@ -679,8 +679,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
     gtk_widget_set_size_request(back_icon, 24, 24); // Set specific size for the back icon
 
-    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
-
     // Center label
     GtkWidget *center_label = gtk_label_new("Chats");
     gtk_widget_add_css_class(center_label, "center-label");
@@ -699,8 +697,6 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
     gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
     gtk_widget_set_size_request(next_icon, 24, 24); // Set specific size for the forward icon
-
-    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
     
     gtk_box_set_homogeneous(GTK_BOX(sidebar_container), TRUE); // Make all children the same size
 
