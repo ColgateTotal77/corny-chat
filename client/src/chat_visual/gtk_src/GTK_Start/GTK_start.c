@@ -205,8 +205,7 @@ static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
 }
 
 void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
-    (void) widget;
-    // (void) data;
+    (void)widget;
     GTK_data_t *GTK_data = (GTK_data_t *)data;
 
     // Create a new dialog window
@@ -214,13 +213,14 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
     gtk_window_set_title(GTK_WINDOW(dialog), "Create New Group");
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
 
-    // Make dialog a transient window of the main window
+    // Make dialog a transient window of the main window, but still allow independent movement
     if (GTK_data && GTK_data->window) {
         gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(GTK_data->window));
+        gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), FALSE); // Ensure it doesn't move the main window
     }
 
-    // Ensure dialog is modal
-    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    // Allow the dialog to be moved independently
+    gtk_window_set_modal(GTK_WINDOW(dialog), FALSE); // Not modal
 
     // Create a box to hold the content
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -245,7 +245,7 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
     // Create buttons
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
-    
+
     gtk_box_append(GTK_BOX(button_box), cancel_button);
     gtk_box_append(GTK_BOX(button_box), create_button);
     gtk_box_append(GTK_BOX(box), button_box);
@@ -260,7 +260,7 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
 
     // Connect button signals
     g_signal_connect_swapped(cancel_button, "clicked", G_CALLBACK(gtk_window_destroy), dialog);
-    
+
     g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_group_clicked), entries);
 
     // Present the dialog
@@ -376,19 +376,44 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     // --- Sidebar Container Setup ---
     GtkWidget *sidebar_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 40);
     gtk_widget_add_css_class(sidebar_container, "sidebar-container");
+
+    // Set fixed size
+    gtk_widget_set_size_request(sidebar_container, 400, 60);  // Width: 400px, Height: 60px
+
+    // Prevent expansion
+    gtk_widget_set_hexpand(sidebar_container, FALSE);
+    gtk_widget_set_vexpand(sidebar_container, FALSE);
+
+    // Keep alignment
+    gtk_widget_set_halign(sidebar_container, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(sidebar_container, GTK_ALIGN_START);
+
+    // Keep existing margins
+    gtk_widget_set_margin_top(sidebar_container, 25);
+    gtk_widget_set_margin_bottom(sidebar_container, 17);
+    gtk_widget_set_margin_start(sidebar_container, 10);
+    gtk_widget_set_margin_end(sidebar_container, 10);
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_container, 0, 2, 1, 1);
 
     // Left button
     GtkWidget *left_button = gtk_button_new();
     gtk_widget_add_css_class(left_button, "left-button");
+    gtk_widget_set_size_request(left_button, 30, 30); // Set specific size for the left button
     gtk_box_append(GTK_BOX(sidebar_container), left_button);
+
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
     gtk_button_set_child(GTK_BUTTON(left_button), back_icon);
+    gtk_widget_set_size_request(back_icon, 24, 24); // Set specific size for the back icon
+
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
 
     // Center label
     GtkWidget *center_label = gtk_label_new("Chats");
     gtk_widget_add_css_class(center_label, "center-label");
+    gtk_widget_set_size_request(center_label, 100, 50); // Set specific size for the center label
     gtk_label_set_ellipsize(GTK_LABEL(center_label), PANGO_ELLIPSIZE_END); // Handle overflow gracefully
+    gtk_widget_set_halign(center_label, GTK_ALIGN_CENTER); // Center-align the label horizontally
+    gtk_widget_set_valign(center_label, GTK_ALIGN_CENTER); // Center-align the label vertically
     gtk_box_append(GTK_BOX(sidebar_container), center_label);
 
     entries[4] = center_label;
@@ -396,14 +421,15 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     // Right button
     GtkWidget *right_button = gtk_button_new();
     gtk_widget_add_css_class(right_button, "right-button");
-    GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
-    gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
+    gtk_widget_set_size_request(right_button, 30, 30); // Set specific size for the right button
     gtk_box_append(GTK_BOX(sidebar_container), right_button);
 
-    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
-    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
-    
+    GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
+    gtk_button_set_child(GTK_BUTTON(right_button), next_icon);
+    gtk_widget_set_size_request(next_icon, 24, 24); // Set specific size for the forward icon
 
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);    
+    
     gtk_box_set_homogeneous(GTK_BOX(sidebar_container), TRUE); // Make all children the same size
 
     // --- Chat Area Setup ---
@@ -439,17 +465,26 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(input_box, "input-box");
     gtk_box_append(GTK_BOX(input_container), input_box);
 
+    // Create an overlay container
+    GtkWidget *entry_overlay = gtk_overlay_new();
+    gtk_widget_set_hexpand(entry_overlay, TRUE);
+    gtk_box_append(GTK_BOX(input_box), entry_overlay);
+
     // Create message entry
     GtkWidget *message_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(message_entry), "Enter message");
     gtk_widget_set_hexpand(message_entry, TRUE);
     gtk_widget_add_css_class(message_entry, "message-entry");
-    gtk_box_append(GTK_BOX(input_box), message_entry);
+    gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), message_entry);
 
-        GtkWidget *cancel_button = gtk_button_new_with_label("X");
+    // Create and setup cancel button
+    GtkWidget *cancel_button = gtk_button_new_with_label("X");
     gtk_widget_add_css_class(cancel_button, "search-erase-button");
     gtk_widget_set_size_request(cancel_button, 20, 20);
-    gtk_box_append(GTK_BOX(input_box), cancel_button); 
+    gtk_overlay_add_overlay(GTK_OVERLAY(entry_overlay), cancel_button);
+    gtk_widget_set_halign(cancel_button, GTK_ALIGN_END);
+    gtk_widget_set_valign(cancel_button, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_end(cancel_button, 15);
     gtk_widget_set_visible(cancel_button, false);
 
     chat_data_t *active_chat = NULL;

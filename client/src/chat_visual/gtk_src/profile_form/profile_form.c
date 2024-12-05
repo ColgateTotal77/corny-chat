@@ -131,73 +131,94 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_stack_set_transition_duration(GTK_STACK(carousel_stack), 300);
 
     // Header section
-    GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 15);
+    GtkWidget *header_box = gtk_grid_new();
+    gtk_widget_set_size_request(header_box, 800, 60);
     gtk_widget_set_hexpand(header_box, TRUE);
-    gtk_box_set_homogeneous(GTK_BOX(header_box), FALSE);
+    gtk_widget_set_vexpand(header_box, FALSE);
     gtk_widget_add_css_class(header_box, "header_box");
 
     // Left side of header (Back button and nickname)
     GtkWidget *header_left_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_halign(header_left_box, GTK_ALIGN_START);
+    gtk_widget_set_hexpand(header_left_box, TRUE);
 
     // Back button
     GtkWidget *back_button = gtk_button_new();
     gtk_widget_add_css_class(back_button, "back-button");
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
+    gtk_widget_set_margin_bottom(back_button, 14);
     gtk_button_set_child(GTK_BUTTON(back_button), back_icon);
     g_signal_connect_swapped(back_button, "clicked", G_CALLBACK(gtk_window_close_wrapper), GTK_data);
 
     // Nickname label
     GtkWidget *name_label = gtk_label_new(GTK_data->username ? GTK_data->username : "Unknown User");
     gtk_widget_add_css_class(name_label, "header-label");
+    gtk_widget_set_size_request(name_label, 200, -1); // Fixed width for nickname
+    gtk_widget_set_margin_bottom(name_label, 12);
+    gtk_label_set_ellipsize(GTK_LABEL(name_label), PANGO_ELLIPSIZE_END); // Ellipsize long nicknames
     GTK_data->profile_data->name_label = GTK_WIDGET(name_label);
 
     // Add back button and nickname to left box
     gtk_box_append(GTK_BOX(header_left_box), back_button);
     gtk_box_append(GTK_BOX(header_left_box), name_label);
 
-    gtk_box_append(GTK_BOX(header_box), header_left_box);
+    // Add left box to grid
+    gtk_grid_attach(GTK_GRID(header_box), header_left_box, 0, 0, 1, 1);
 
-    GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     if (GTK_data->is_admin) {
-    gtk_widget_set_size_request(header_right_box, 300, 50); // Fixed width and height
+        // Right side of header (Navigation buttons and title)
+        GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        gtk_widget_set_halign(header_right_box, GTK_ALIGN_END);
+        gtk_widget_add_css_class(header_right_box, "header_right_box");
 
-    // Ensure it aligns to the end of the header_box
-    gtk_widget_set_halign(header_right_box, GTK_ALIGN_END);
-    gtk_widget_add_css_class(header_right_box, "header_right_box");
+        // Set the same size as the "Create" button container
+        gtk_widget_set_size_request(header_right_box, 400, 60);
+        gtk_widget_set_margin_bottom(header_right_box, 14);
+        gtk_widget_set_margin_end(header_right_box, 23);
 
-    // Previous button
-    GtkWidget *prev_button = gtk_button_new();
-    GtkWidget *prev_icon = gtk_image_new_from_file("src/chat_visual/images/back_arrow.svg");
-    gtk_button_set_child(GTK_BUTTON(prev_button), prev_icon);
-    gtk_widget_add_css_class(prev_button, "nav-button");
+        // Previous button
+        GtkWidget *prev_button = gtk_button_new();
+        gtk_widget_set_size_request(prev_button, 40, 40);
+        GtkWidget *prev_icon = gtk_image_new_from_file("src/chat_visual/images/back_arrow.svg");
+        gtk_button_set_child(GTK_BUTTON(prev_button), prev_icon);
+        gtk_widget_add_css_class(prev_button, "nav-button");
 
-    // Window title
-    current_window_label = gtk_label_new("Create New User");
-    gtk_widget_add_css_class(current_window_label, "window-title");
-    gtk_widget_set_size_request(current_window_label, 300, -1); // Width: 150px, Height: automatic
+        // Window title
+        current_window_label = gtk_label_new("Create New User");
+        gtk_widget_add_css_class(current_window_label, "window-title");
+        gtk_widget_set_size_request(current_window_label, 200, -1); // Fixed size for title
+        gtk_label_set_xalign(GTK_LABEL(current_window_label), 0.5);
 
-    // Next button
-    GtkWidget *next_button = gtk_button_new();
-    GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
-    gtk_button_set_child(GTK_BUTTON(next_button), next_icon);
-    gtk_widget_add_css_class(next_button, "nav-button");
+        // Next button
+        GtkWidget *next_button = gtk_button_new();
+        gtk_widget_set_size_request(next_button, 40, 40);
+        gtk_widget_set_margin_start(next_button, 8);
+        GtkWidget *next_icon = gtk_image_new_from_file("src/chat_visual/images/forward_arrow.svg");
+        gtk_button_set_child(GTK_BUTTON(next_button), next_icon);
+        gtk_widget_add_css_class(next_button, "nav-button");
 
-    // Add navigation elements to right box
-    gtk_box_append(GTK_BOX(header_right_box), prev_button);
-    gtk_box_append(GTK_BOX(header_right_box), current_window_label);
-    gtk_box_append(GTK_BOX(header_right_box), next_button);
+        // Add navigation elements to right box
+        gtk_box_append(GTK_BOX(header_right_box), prev_button);
+        gtk_box_append(GTK_BOX(header_right_box), current_window_label);
+        gtk_box_append(GTK_BOX(header_right_box), next_button);
 
-    // Connect navigation button signals
-    g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
-    g_signal_connect(prev_button, "clicked", G_CALLBACK(on_prev_button_clicked), carousel_stack);
+        // Connect navigation button signals
+        g_signal_connect(next_button, "clicked", G_CALLBACK(on_next_button_clicked), carousel_stack);
+        g_signal_connect(prev_button, "clicked", G_CALLBACK(on_prev_button_clicked), carousel_stack);
 
-    gtk_box_append(GTK_BOX(header_box), header_right_box);
+        // Add right box to grid
+        gtk_grid_attach(GTK_GRID(header_box), header_right_box, 1, 0, 1, 1);
     } else {
-    g_print("User is NOT admin. Skipping header_right_box.\n");
+        g_print("User is NOT admin. Skipping header_right_box.\n");
     }
+
+    // Use alignment for fixed spacing
+    gtk_widget_set_hexpand(header_left_box, TRUE); // Left box will take the remaining space
+    gtk_widget_set_hexpand(header_box, TRUE);    // Grid won't grow unnecessarily
+
     // Add header to main box
     gtk_box_append(GTK_BOX(main_box), header_box);
+
 
     // Left Box (Nickname and Password Sections)
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
@@ -206,12 +227,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Nickname Section
     GtkWidget *nickname_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_set_size_request(nickname_box, 300, -1);
     GtkWidget *nickname_label = gtk_label_new("Enter new nickname:");
     gtk_widget_set_halign(nickname_label, GTK_ALIGN_START);
 
     GtkWidget *nickname_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(nickname_entry), "Enter nickname");
     gtk_widget_add_css_class(nickname_entry, "nickname-entry");
+    gtk_widget_set_size_request(nickname_entry, 250, 20);
     GTK_data->profile_data->nickname_entry = nickname_entry; // Store in profile_data
 
     GtkWidget *update_button = gtk_button_new_with_label("Update");
@@ -237,8 +260,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(nickname_box), nickname_input_box);
     gtk_box_append(GTK_BOX(nickname_box), nickname_error_label); // Add error label to the box
 
-    GtkWidget *nickname_separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_widget_set_margin_top(nickname_separator, 10);
+    GtkWidget *nickname_separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);;
+    gtk_widget_set_size_request(nickname_separator, 300, 3);
+    gtk_widget_add_css_class(nickname_separator, "nickname-separator");
     gtk_widget_set_margin_bottom(nickname_separator, 10);
     gtk_box_append(GTK_BOX(nickname_box), nickname_separator);
 
@@ -367,7 +391,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_halign(login_label, GTK_ALIGN_START);
     GtkWidget *login_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(login_entry), "Enter login");
-    gtk_widget_add_css_class(login_entry, "login-entry");
+    gtk_widget_add_css_class(login_entry, "login-entry1");
 
     // Password input with eye icon
     GtkWidget *password_label = gtk_label_new("Password:");
@@ -436,7 +460,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_halign(login_label1, GTK_ALIGN_START);
     GtkWidget *admin_login_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(admin_login_entry), "Login");
-    gtk_widget_add_css_class(admin_login_entry, "text-entry");
+    gtk_widget_add_css_class(admin_login_entry, "login-entry2");
     GTK_data->profile_data->admin_login_entry = admin_login_entry;
 
     // New password input field
