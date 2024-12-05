@@ -13,7 +13,7 @@
 
 
 typedef struct User_create {
-    char login[15];
+    char login[40];
     char nickname[50];
     unsigned char password[32];
     int role_id;
@@ -22,7 +22,7 @@ typedef struct User_create {
 typedef struct User {
     int id;
     char createdAt[20];
-    char login[15];
+    char login[40];
     char nickname[50];
     int role_id;
     bool active;
