@@ -776,6 +776,7 @@ void* recv_msg_handler(void* arg) {
         }
         //memset(message, 0, sizeof(message));
     }
+    free(local_time);
     free(session_id);
     pthread_detach(pthread_self());
     return NULL;
