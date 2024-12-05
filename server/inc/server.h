@@ -134,6 +134,7 @@ void send_to_another_ids_and_delete_json(call_data_t *call_data, cJSON **json);
 void send_user_returned_msg(call_data_t *call_data);
 void send_user_exit_msg(call_data_t *call_data);
 void send_to_client_and_delete_json(cJSON **json, client_t* client_data);
+void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t *chat);
 
 cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
 

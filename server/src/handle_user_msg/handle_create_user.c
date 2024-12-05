@@ -10,7 +10,7 @@ static bool check_login_validity(char *login) { //Валидация логин�
     }
 
     int login_length = mx_strlen(login);
-    if (login_length < 3 || login_length > 14) { //Проверка на длинну, котора должна быть больше 2 и меньше 15
+    if (login_length < 3 || login_length > 39) { //Проверка на длинну, котора должна быть больше 2 и меньше 40
         return false;
     }
 
