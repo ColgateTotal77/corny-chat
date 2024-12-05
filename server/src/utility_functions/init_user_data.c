@@ -40,7 +40,9 @@ user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname,
 		printf("Warning init_user_data got no nickname in call\n");
 		fflush(stdout);
 	}
-	set_user_contacts(db, user_data->user_id, &user_data->contacts_id, &user_data->contacts_count);
+	if (db != NULL) {
+	    set_user_contacts(db, user_data->user_id, &user_data->contacts_id, &user_data->contacts_count);
+	}
 	user_data->is_online = is_online;
 	user_data->is_admin = is_admin;
 	user_data->is_active = is_active;

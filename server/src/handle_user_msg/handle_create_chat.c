@@ -22,23 +22,40 @@ cJSON *handle_create_chat(call_data_t *call_data, cJSON *json) {
     }
 
     cJSON *new_chat_name_json = cJSON_GetObjectItemCaseSensitive(json, "new_chat_name");
+
+    if (strlen(new_chat_name_json->valuestring) < 1) {
+        return create_error_json("Invalid json format\n");
+    }
+
     int user_id = call_data->client_data->user_data->user_id;
 
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     int created_group_id = create_group(
-        call_data->general_data->db, 
+        call_data->general_data->db,
         user_id, new_chat_name_json->valuestring,
         NULL, 0);
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
 	chat_t *new_chat = init_server_group(
         created_group_id, 
         new_chat_name_json->valuestring,
         user_id);
         
+    // Critical resource access: USER DATA. Start
+    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
     append_to_intarr(&call_data->client_data->user_data->groups_id,
                      &call_data->client_data->user_data->groups_count,
                      created_group_id);
+    pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+    // Critical resource access: USER DATA. End
     
+    // Critical resource access: CHATS HASH TABLE. Start
+    pthread_mutex_lock(call_data->general_data->chats_mutex);
 	ht_set(call_data->general_data->chats, new_chat->chat_id, (void*)new_chat);
+    pthread_mutex_unlock(call_data->general_data->chats_mutex);
+    // Critical resource access: CHATS HASH TABLE. End
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

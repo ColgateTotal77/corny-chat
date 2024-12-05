@@ -20,7 +20,7 @@ void send_to_client_and_delete_json(cJSON **json, client_t* client_data) {
     pthread_mutex_unlock(&client_data->user_data->mutex);
     // Critical resource access: CLIENT USER DATA. End
     
-    if (is_online || !client_data->ssl) {
+    if (!is_online || !client_data->ssl) {
         fprintf(stderr, "User with id %d is not available or offline\n", client_data->user_data->user_id);
     }
     else {

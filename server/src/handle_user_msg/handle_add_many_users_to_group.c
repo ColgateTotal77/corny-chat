@@ -70,7 +70,7 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
     pthread_mutex_lock(call_data->general_data->clients_mutex);
     if (!get_int_arr_from_json(call_data, users_id_json, chat, &users_to_add, &users_num)) {
         pthread_mutex_unlock(call_data->general_data->clients_mutex);
-        // Critical resource access: CLIENTS HASH TABLE. End
+        // Critical resource access: CLIENTS HASH TABLE. Possible end
 
         pthread_mutex_unlock(&chat->mutex);
         // Critical resource access: SELECTED CHAT. Possible end
