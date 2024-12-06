@@ -335,6 +335,7 @@ static void delete_name_from_list(GtkWidget *button, gpointer user_data) {
     if (strlen(name_to_delete) > 0) {
         // Get the first child of the list box
         GtkWidget *child = gtk_widget_get_first_child(list_box);
+        gtk_widget_add_css_class(list_box, "settings_list_box");
        
         // Iterate through all children
         while (child != NULL) {

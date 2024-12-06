@@ -18,6 +18,8 @@ void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_
     
     new_chat->user_list_for_add = GTK_LIST_BOX(gtk_list_box_new());
     new_chat->user_list_for_delete = GTK_LIST_BOX(gtk_list_box_new());
+    gtk_widget_add_css_class(GTK_WIDGET(new_chat->user_list_for_add), "settings_list_box");
+    gtk_widget_add_css_class(GTK_WIDGET(new_chat->user_list_for_delete), "settings_list_box");
     g_object_ref(new_chat->user_list_for_add); 
     g_object_ref(new_chat->user_list_for_delete); 
 
