@@ -22,9 +22,10 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
 
     if(current_manager->active_chat == NULL) {
         if(current_manager->select_a_chat_label && other_manager->select_a_chat_label){
-            gtk_widget_unparent(current_manager->select_a_chat_label); // відв'язили
-            current_manager->select_a_chat_label = NULL;
-            other_manager->select_a_chat_label = NULL;
+            // gtk_widget_unparent(current_manager->select_a_chat_label); // відв'язили
+            // current_manager->select_a_chat_label = NULL;
+            // other_manager->select_a_chat_label = NULL;
+            gtk_widget_set_visible(current_manager->select_a_chat_label, false);
         } else{
             printf("ERROR: current_manager->select_a_chat_label && other_manager->select_a_chat_label not available\n");
         }

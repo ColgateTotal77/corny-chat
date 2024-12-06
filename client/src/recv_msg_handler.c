@@ -159,6 +159,7 @@ void* recv_msg_handler(void* arg) {
                                     chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
+                                    printf("\nThis is message: %s\n\n", message);
                                     if (local_time->tm_year > adjusted_time->tm_year || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
@@ -235,7 +236,7 @@ void* recv_msg_handler(void* arg) {
                             if (i == 0) {
                                 chat->last_message_id = msg_id;
                             }
-                            else if(i == all_mes_qty - 1) {
+                            if(i == all_mes_qty - 1) {
                                 if (local_time->tm_year > adjusted_time->tm_year || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
@@ -453,7 +454,11 @@ void* recv_msg_handler(void* arg) {
                         if(cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
-                            g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
+                            gtk_widget_set_visible(GTK_data->group_manager->select_a_chat_label, true);
+                            gtk_widget_set_visible(chat->button, false); //Це заплатка, потрібно зробити нормально!!!!
+                            gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
+                            gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
+                            gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
                         }
                         break;
 
@@ -833,7 +838,10 @@ void* recv_msg_handler(void* arg) {
                 case 56: {
                     int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
-                    g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
+                    gtk_widget_set_visible(chat->button, false); //Це заплатка, потрібно зробити нормально!!!!
+                    gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
+                    gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
+                    gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
                 }
                     break;
                 case 57: {
@@ -871,7 +879,10 @@ void* recv_msg_handler(void* arg) {
                 case 62: {
                     int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
-                    g_object_unref(chat->button); //Це заплатка, потрібно зробити нормально!!!!
+                    gtk_widget_set_visible(chat->button, false); //Це заплатка, потрібно зробити нормально!!!!
+                    gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
+                    gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
+                    gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
                 }
             }
             cJSON_Delete(parsed_json);
