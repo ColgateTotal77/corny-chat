@@ -387,6 +387,19 @@ void group_delete(GtkWidget *button, gpointer user_data) {
     delete_group(GTK_data->call_data->ssl, chat_id);
 }
 
+static void on_group_user_row_selected(GtkListBox *list_box, GtkListBoxRow *row, gpointer user_data) {
+    (void)list_box;
+    GtkEntry *entry = GTK_ENTRY(user_data);
+
+    if (row) {
+        GtkWidget *child = gtk_list_box_row_get_child(row);
+        if (GTK_IS_LABEL(child)) {
+            const char *user_text = gtk_label_get_text(GTK_LABEL(child));
+            gtk_editable_set_text(GTK_EDITABLE(entry), user_text);
+        }
+    }
+}
+
 void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
@@ -565,6 +578,8 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), GTK_data);
     g_object_set_data(G_OBJECT(del_button), "entry", name_entry_2);
     g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), GTK_data);
+    g_signal_connect(GTK_data->group_manager->user_list_for_add, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry);
+    g_signal_connect(GTK_data->group_manager->user_list_for_delete, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry_2);
 
     //delete group
     g_signal_connect(small_button, "clicked", G_CALLBACK(group_delete), GTK_data);
