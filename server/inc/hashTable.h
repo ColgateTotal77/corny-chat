@@ -1,6 +1,6 @@
 #pragma once
 
-#define TABLE_SIZE 200
+#define TABLE_SIZE 5
 
 typedef struct entry_t {
     int key;
@@ -10,6 +10,8 @@ typedef struct entry_t {
 
 typedef struct {
     entry_t **entries;
+    int size;
+    int current_size;
 } ht_t;
 
 ht_t *ht_create(void);
@@ -17,6 +19,8 @@ void ht_set(ht_t *hashtable, int key, void *value);
 void *ht_get(ht_t *hashtable, int key);
 void ht_del(ht_t *hashtable, int key);
 entry_t** ht_dump(ht_t *hashtable, int* count);
+void enlarge_table(ht_t *hashtable);
+void shrink_table(ht_t *hashtable);
 
 typedef struct entry_str_t {
     char* key;

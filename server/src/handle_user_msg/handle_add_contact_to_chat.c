@@ -87,10 +87,10 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
     // Critical resource access: CONTACT USER DATA. Start
     pthread_mutex_lock(&contact_data->user_data->mutex);
     update_group_users_and_user_groups(chat, contact_data);
-    
-    send_to_client_and_delete_json(&notification_json, contact_data);
     pthread_mutex_unlock(&contact_data->user_data->mutex);
     // Critical resource access: CONTACT USER DATA. End
+    
+    send_to_client_and_delete_json(&notification_json, contact_data);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

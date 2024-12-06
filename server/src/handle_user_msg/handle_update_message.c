@@ -33,19 +33,27 @@ static void send_notification_to_group(call_data_t* call_data, cJSON *notif, int
 
     pthread_mutex_unlock(&chat->mutex);
     // Critical resource access: SELECTED CHAT. End
+    printf("MUTEX LOG: unlock(&chat->mutex)\n");
+    fflush(stdout);
 }
 
 static void send_notification_to_client(call_data_t *call_data, cJSON *notif, int client_id) {
+    printf("MUTEX LOG: lock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
     // Critical resource access: CLIENTS HASH TABLE. Start
     pthread_mutex_lock(call_data->general_data->clients_mutex);
     client_t *contact_data = ht_get(call_data->general_data->clients, client_id);
     pthread_mutex_unlock(call_data->general_data->clients_mutex);
     // Critical resource access: CLIENTS HASH TABLE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
 
     if (contact_data == NULL) {
         return;
     }
 
+    printf("MUTEX LOG: lock(&contact_data->user_data->mutex)\n");
+    fflush(stdout);
     // Critical resource access: CLIENT USER DATA. Start
     pthread_mutex_lock(&contact_data->user_data->mutex);
 
@@ -53,12 +61,17 @@ static void send_notification_to_client(call_data_t *call_data, cJSON *notif, in
         return;
     }
 
-    send_to_client_and_delete_json(&notif, contact_data);
     pthread_mutex_unlock(&contact_data->user_data->mutex);
     // Critical resource access: CLIENT USER DATA. End
+    printf("MUTEX LOG: unlock(&contact_data->user_data->mutex)\n");
+    fflush(stdout);
+
+    send_to_client_and_delete_json(&notif, contact_data);
 }
 
 cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
+    printf("MUTEX LOG: handle_update_message<--------------------------------\n");
+    fflush(stdout);
     if (!cJSON_HasObjectItem(json, "message_id")
         || !cJSON_HasObjectItem(json, "new_message")) {
         return create_error_json("Invalid json format\n");
@@ -77,6 +90,8 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
 
     s_message message;
 
+    printf("MUTEX LOG: lock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
     // Critical resource access: DATABASE. Start
     pthread_mutex_lock(call_data->general_data->db_mutex);
     int rc = get_message_by_id(
@@ -86,6 +101,8 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
     if (rc != SQLITE_OK) {
         pthread_mutex_unlock(call_data->general_data->db_mutex);
         // Critical resource access: DATABASE. Possible end
+        printf("MUTEX LOG: unlock(call_data->general_data->db_mutex)\n");
+        fflush(stdout);
 
         cJSON* error_response = create_error_json("Something went wrong 1\n");
         cJSON_AddNumberToObject(error_response, "message_id", message_id);
@@ -95,6 +112,8 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
     if (message.owner_id != user_id) {
         pthread_mutex_unlock(call_data->general_data->db_mutex);
         // Critical resource access: DATABASE. Possible end
+        printf("MUTEX LOG: unlock(call_data->general_data->db_mutex)\n");
+        fflush(stdout);
 
         cJSON* error_response = create_error_json("You have no rights\n");
         cJSON_AddNumberToObject(error_response, "message_id", message_id);
@@ -105,6 +124,8 @@ cJSON *handle_update_message(call_data_t *call_data, cJSON *json) {
                             new_message_json->valuestring);
     pthread_mutex_unlock(call_data->general_data->db_mutex);
     // Critical resource access: DATABASE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
 
     if (rc != 101) {
         cJSON* error_response = create_error_json("Something went wrong 2\n");
