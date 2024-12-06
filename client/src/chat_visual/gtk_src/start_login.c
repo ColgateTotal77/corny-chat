@@ -52,6 +52,7 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
         pthread_cond_destroy(&GTK_data->login_cond);
         *(GTK_data->stop_login) = true;
         //pthread_join(GTK_data->recv_thread, NULL);
+
         *(GTK_data->call_data->stop_flag) = true;
         free(GTK_data);
         GTK_data = NULL;
