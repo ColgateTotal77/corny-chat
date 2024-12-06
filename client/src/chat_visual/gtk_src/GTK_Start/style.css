@@ -126,12 +126,10 @@ button.settings-group-button {
     background-image: none; /* Remove any default background image */
     color: #333333; /* Icon color */
     border-radius: 50%; /* Circular shape */
-    min-width: 35px;
-    min-height: 35px;
+    min-width: 40px;
+    min-height: 40px;
     border: none;
     transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions */
-    padding-top: 10px;
-    padding-bottom: 10px;
     margin-top: 10px;
 }
 
@@ -258,6 +256,10 @@ button.add-group-button > label {
     background-color: #000000; /* Black color */
     border-radius: 50%; /* Circular shape */
 
+}
+
+.group-avatar-circle{
+    margin-left: 20px;
 }
 
 /* Adjust name label */
@@ -456,68 +458,6 @@ button.search-erase-button > label {
     margin-right: 20px;
     margin-left: 25px;
 }
-.left-button,
-.right-button {
-    min-width: 30px;
-    min-height: 30px;
-    padding: 0;
-    margin: 0;
-}
-
-/* Add these additional rules to maintain fixed size */
-.left-button:hover,
-.right-button:hover,
-.left-button:active,
-.right-button:active {
-    min-width: 30px;
-    min-height: 30px;
-
-}
-
-/* Left button styling */
-button.left-button {
-    background: transparent;
-    background-color: #C9C9C9; /* Background color for the left button */
-    color: black; /* Text color */
-    font-size: 16px; /* Font size */
-    padding: 10px 20px; /* Padding for the button */
-    border-radius: 20px; /* Rounded corners */
-    border: none; /* Remove border */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    min-width: 30px;
-    min-height: 30px;
-}
-
-/* Hover effect for left button */
-button.left-button:hover {
-    background-color: #BEBEBE; /* Darker shade on hover */
-}
-
-/* Right button styling */
-button.right-button {
-    background: transparent;
-    background-color: #C9C9C9; /* Background color for the right button */
-    color: black; /* Text color */
-    font-size: 16px; /* Font size */
-    padding: 10px 20px; /* Padding for the button */
-    border-radius: 20px; /* Rounded corners */
-    border: none; /* Remove border */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    min-width: 30px;
-    min-height: 30px;
-}
-
-/* Hover effect for right button */
-button.right-button:hover {
-    background-color: #BEBEBE; /* Darker shade on hover */
-}
-
-/* Center label styling */
-.center-label {
-    font-size: 25px; /* Font size for the label */
-    color: black; /* Text color */
-    margin: 0 10px; /* Margin around the label */
-}
 
 .message-sender {
     font-size: 0.8em;
@@ -543,6 +483,7 @@ button.right-button:hover {
     border: none;
     min-width: 0;
     min-height: 0;
+    border-radius: 10px;
 }
 
 .box-popover{
@@ -1276,9 +1217,9 @@ entry {
 
 /* Page Controller Container */
 .settings_page_controller {
-    background-color: #f0f0f0;
+    background-color: #D9D9D9;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 25px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     min-width: 500px;
 }
@@ -1287,29 +1228,7 @@ entry {
 .settings_slider-container {
     background-color: #f0f0f0;
     padding: 10px;
-    border-radius: 5px;
-}
-
-/* Entry Container */
-.settings_entry-container {
-    margin-bottom: 10px;
-}
-
-.settings_name-entry {
-    flex-grow: 1;
-    margin-right: 10px;
-}
-
-/* Add Button */
-.settings_add-button {
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 4px;
-    padding: 5px 10px;
-}
-
-.settings_add-button:hover {
-    background-color: #45a049;
+    border-radius: 25px;
 }
 
 /* Names Scroll */
@@ -1320,7 +1239,14 @@ entry {
 }
 
 .settings_names-list {
-    background-color: white;
+    background-color: #D9D9D9;
+    color: black;
+    border-radius: 25px;
+}
+.settings_names-list label {
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 /* Name List Items */
@@ -1335,9 +1261,9 @@ entry {
 
 /* Page Controller Container */
 .settings_page_controller_container {
-    background-color: #f0f0f0;
+    background-color: #D9D9D9;
     padding: 5px;
-    border-radius: 4px;
+    border-radius: 25px;
 }
 
 /* Center Label */
@@ -1356,4 +1282,205 @@ entry {
 .settings_left-button:hover,
 .settings_right-button:hover {
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* create group window *//* create group window *//* create group window *//* create group window */
+.group-create-label{
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.group-name-entry{
+    background: #D9D9D9;
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin: 5px 0;
+    min-height: 30px;
+    min-width: 250px;
+    color: black;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.group-create-button{
+    background-color: #47a3b5; /* Same blue color as update button */
+    color: white;
+    background: #47a3b5;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.group-create-button:hover {
+    background-color: #3b8b9c; /* Slightly darker on hover */
+}
+
+.group-create-button:active {
+    background-color: #2e6;
+}
+
+.group-cancel-button{
+    background-color: red; /* Same blue color as update button */
+    color: white;
+    background: red;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.group-cancel-button:hover {
+    background-color: #660303; /* Slightly darker on hover */
+}
+
+.group-cancel-button:active {
+    background-color: rgb(133, 5, 5);
+}
+
+/* settings group window *//* settings group window *//* settings group window *//* settings group window */
+
+.left-button,
+.right-button {
+    min-width: 20px;
+    min-height: 30px;
+    padding: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* Add these additional rules to maintain fixed size */
+.left-button:hover,
+.right-button:hover,
+.left-button:active,
+.right-button:active {
+    min-width: 20px;
+    min-height: 30px;
+
+}
+
+/* Left button styling */
+button.left-button {
+    background: transparent;
+    background-color: #C9C9C9; /* Background color for the left button */
+    color: black; /* Text color */
+    font-size: 16px; /* Font size */
+    padding: 10px 20px; /* Padding for the button */
+    border-radius: 20px; /* Rounded corners */
+    border: none; /* Remove border */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    min-width: 30px;
+    min-height: 30px;
+}
+
+/* Hover effect for left button */
+button.left-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* Right button styling */
+button.right-button {
+    background: transparent;
+    background-color: #C9C9C9; /* Background color for the right button */
+    color: black; /* Text color */
+    font-size: 16px; /* Font size */
+    padding: 10px 20px; /* Padding for the button */
+    border-radius: 20px; /* Rounded corners */
+    border: none; /* Remove border */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    min-width: 30px;
+    min-height: 30px;
+}
+
+/* Hover effect for right button */
+button.right-button:hover {
+    background-color: #BEBEBE; /* Darker shade on hover */
+}
+
+/* Center label styling */
+.center-label {
+    font-size: 23px; /* Font size for the label */
+    color: black; /* Text color */
+    margin: 0 10px; /* Margin around the label */
+}
+.settings_del-button{
+    background-color: red; /* Same blue color as update button */
+    color: white;
+    background: red;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.settings_del-button:hover {
+    background-color: #660303; /* Slightly darker on hover */
+}
+
+.settings_del-button:active {
+    background-color: rgb(133, 5, 5);
+}
+.settings-del-button{
+    background-color: red; /* Same blue color as update button */
+    color: white;
+    background: red;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.settings-del-button:hover {
+    background-color: #660303; /* Slightly darker on hover */
+}
+
+.settings-del-button:active {
+    background-color: rgb(180, 92, 92);
+}
+.settings_add-button{
+    background-color: green; /* Same blue color as update button */
+    color: white;
+    background: green;
+    min-width: 80px;
+    border-radius: 25px;
+    padding: 12px 24px;
+    border: none;
+    min-height: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 10px;
+}
+
+.settings_add-button:hover {
+    background-color: #30610f; /* Slightly darker on hover */
+}
+
+.settings_add-button:active {
+    background-color: rgb(0, 119, 30);
+}
+
+/* Entry Container */
+.settings_name-entry {
+    background: #D9D9D9;
+    color: black;
+    margin-bottom: 10px;
+    border-radius: 25px;
+    border: none;
 }

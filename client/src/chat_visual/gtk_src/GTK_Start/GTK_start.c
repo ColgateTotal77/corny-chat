@@ -228,10 +228,12 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
 
     // Create a label
     GtkWidget *label = gtk_label_new("Enter Group Name:");
+    gtk_widget_add_css_class(label, "group-setting-label");
     gtk_box_append(GTK_BOX(box), label);
 
     // Create an entry for group name
     GtkWidget *group_name_entry = gtk_entry_new();
+    gtk_widget_add_css_class(group_name_entry, "group-name-entry");
     gtk_entry_set_placeholder_text(GTK_ENTRY(group_name_entry), "Group name");
     gtk_box_append(GTK_BOX(box), group_name_entry);
 
@@ -244,7 +246,9 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
     GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
 
     gtk_box_append(GTK_BOX(button_box), cancel_button);
+    gtk_widget_add_css_class(create_button, "group-create-button");
     gtk_box_append(GTK_BOX(button_box), create_button);
+    gtk_widget_add_css_class(cancel_button, "group-cancel-button");
     gtk_box_append(GTK_BOX(box), button_box);
 
     // Set the box as the child of the dialog
@@ -414,6 +418,7 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     // Center label
     GtkWidget *center_label = gtk_label_new("Add users");
     gtk_widget_add_css_class(center_label, "center-label");
+    gtk_widget_set_size_request(center_label, 150, -1);
     gtk_label_set_ellipsize(GTK_LABEL(center_label), PANGO_ELLIPSIZE_END); // Handle overflow gracefully
     gtk_box_append(GTK_BOX(page_controller_container), center_label);
 
@@ -513,6 +518,7 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
 
     // Create a small button
     GtkWidget *small_button = gtk_button_new_with_label("Delete group");
+    gtk_widget_add_css_class(small_button, "settings-del-button");
     gtk_grid_attach(GTK_GRID(grid), small_button, 0, 1, 1, 1); // Attach to grid at (0, 1)
     gtk_widget_set_hexpand(small_button, TRUE); // Allow horizontal expansion
     gtk_widget_set_vexpand(small_button, FALSE); // Do not allow vertical expansion
@@ -717,15 +723,28 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *avatar_circle_group = gtk_image_new_from_file("src/chat_visual/images/group.svg");
     gtk_widget_set_size_request(avatar_circle_group, 60, 60);
-    //gtk_widget_add_css_class(avatar_circle_group, "avatar-circle");
+    gtk_widget_set_margin_start(avatar_circle_group, 10);
+    gtk_widget_set_margin_end(avatar_circle_group, 10);
+    gtk_widget_set_margin_top(avatar_circle_group, 9);
+    //gtk_widget_add_css_class(avatar_circle_group, "group-avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle_group);
+
+    // Spacer (optional, ensures spacing between the label and button)
+    GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_hexpand(spacer, TRUE); // Take up remaining horizontal space
+    
 
     // Create the settings button
     GtkWidget *settings_group_button = gtk_button_new();
     gtk_widget_add_css_class(settings_group_button, "settings-group-button");
-    gtk_box_append(GTK_BOX(chat_header), settings_group_button);
+    gtk_widget_set_margin_end(settings_group_button, 10);
+    gtk_widget_set_margin_bottom(settings_group_button, 10);
     GtkWidget *settings_group_icon = gtk_image_new_from_file("src/chat_visual/images/settings.svg");
     gtk_button_set_child(GTK_BUTTON(settings_group_button), settings_group_icon);
+    gtk_widget_set_hexpand(settings_group_button, FALSE); // Prevent the button from expanding
+    gtk_widget_set_halign(settings_group_button, GTK_ALIGN_END); // Align to the far right
+
+    // Initially hide the settings button
     gtk_widget_set_visible(settings_group_button, FALSE);
 
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
@@ -794,6 +813,10 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(chat_header), chat_user_label);
     chat_manager->chat_user_label = chat_user_label;
     group_manager->chat_user_label = chat_user_label;
+
+    gtk_box_append(GTK_BOX(chat_header), spacer);
+
+    gtk_box_append(GTK_BOX(chat_header), settings_group_button);
 
     GTK_data->chat_manager = chat_manager;
     GTK_data->group_manager = group_manager;
