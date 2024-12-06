@@ -62,7 +62,7 @@ void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
 
     g_signal_connect(message_data->cancel_button, "clicked", G_CALLBACK(cancel_changing_message), message_data);  
     gtk_widget_set_visible(message_data->cancel_button, true);
-
+    
     gtk_editable_set_text(GTK_EDITABLE(message_data->message_entry), gtk_label_get_text(GTK_LABEL(message_data->message_label)));
     *(message_data->is_editing) = true;
     message_data->own_is_editing = true;
@@ -75,7 +75,7 @@ void on_delete_button_clicked(GtkButton *button, gpointer user_data) {
 
     delete_message(message_data->ssl, message_data->message_id);
 
-    gtk_widget_unparent(alignment_box);
+    gtk_widget_set_visible(alignment_box, false);
 }
 
 void on_message_edit(GtkGestureClick *gesture) {

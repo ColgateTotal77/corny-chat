@@ -341,7 +341,6 @@ static void delete_name_from_list(GtkWidget *button, gpointer user_data) {
             GtkWidget *label = gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child));
             const char *current_name = gtk_label_get_text(GTK_LABEL(label));                   
             if (strcmp(current_name, name_to_delete) == 0) {
-                printf("\nchat_id: %d\n\n", GPOINTER_TO_INT(g_object_get_data(G_OBJECT(label), "chat_id")));
                 delete_user_from_group(GTK_data->call_data->ssl, GPOINTER_TO_INT(g_object_get_data(G_OBJECT(label), "user_id")), GPOINTER_TO_INT(g_object_get_data(G_OBJECT(list_box), "chat_id")));
     
                 gtk_editable_set_text(GTK_EDITABLE(entry), "");
