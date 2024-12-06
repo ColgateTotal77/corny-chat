@@ -17,10 +17,15 @@ static cJSON *create_group_json_from_db_data(s_group group_data) {
 
 cJSON *handle_get_my_groups(call_data_t *call_data) {
     int count = 0;
-    s_group *groups = get_groups_full_list(
+
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
+    s_group *groups = get_groups_full_list(//
         call_data->general_data->db,
         call_data->client_data->user_data->user_id, &count
     );
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

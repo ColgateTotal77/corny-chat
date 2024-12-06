@@ -12,10 +12,16 @@ static cJSON* create_chat_user_json(chat_user chat_user) {
 
 cJSON* handle_get_all_clients_userslist(call_data_t *call_data) {
     int chat_users_num = 0;
+
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     chat_user* chat_users =  get_clients_userslist(
-        call_data->general_data->db,
+        call_data->general_data->db,//
         call_data->client_data->user_data->user_id,
-        true, &chat_users_num);
+        true, &chat_users_num
+    );
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     if (chat_users == NULL) {
         return create_error_json("No data was found\n");
@@ -28,10 +34,21 @@ cJSON* handle_get_all_clients_userslist(call_data_t *call_data) {
 
     for (int i = 0; i < chat_users_num; i++) {
         cJSON *chat_user_json = create_chat_user_json(chat_users[i]);
+
+        // Critical resource access: CLIENTS HASH TABLE. Start
+        pthread_mutex_lock(call_data->general_data->clients_mutex);
         client_t *chat_user_data = ht_get(call_data->general_data->clients, chat_users[i].id);
+        pthread_mutex_unlock(call_data->general_data->clients_mutex);
+        // Critical resource access: CLIENTS HASH TABLE. End
+
+        // Critical resource access: CLIENT USER DATA. Start
+        pthread_mutex_lock(&chat_user_data->user_data->mutex);
         cJSON_AddStringToObject(chat_user_json, "login", chat_user_data->user_data->login);
         cJSON_AddBoolToObject(chat_user_json, "online", chat_user_data->user_data->is_online);
         cJSON_AddBoolToObject(chat_user_json, "admin", chat_user_data->user_data->is_admin);
+        pthread_mutex_unlock(&chat_user_data->user_data->mutex);
+        // Critical resource access: CLIENT USER DATA. End
+
         cJSON_AddItemToArray(users_array, chat_user_json);
     }
     free(chat_users);

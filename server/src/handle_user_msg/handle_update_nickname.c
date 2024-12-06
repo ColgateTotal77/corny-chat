@@ -18,8 +18,12 @@ cJSON *handle_update_nickname(call_data_t *call_data, cJSON *json) {
     cJSON *new_nickname_json = cJSON_GetObjectItemCaseSensitive(json, "new_nickname");
     int user_id = call_data->client_data->user_data->user_id;
 
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     int return_code = update_nickname(call_data->general_data->db, user_id,
                                    new_nickname_json->valuestring);
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     bool success = (return_code == SQLITE_DONE);
 
@@ -27,10 +31,14 @@ cJSON *handle_update_nickname(call_data_t *call_data, cJSON *json) {
         return create_error_json("Something went wrong\n");
     }
 
+    // Critical resource access: USER DATA. Start
+    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
     bzero(call_data->client_data->user_data->nickname,
          sizeof(call_data->client_data->user_data->nickname));
     strcpy(call_data->client_data->user_data->nickname,
            new_nickname_json->valuestring);
+    pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+    // Critical resource access: USER DATA. End
 
     cJSON *nickname_changed_notif = nickname_changed_notification(
         user_id, 

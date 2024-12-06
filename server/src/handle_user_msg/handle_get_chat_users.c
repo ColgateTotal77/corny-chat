@@ -44,6 +44,7 @@ cJSON *handle_get_chat_users(call_data_t *call_data, cJSON *json) {
         // Critical resource access: CLIENT USER DATA. Start
         pthread_mutex_lock(&member_data->user_data->mutex);
         cJSON_AddStringToObject(member_data_json, "login", member_data->user_data->login);
+        cJSON_AddStringToObject(member_data_json, "nickname", member_data->user_data->nickname);
         pthread_mutex_unlock(&member_data->user_data->mutex);
         // Critical resource access: CLIENT USER DATA. End
 

@@ -143,7 +143,7 @@ int handle_login(char *str_json_login_password, call_data_t *call_data) {
 	if (is_valid_login == INVALID_INPUT || !is_active_user(call_data, login->valuestring)) {
         printf("Invalid Input\n");
 		cJSON *response_json = create_response_json(LOGIN, false, "Invalid login input\n");
-        send_to_user_and_delete_json(call_data, &response_json);
+		send_to_user_and_delete_json_no_mutexes(call_data, &response_json);
 
 		SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
         SSL_free(call_data->client_data->ssl);

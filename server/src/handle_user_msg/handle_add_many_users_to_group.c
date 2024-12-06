@@ -97,18 +97,27 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
     pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
     // Critical resource access: USER DATA. End
 
+    cJSON *users_array = cJSON_CreateArray();
+
     for (int i = 0; i < users_num; i++) {
         client_t *client_data = ht_get(call_data->general_data->clients, users_to_add[i]);
+
+        cJSON *user_data = cJSON_CreateObject();
 
         // Critical resource access: CLIENT USER DATA. Start
         pthread_mutex_lock(&client_data->user_data->mutex);
         update_group_users_and_user_groups(chat, client_data);
+        cJSON_AddNumberToObject(user_data, "id", client_data->user_data->user_id);
+        cJSON_AddStringToObject(user_data, "nickname", client_data->user_data->nickname);
         pthread_mutex_unlock(&client_data->user_data->mutex);
         // Critical resource access: CLIENT USER DATA. End
+
+        cJSON_AddItemToArray(users_array, user_data);
         
-        send_to_client_and_delete_json(&notification_json, client_data);
+        send_json_to_client(&notification_json, client_data);
         
     }
+    cJSON_Delete(notification_json);
 
     pthread_mutex_unlock(call_data->general_data->clients_mutex);
     // Critical resource access: CLIENTS HASH TABLE. End
@@ -118,8 +127,7 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
-    cJSON *users_id_array = cJSON_CreateIntArray(users_to_add, users_num);
-    cJSON_AddItemToObject(response_json, "users_id", users_id_array);
+    cJSON_AddItemToObject(response_json, "users", users_array);
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
 
     free(users_to_add);

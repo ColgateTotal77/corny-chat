@@ -24,7 +24,7 @@ static cJSON *create_incoming_private_message_json(char *message, int message_id
 static void update_reciever_and_user_contact_lists(client_t *reciever_data, 
                                                    client_t *client_data) {
     int user_id = client_data->user_data->user_id;
-    int **user_list = &client_data->user_data->contacts_id;
+    int **user_list = &client_data->user_data->contacts_id;//
     int *user_count = &client_data->user_data->contacts_count;
     int reciever_id = reciever_data->user_data->user_id;
     int **reciever_list = &reciever_data->user_data->contacts_id;
@@ -40,6 +40,8 @@ static void update_reciever_and_user_contact_lists(client_t *reciever_data,
 }
 
 cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
+    printf("MUTEX LOG: handle_send_to_user<--------------------------------\n");
+    fflush(stdout);
     if (!cJSON_HasObjectItem(json, "reciever_id")
         || !cJSON_HasObjectItem(json, "message")) {
         return create_error_json("Invalid json format\n");
@@ -48,22 +50,54 @@ cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
     cJSON *message_json = cJSON_GetObjectItemCaseSensitive(json, "message");
     int contact_id = (int)cJSON_GetNumberValue(contact_id_json);
 
+    printf("MUTEX LOG: lock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
+    // Critical resource access: CLIENTS HASH TABLE. Start
+    pthread_mutex_lock(call_data->general_data->clients_mutex);
     client_t *reciever_data = ht_get(call_data->general_data->clients, contact_id);
+    pthread_mutex_unlock(call_data->general_data->clients_mutex);
+    // Critical resource access: CLIENTS HASH TABLE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
 
     if (reciever_data == NULL
         || !reciever_data->user_data->is_active) {
         return create_error_json("No such user\n");
     }
 
+    printf("MUTEX LOG: lock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     int message_id = insert_private_message(call_data->general_data->db,
                            call_data->client_data->user_data->user_id,
                            contact_id, message_json->valuestring, NULL);
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
 
     if (message_id == -1) {
         return create_error_json("Something went wrong\n");
     }
+
+
+    printf("MUTEX LOG: lock(&call_data->client_data->user_data->mutex)\n");
+    fflush(stdout);
+    // Critical resource access: USER DATA. Start
+    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
+
+    printf("MUTEX LOG: lock(&reciever_data->user_data->mutex)\n");
+    fflush(stdout);
+    // Critical resource access: CLIENT USER DATA. Start
+    pthread_mutex_lock(&reciever_data->user_data->mutex);
     
     update_reciever_and_user_contact_lists(reciever_data, call_data->client_data);
+
+    pthread_mutex_unlock(&reciever_data->user_data->mutex);
+    // Critical resource access: CLIENT USER DATA. End
+    printf("MUTEX LOG: unlock(&reciever_data->user_data->mutex)\n");
+    fflush(stdout);
 
     char *time_string = get_string_time();
 
@@ -72,8 +106,14 @@ cJSON *handle_send_to_user(call_data_t *call_data, cJSON *json) {
         message_id,
         call_data->client_data->user_data->user_id,
         call_data->client_data->user_data->nickname,
-        time_string);
-    send_to_id_and_delete_json(call_data, &message_data_json, contact_id);
+        time_string
+    );
+    pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+    // Critical resource access: USER DATA. End
+    printf("MUTEX LOG: unlock(&call_data->client_data->user_data->mutex)\n");
+    fflush(stdout);
+
+    send_to_client_and_delete_json(&message_data_json, reciever_data);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

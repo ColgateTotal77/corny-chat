@@ -84,8 +84,10 @@ void *handle_client(void *arg) {
     int leave_flag = 0;
 	leave_flag = handle_login(str_json_login_password, call_data);
 
-	char buff_out[BUF_SIZE];
-	bzero(buff_out, BUF_SIZE);
+    int buffer_size = 1024;
+
+	char buff_out[buffer_size];
+	bzero(buff_out, buffer_size);
     bool is_active;
 
     if (call_data->client_data == NULL) {
@@ -100,7 +102,7 @@ void *handle_client(void *arg) {
     }
 
     while (!leave_flag && is_active && !general_data->server_stoped) {
-        int bytes_received = SSL_read(call_data->client_data->ssl, buff_out, BUF_SIZE);
+        int bytes_received = SSL_read(call_data->client_data->ssl, buff_out, buffer_size);
         if (bytes_received <= 0) {
             int err = SSL_get_error(call_data->client_data->ssl, bytes_received);
             if (err == SSL_ERROR_ZERO_RETURN) {
@@ -109,8 +111,11 @@ void *handle_client(void *arg) {
             fprintf(stderr, "SSL_read failed with error: %d\n", err);
             //break;
         }
+        else if (bytes_received > 1000) {
+            printf("Ignoring invalidly long message\n");
+        }
         handle_user_msg(bytes_received, &leave_flag, buff_out, call_data);
-        bzero(buff_out, BUF_SIZE);
+        bzero(buff_out, buffer_size);
 
         // Critical resource access: CLIENT USER DATA. Start
 	    pthread_mutex_lock(&call_data->client_data->user_data->mutex);

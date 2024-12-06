@@ -1,8 +1,8 @@
 #include "server.h"
 
 
-void send_to_client_and_delete_json(cJSON **json, client_t* client_data) {
-    printf("MUTEX LOG: send_to_client_and_delete_json<--------------------------------\n");
+void send_json_to_client(cJSON **json, client_t* client_data) {
+    printf("MUTEX LOG: send_json_to_client<--------------------------------\n");
     fflush(stdout);
     if (!client_data) {
         return;
@@ -45,5 +45,4 @@ void send_to_client_and_delete_json(cJSON **json, client_t* client_data) {
     fflush(stdout);
 
     free(response);
-    cJSON_Delete(*json);
 }

@@ -2,6 +2,8 @@
 
 
 void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t *chat) {
+    printf("MUTEX LOG: send_to_group_and_delete_json<--------------------------------\n");
+    fflush(stdout);
     char *str_json = cJSON_Print(*json);
     cJSON_Minify(str_json);
 
@@ -13,28 +15,40 @@ void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t 
     bool can_send;
 
     for (int i = 0; i < count; i++) {
+        printf("MUTEX LOG: lock(call_data->general_data->clients_mutex)\n");
+        fflush(stdout);
         // Critical resource access: CLIENTS HASH TABLE. Start
         pthread_mutex_lock(call_data->general_data->clients_mutex);
         client_t* client_data = ht_get(call_data->general_data->clients, chat->users_id[i]);
         pthread_mutex_unlock(call_data->general_data->clients_mutex);
         // Critical resource access: CLIENTS HASH TABLE. End
+        printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+        fflush(stdout);
 
+        printf("MUTEX LOG: lock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
         // Critical resource access: CLIENT USER DATA. Start
         pthread_mutex_lock(&client_data->user_data->mutex);
         can_send = (!(client_data->user_data->user_id == sender_uid)
 		            && client_data->user_data->is_online);
         pthread_mutex_unlock(&client_data->user_data->mutex);
         // Critical resource access: CLIENT USER DATA. End
+        printf("MUTEX LOG: unlock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
 
+        printf("MUTEX LOG: lock(&client_data->mutex)\n");
+        fflush(stdout);
         // Critical resource access: CLIENT CONNECTION. Start
         pthread_mutex_lock(&client_data->mutex);
 		if (!can_send || !client_data->ssl) {
             pthread_mutex_unlock(&client_data->mutex);
             // Critical resource access: CLIENT CONNECTION. Possible end
+            printf("MUTEX LOG: unlock(&client_data->mutex)\n");
+            fflush(stdout);
 
 			continue;
 		}
-        
+
         int write_len = SSL_write(client_data->ssl, response, strlen(response));
         if (write_len <= 0) {
             int err = SSL_get_error(client_data->ssl, write_len);
@@ -43,6 +57,8 @@ void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t 
         }
         pthread_mutex_unlock(&client_data->mutex);
         // Critical resource access: CLIENT CONNECTION. End
+        printf("MUTEX LOG: unlock(&client_data->mutex)\n");
+        fflush(stdout);
     }
 
     free(response);

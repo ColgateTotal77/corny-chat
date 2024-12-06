@@ -11,6 +11,9 @@ static void set_user_contacts(sqlite3 *db, int user_id, int **contacts_list, int
     }
 
     for (int i = 0; i < chat_users_num; i++) {
+		if (chat_users[i].id == user_id) {
+			continue;
+		}
         append_to_intarr(contacts_list, contacts_count, chat_users[i].id);
     }
 	free(chat_users);

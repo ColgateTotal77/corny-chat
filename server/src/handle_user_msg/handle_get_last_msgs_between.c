@@ -13,11 +13,15 @@ cJSON* handle_get_last_msgs_between(call_data_t *call_data, cJSON *json) {
     cJSON *before_id_json = cJSON_GetObjectItemCaseSensitive(json, "before");
     cJSON *quantity_json = cJSON_GetObjectItemCaseSensitive(json, "quantity");
 
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     s_texting* textings = get_last_messages_between(
         call_data->general_data->db,
         user_id, user2_json->valueint,
-        quantity_json->valueint, before_id_json->valueint);
-
+        quantity_json->valueint, before_id_json->valueint
+    );
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(response_json, "unread_mes_qty",  textings->unread_mes_qty);

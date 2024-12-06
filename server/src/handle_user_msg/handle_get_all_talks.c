@@ -4,11 +4,17 @@
 cJSON* handle_get_all_talks(call_data_t *call_data) {
     int user_id = call_data->client_data->user_data->user_id;
     int textings_num = 0;
+
+    // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     s_texting* textings = get_starting_messages(call_data->general_data->db, user_id, &textings_num);
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     cJSON *json = cJSON_CreateObject();
     cJSON_AddNumberToObject(json, "unreaded_chats_qty",  textings_num);
     cJSON *new_messages_json = cJSON_AddArrayToObject(json, "unread_chats_data");
+    
     for (int i = 0; i < textings_num; i++) {
         s_texting texting = textings[i];
 

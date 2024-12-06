@@ -32,15 +32,21 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
     cJSON *chat_id_json = cJSON_GetObjectItemCaseSensitive(json, "chat_id");
     cJSON *message_json = cJSON_GetObjectItemCaseSensitive(json, "message");
     int chat_id = (int)cJSON_GetNumberValue(chat_id_json);
+    chat_t *chat = NULL;
 
-    chat_t *chat = ht_get(call_data->general_data->chats, chat_id);
+    // Critical resource access: SELECTED CHAT. Start
+    bool chat_retrieved_successfully = get_group_data_and_lock_group_mutex(
+        call_data, chat_id, &chat
+    );
 
-    if (chat == NULL) {
+    if (!chat_retrieved_successfully) {
         cJSON *error_response = create_error_json("No such group\n");
         cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
         return error_response;
     }
 
+   // Critical resource access: DATABASE. Start
+    pthread_mutex_lock(call_data->general_data->db_mutex);
     int message_id = insert_group_message(
         call_data->general_data->db,
         call_data->client_data->user_data->user_id,
@@ -48,8 +54,13 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
         message_json->valuestring,
         NULL
     );
+    pthread_mutex_unlock(call_data->general_data->db_mutex);
+    // Critical resource access: DATABASE. End
 
     if (message_id == -1) {
+        pthread_mutex_unlock(&chat->mutex);
+        // Critical resource access: SELECTED CHAT. Possible end
+
         cJSON *error_response = create_error_json("Something went wrong\n");
         cJSON_AddNumberToObject(error_response, "chat_id", chat_id);
         return error_response;
@@ -57,6 +68,8 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
 
     char *time_string = get_string_time();
 
+    // Critical resource access: USER DATA. Start
+    pthread_mutex_lock(&call_data->client_data->user_data->mutex);
     cJSON *message_data_json = create_incoming_group_message_json(
         message_json->valuestring,
         message_id,
@@ -66,8 +79,13 @@ cJSON *handle_send_to_chat(call_data_t *call_data, cJSON *json) {
         chat->name,
         time_string
     );
+    pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
+    // Critical resource access: USER DATA. End
     
-    send_to_chat_and_delete_json(call_data, &message_data_json, chat_id);
+    send_to_group_and_delete_json(call_data, &message_data_json, chat);
+    
+    pthread_mutex_unlock(&chat->mutex);
+    // Critical resource access: SELECTED CHAT. End
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);

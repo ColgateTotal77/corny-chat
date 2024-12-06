@@ -1,6 +1,11 @@
 #include "server.h"
 
 void send_message_to_user(call_data_t *call_data, char *message) {
+    printf("MUTEX LOG: send_message_to_user<--------------------------------\n");
+    fflush(stdout);
+
+    printf("MUTEX LOG: lock(&call_data->client_data->mutex)\n");
+    fflush(stdout);
     // Critical resource access: USER CONNECTION DATA. Start
     pthread_mutex_lock(&call_data->client_data->mutex);
     
@@ -12,5 +17,7 @@ void send_message_to_user(call_data_t *call_data, char *message) {
     
     pthread_mutex_unlock(&call_data->client_data->mutex);
     // Critical resource access: USER CONNECTION DATA. End
+    printf("MUTEX LOG: unlock(&call_data->client_data->mutex)\n");
+    fflush(stdout);
 }
 

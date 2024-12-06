@@ -2,6 +2,10 @@
 
 
 void send_message_to_another_ids(call_data_t *call_data, char *s) {
+    printf("MUTEX LOG: send_message_to_another_ids<--------------------------------\n");
+    fflush(stdout);
+    printf("MUTEX LOG: lock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
     // Critical resource access: CLIENTS HASH TABLE. Start
     pthread_mutex_lock(call_data->general_data->clients_mutex);
     
@@ -16,18 +20,26 @@ void send_message_to_another_ids(call_data_t *call_data, char *s) {
         
         client_t *client_data = (client_t*)entry->value;
 
+        printf("MUTEX LOG: lock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
         // Critical resource access: SELECTED CLIENT USER DATA. Start
         pthread_mutex_lock(&client_data->user_data->mutex);
         is_online = client_data->user_data->is_online;
         pthread_mutex_unlock(&client_data->user_data->mutex);
         // Critical resource access: SELECTED CLIENT USER DATA. End
+        printf("MUTEX LOG: unlock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
 
+        printf("MUTEX LOG: lock(&client_data->mutex)\n");
+        fflush(stdout);
         // Critical resource access: SELECTED CLIENT CONNECTION. Start
         pthread_mutex_lock(&client_data->mutex);
         
 		if (!is_online || !client_data->ssl) {
             pthread_mutex_unlock(&client_data->mutex);
             // Critical resource access: SELECTED CLIENT CONNECTION. Possible end
+            printf("MUTEX LOG: unlock(&client_data->mutex)\n");
+            fflush(stdout);
 
             continue;
         }
@@ -41,11 +53,14 @@ void send_message_to_another_ids(call_data_t *call_data, char *s) {
 
         pthread_mutex_unlock(&client_data->mutex);
         // Critical resource access: SELECTED CLIENT CONNECTION. End
-
+        printf("MUTEX LOG: unlock(&client_data->mutex)\n");
+        fflush(stdout);
     }
     free(entries);
 
     pthread_mutex_unlock(call_data->general_data->clients_mutex);
     // Critical resource access: CLIENTS HASH TABLE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
 }
 
