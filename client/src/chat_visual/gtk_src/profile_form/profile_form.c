@@ -22,7 +22,7 @@ void update_window_title(const char *stack_name) {
     if (g_strcmp0(stack_name, "create") == 0)
         title = "Create New User";
     else if (g_strcmp0(stack_name, "change_password") == 0)
-        title = "Change User Password";
+        title = "Change Password";
     else if (g_strcmp0(stack_name, "delete") == 0)
         title = "Deactivate User";
     else if (g_strcmp0(stack_name, "activate") == 0)
