@@ -33,6 +33,23 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_set_halign(name_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(name_box), name_label);
 
+    chat->message_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(chat->message_entry), "Enter message");
+    gtk_widget_set_hexpand(chat->message_entry, TRUE);
+    gtk_widget_add_css_class(chat->message_entry, "message-entry");
+    g_object_ref(chat->message_entry); 
+
+    GtkWidget *cancel_button = gtk_button_new_with_label("X");
+    gtk_widget_add_css_class(cancel_button, "search-erase-button");
+    gtk_widget_set_size_request(cancel_button, 20, 20);
+    gtk_overlay_add_overlay(GTK_OVERLAY(GTK_data->entry_overlay), cancel_button);
+    gtk_widget_set_halign(cancel_button, GTK_ALIGN_END);
+    gtk_widget_set_valign(cancel_button, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_end(cancel_button, 15);
+    gtk_widget_set_visible(cancel_button, false);
+
+    g_object_set_data(G_OBJECT(chat->message_entry), "cancel_button", GINT_TO_POINTER(cancel_button));
+
     GtkWidget *number_of_unread_messages = gtk_label_new(NULL);
     gtk_label_set_text(GTK_LABEL(number_of_unread_messages), "");
     gtk_widget_add_css_class(number_of_unread_messages, "number_of_unread_messages");
@@ -81,6 +98,8 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     // Single signal connection for both group and user chats
     g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
     
+    chat->this_chat = false;
+
     chat->button = button;
 
     return button;

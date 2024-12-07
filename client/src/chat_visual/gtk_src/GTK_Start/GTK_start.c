@@ -3,11 +3,6 @@
 bool switch_to_groups;
 bool switch_settings_in_group;
 
-static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
-    (void) entry;
-    on_send_clicked(NULL, user_data);
-}
-
 static void on_settings_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
@@ -181,10 +176,21 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
     for (iter = user_list; iter != NULL; iter = iter->next) {
         gpointer key = iter->data;
         chat_data_t *user_chat = g_hash_table_lookup(GTK_data->group_manager->chats, key);
+        g_object_unref(user_chat->message_entry);
         g_object_unref(user_chat->user_list_for_add);
         g_object_unref(user_chat->user_list_for_delete);
     }
+
+    user_list = g_hash_table_get_keys(GTK_data->chat_manager->chats);
+
+    for (iter = user_list; iter != NULL; iter = iter->next) {
+        gpointer key = iter->data;
+        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
+        g_object_unref(user_chat->message_entry);
+
+    }
     g_list_free(user_list);
+    
     send_exit_command(GTK_data->call_data->ssl);
     *(GTK_data->call_data->stop_flag) = true;
     free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
@@ -789,45 +795,40 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(input_box), entry_overlay);
 
     // Create message entry
-    GtkWidget *message_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(message_entry), "Enter message");
-    gtk_widget_set_hexpand(message_entry, TRUE);
-    gtk_widget_add_css_class(message_entry, "message-entry");
-    gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), message_entry);
+    GTK_data->message_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(GTK_data->message_entry), "Enter message");
+    gtk_widget_set_hexpand(GTK_data->message_entry, TRUE);
+    gtk_widget_add_css_class(GTK_data->message_entry, "message-entry");
+    gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), GTK_data->message_entry);
+    GTK_data->entry_overlay = entry_overlay;
 
     // Create and setup cancel button
-    GtkWidget *cancel_button = gtk_button_new_with_label("X");
-    gtk_widget_add_css_class(cancel_button, "search-erase-button");
-    gtk_widget_set_size_request(cancel_button, 20, 20);
-    gtk_overlay_add_overlay(GTK_OVERLAY(entry_overlay), cancel_button);
-    gtk_widget_set_halign(cancel_button, GTK_ALIGN_END);
-    gtk_widget_set_valign(cancel_button, GTK_ALIGN_CENTER);
-    gtk_widget_set_margin_end(cancel_button, 15);
-    gtk_widget_set_visible(cancel_button, false);
+    // GtkWidget *cancel_button = gtk_button_new_with_label("X");
+    // gtk_widget_add_css_class(cancel_button, "search-erase-button");
+    // gtk_widget_set_size_request(cancel_button, 20, 20);
+    // gtk_overlay_add_overlay(GTK_OVERLAY(entry_overlay), cancel_button);
+    // gtk_widget_set_halign(cancel_button, GTK_ALIGN_END);
+    // gtk_widget_set_valign(cancel_button, GTK_ALIGN_CENTER);
+    // gtk_widget_set_margin_end(cancel_button, 15);
+    // gtk_widget_set_visible(cancel_button, false);
 
     chat_data_t *active_chat = NULL;
 
     chat_manager_t *chat_manager = g_new(chat_manager_t, 1);
     chat_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     chat_manager->active_chat = active_chat;
-    chat_manager->message_entry = message_entry;
     chat_manager->sidebar = sidebar_users;
     chat_manager->error_label = error_label;
-    chat_manager->is_editing = g_new(gboolean, 1);
-    chat_manager->cancel_button = cancel_button;
-    *chat_manager->is_editing = false;
+    //chat_manager->cancel_button = cancel_button;
     chat_manager->avatar_circle = avatar_circle;
     chat_manager->settings_group_button = NULL;
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
     group_manager->active_chat = active_chat;
-    group_manager->message_entry = message_entry;
     group_manager->sidebar = sidebar_groups;
     group_manager->error_label = error_label;
-    group_manager->is_editing = g_new(gboolean, 1);
-    group_manager->cancel_button = cancel_button;
-    group_manager->is_editing = chat_manager->is_editing;
+    //group_manager->cancel_button = cancel_button;
     group_manager->avatar_circle = avatar_circle_group;
     group_manager->settings_group_button = settings_group_button;
 
@@ -861,8 +862,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->send_button = send_button;
     // Connect the callback to the send button
     g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_clicked), GTK_data);    
-    // In the on_activate function, after creating message_entry, add:
-    g_signal_connect(message_entry, "activate", G_CALLBACK(on_entry_activated), GTK_data);    
+
     gtk_box_append(GTK_BOX(input_box), send_button);
 
     gtk_widget_set_visible(input_box, false);

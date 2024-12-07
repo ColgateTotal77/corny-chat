@@ -72,6 +72,9 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         g_print("-DEBUG: Chat ID %d is already active in the correct context\n", chat_id);
         return;
     }
+    else if (current_manager->active_chat != NULL) {
+        current_manager->active_chat->this_chat = false;
+    }
 
     // g_print("DEBUG: select_a_chat_label = %p\n", (void *)current_manager->select_a_chat_label);
 
@@ -121,6 +124,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     // Update active chat
     current_manager->active_chat = new_chat;
     other_manager->active_chat = new_chat;
+    new_chat->this_chat = true;
     // Extract contact name
     GtkWidget *grid = gtk_button_get_child(GTK_BUTTON(widget));
     if (grid == NULL) {
@@ -181,9 +185,26 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         printf("ERROR: New chat's messages_container_wrapper is not a valid widget\n");
         return;
     }
+    if(GPOINTER_TO_INT(g_object_get_data(G_OBJECT(GTK_data->message_entry), "is_editing"))== true) {
+        gtk_widget_set_visible(g_object_get_data(G_OBJECT(GTK_data->message_entry), "cancel_button"), false);
+    }
+
+    gtk_widget_set_visible(GTK_data->message_entry, false);
+    GTK_data->message_entry = new_chat->message_entry;
+    
+    if (!gtk_widget_get_parent(GTK_data->message_entry)) {
+        gtk_overlay_set_child(GTK_OVERLAY(GTK_data->entry_overlay), GTK_data->message_entry);
+        g_signal_connect(GTK_data->message_entry, "activate", G_CALLBACK(on_send_clicked), GTK_data);
+    }
+    
+    if(GPOINTER_TO_INT(g_object_get_data(G_OBJECT(GTK_data->message_entry), "is_editing"))== true) {
+        gtk_widget_set_visible(g_object_get_data(G_OBJECT(GTK_data->message_entry), "cancel_button"), true);
+    }
+
+    gtk_widget_set_visible(GTK_data->message_entry, true);
+    gtk_widget_grab_focus(GTK_data->message_entry);
 
     if(new_chat->is_group) {
-
         GTK_data->group_manager->user_list_for_add = GTK_WIDGET(new_chat->user_list_for_add);
         GTK_data->group_manager->user_list_for_delete = GTK_WIDGET(new_chat->user_list_for_delete);
     }

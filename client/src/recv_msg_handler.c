@@ -697,7 +697,9 @@ void* recv_msg_handler(void* arg) {
                             strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             
                             add_message(message, time_to_send, true, false, GTK_data->chat_manager, call_data->ssl, message_id, chat, "None");
-                                
+                            
+                            scroll_to_bottom(chat->messages_container);
+                            
                             g_object_ref(chat->button);
                             gtk_box_remove(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);
                             gtk_box_prepend(GTK_BOX(GTK_data->chat_manager->sidebar), chat->button);

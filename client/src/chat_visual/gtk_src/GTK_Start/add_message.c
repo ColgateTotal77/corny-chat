@@ -19,37 +19,38 @@ void cancel_changing_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
     message_data_t *message_data = (message_data_t*)user_data;
 
-    gtk_widget_set_visible(message_data->cancel_button, false);
+    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), false);
     reset_all_message_own_is_editing(message_data->messages);
 
     GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
     gtk_entry_buffer_set_text(buffer, "", -1);
 
-    *(message_data->is_editing) = false;
+    g_object_set_data(G_OBJECT(message_data->message_entry), "is_editing", GINT_TO_POINTER(false));
 }
 
 void change_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
 
     message_data_t *message_data = (message_data_t*)user_data;
+    if(*(message_data->this_chat)) {
+        if (message_data->own_is_editing) {
+            GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
+            const char *message_text = gtk_entry_buffer_get_text(buffer);
 
-    if (message_data->own_is_editing) {
-        GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
-        const char *message_text = gtk_entry_buffer_get_text(buffer);
+            gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
+            if (!gtk_widget_get_visible(message_data->edited_label)) {
+                gtk_widget_set_visible(message_data->edited_label, true);
+            }
 
-        gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
-        if (!gtk_widget_get_visible(message_data->edited_label)) {
-            gtk_widget_set_visible(message_data->edited_label, true);
+            update_message(message_data->ssl, message_data->message_id, (char *)message_text);
+
+            cancel_changing_message(NULL, (gpointer)message_data);
+
+            gtk_entry_buffer_set_text(buffer, "", -1);
         }
-
-        update_message(message_data->ssl, message_data->message_id, (char *)message_text);
-
-        cancel_changing_message(message_data->cancel_button, (gpointer)message_data);
-
-        gtk_entry_buffer_set_text(buffer, "", -1);
+        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
+        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
     }
-    g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
-    g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
 }
 
 void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
@@ -60,11 +61,11 @@ void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
     g_signal_connect(message_data->send_button, "clicked", G_CALLBACK(change_message), message_data);    
     g_signal_connect(message_data->message_entry, "activate", G_CALLBACK(change_message), message_data);  
 
-    g_signal_connect(message_data->cancel_button, "clicked", G_CALLBACK(cancel_changing_message), message_data);  
-    gtk_widget_set_visible(message_data->cancel_button, true);
+    g_signal_connect(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), "clicked", G_CALLBACK(cancel_changing_message), message_data);  
+    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), true);
     
     gtk_editable_set_text(GTK_EDITABLE(message_data->message_entry), gtk_label_get_text(GTK_LABEL(message_data->message_label)));
-    *(message_data->is_editing) = true;
+    g_object_set_data(G_OBJECT(message_data->message_entry), "is_editing", GINT_TO_POINTER(true));
     message_data->own_is_editing = true;
 }
 
@@ -150,15 +151,12 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
         
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_END); // Set the alignment to the right if the message is sent
 
-        message_data->alignment_box = alignment_box;
-        message_data->message_label = message_label;
-        message_data->message_entry = manager->message_entry;
-        message_data->is_editing = manager->is_editing;
+        message_data->message_entry = chat->message_entry;
         message_data->own_is_editing = false;
         message_data->send_button = manager->send_button;
         message_data->ssl = ssl;
         message_data->messages = chat->messages;
-        message_data->cancel_button = manager->cancel_button;
+        message_data->this_chat = &(chat->this_chat);
         gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
 
         g_object_set_data(G_OBJECT(alignment_box), "message_data", message_data);

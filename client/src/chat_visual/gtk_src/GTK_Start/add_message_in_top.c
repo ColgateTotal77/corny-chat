@@ -46,15 +46,12 @@ void add_message_to_top(const char *message_text, const char *time_text, gboolea
         
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_END); // Set the alignment to the right if the message is sent
 
-        message_data->alignment_box = alignment_box;
-        message_data->message_label = message_label;
-        message_data->message_entry = manager->message_entry;
-        message_data->is_editing = manager->is_editing;
+        message_data->message_entry = chat->message_entry;
         message_data->own_is_editing = false;
         message_data->send_button = manager->send_button;
         message_data->ssl = ssl;
         message_data->messages = chat->messages;
-        message_data->cancel_button = manager->cancel_button;
+        message_data->this_chat = &(chat->this_chat);
         gtk_widget_set_halign(edited_label, GTK_ALIGN_END);
 
         g_object_set_data(G_OBJECT(alignment_box), "message_data", message_data);
@@ -68,7 +65,7 @@ void add_message_to_top(const char *message_text, const char *time_text, gboolea
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_START); // Set the alignment to the left if the message is sent
         gtk_widget_set_halign(edited_label, GTK_ALIGN_START);
     }
-
+    
 //Пізніше дороблю!
     // gdouble value = gtk_adjustment_get_value(chat->adjustment); // Поточне становище скролла
     //gdouble upper = gtk_adjustment_get_upper(adjustment); // Максимальне становище скролла
