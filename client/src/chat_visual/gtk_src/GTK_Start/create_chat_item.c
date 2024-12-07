@@ -49,16 +49,15 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
 
     g_object_set_data(G_OBJECT(chat->message_entry), "cancel_button", GINT_TO_POINTER(cancel_button));
 
+    // Unread messages label
     GtkWidget *number_of_unread_messages = gtk_label_new(NULL);
-    gtk_label_set_text(GTK_LABEL(number_of_unread_messages), "");
+    gtk_label_set_text(GTK_LABEL(number_of_unread_messages), ""); // Default empty
     gtk_widget_add_css_class(number_of_unread_messages, "number_of_unread_messages");
     gtk_widget_set_halign(number_of_unread_messages, GTK_ALIGN_END);
-    gtk_widget_set_valign(number_of_unread_messages, GTK_ALIGN_CENTER);
-    gtk_widget_set_hexpand(number_of_unread_messages, TRUE);
-    gtk_widget_set_visible(number_of_unread_messages, false);
+    gtk_widget_set_valign(number_of_unread_messages, GTK_ALIGN_END);
+    gtk_widget_set_visible(number_of_unread_messages, FALSE); // Initially hidden
+    gtk_grid_attach(GTK_GRID(grid), number_of_unread_messages, 2, 1, 1, 1); // Bottom-right corner
     chat->number_of_unread_messages = number_of_unread_messages;
-
-    gtk_grid_attach(GTK_GRID(grid), number_of_unread_messages, 3, 1, 1, 1);
 
     // Status indicator
     if (!is_group) { // Only show status indicator if it's not a group
@@ -79,7 +78,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_set_hexpand(message_label, TRUE);
     gtk_label_set_wrap(GTK_LABEL(message_label), TRUE); // Allow text wrapping
     gtk_label_set_max_width_chars(GTK_LABEL(message_label), 30); // Set max width for the label
-    gtk_grid_attach(GTK_GRID(grid), message_label, 1, 1, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), message_label, 1, 1, 1, 1);
     chat->message_label = message_label;
 
     // Time label
@@ -87,7 +86,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_add_css_class(time_label, "message-time");
     gtk_widget_set_halign(time_label, GTK_ALIGN_END);
     gtk_widget_set_valign(time_label, GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(grid), time_label, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), time_label, 2, 0, 1, 1); // Top-right corner
     chat->time_label = time_label;
 
     if (is_group) {
@@ -101,7 +100,7 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
 
     // Single signal connection for both group and user chats
     g_signal_connect(button, "clicked", G_CALLBACK(switch_chat), GTK_data);
-    
+
     chat->this_chat = false;
 
     chat->button = button;

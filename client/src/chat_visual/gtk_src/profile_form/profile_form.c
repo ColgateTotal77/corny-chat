@@ -438,6 +438,16 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     gtk_widget_add_css_class(create_button, "create-button");
 
+    GtkWidget *create_error_label = gtk_label_new("");
+    gtk_widget_add_css_class(create_error_label, "error-label");
+    gtk_widget_set_halign(create_error_label, GTK_ALIGN_START);
+    GTK_data->profile_data->create_error_label = create_error_label;
+
+    GtkWidget *create_success_label = gtk_label_new("");
+    gtk_widget_add_css_class(create_success_label, "success-label");
+    gtk_widget_set_halign(create_success_label, GTK_ALIGN_START);
+    GTK_data->profile_data->create_success_label = create_success_label;
+
     // Append widgets to the bottom box
     gtk_box_append(GTK_BOX(bottom_box), admin_check);
     gtk_box_append(GTK_BOX(bottom_box), create_button);
@@ -448,6 +458,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(create_box), password_label);
     gtk_box_append(GTK_BOX(create_box), password_box);
     gtk_box_append(GTK_BOX(create_box), bottom_box);
+    // Add labels to create_box
+    gtk_box_append(GTK_BOX(create_box), create_error_label);
+    gtk_box_append(GTK_BOX(create_box), create_success_label);
 
     // Add the Create box to the carousel
     gtk_stack_add_titled(GTK_STACK(carousel_stack), create_box, "create", "Create");
@@ -725,10 +738,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget **entries = g_malloc(sizeof(GtkWidget *) * 10);
     entries[0] = login_entry;
     entries[1] = password_entry;
-    entries[2] = GTK_data->profile_data->error_label;
+    entries[2] = GTK_data->profile_data->create_error_label;
     entries[3] = user_data;
     entries[4] = window;
-    entries[5] = GTK_data->profile_data->success_label;
+    entries[5] = GTK_data->profile_data->create_success_label;
     entries[6] = admin_check;
     entries[7] = delete_entry;
     g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_button_clicked), entries);

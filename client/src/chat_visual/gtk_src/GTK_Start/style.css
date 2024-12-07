@@ -279,8 +279,8 @@ button.add-group-button > label {
 .status-indicator {
     background-color: #00CC00;
     border-radius: 50%;
-    margin-top: 25px;
-    margin-bottom: 25px;
+    margin-top: 11px;
+    margin-bottom: 11px;
 }
 
 /* Status text styling */
@@ -471,8 +471,15 @@ button.search-erase-button > label {
     background-color: #C9C9C9;
     border: none;
     box-shadow: none;
+    background: transparent;
 }
 .popover > contents {
+    background-color: #C9C9C9;
+    border: none;
+    border-radius: 10px;
+    padding: 5px;
+}
+.popover > arrow {
     background-color: #C9C9C9;
     border: none;
     border-radius: 10px;
