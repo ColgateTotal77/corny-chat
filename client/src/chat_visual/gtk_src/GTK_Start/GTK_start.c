@@ -936,6 +936,9 @@ void GTK_start(GTK_data_t *GTK_data) {
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
         
+        pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
+        pthread_cond_init(&GTK_data->pthread_cond, NULL);
+
         app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
         g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
     }

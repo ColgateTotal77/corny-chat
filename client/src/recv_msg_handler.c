@@ -902,23 +902,24 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
 
-            bool session_expired = false;
-
-            SSL* new_ssl = try_to_reconnect(session_id, call_data->host, 
-                                            call_data->port, &session_expired);
-
-            if (new_ssl == NULL) {
-                printf("SSL = NULL\nServer disconnected!\n");
-                free(session_id);
-                session_id = NULL;
-                *(call_data->stop_flag) = true;
-                break;
+            GTK_data->stop_reconnect = false;
+            if (pthread_create(&GTK_data->reconnect_thread, NULL, &reconnect_handler, (void*)GTK_data) != 0) {
+                printf("ERROR: pthread\n");
             }
-            printf("\nConnection recover!\n");
-            SSL_free(call_data->ssl);
-            call_data->ssl = new_ssl;
-            continue;
-        } 
+
+            pthread_mutex_lock(&GTK_data->pthread_mutex);
+
+            printf("WAIT\n");
+            // Wait for the login response
+            pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
+            pthread_mutex_unlock(&GTK_data->pthread_mutex);
+
+            printf("TYT\n");
+
+            // create loading window
+
+            // pthread_cond wait        
+            } 
         else {
             int err = SSL_get_error(call_data->ssl, bytes_received);
             if (err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {

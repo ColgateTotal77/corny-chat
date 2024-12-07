@@ -131,14 +131,17 @@ typedef struct {
     GtkWidget *window;
     GtkWidget *profile_window;
     GtkWidget *search_bar;
-    pthread_mutex_t login_mutex;
-    pthread_cond_t login_cond;
+    pthread_mutex_t pthread_mutex;
+    pthread_cond_t pthread_cond;
     bool login_successful;
     pthread_t recv_thread;
     bool *stop_login;
 
     GtkWidget *message_entry;
     GtkWidget *entry_overlay;
+
+    pthread_t reconnect_thread;
+    bool *stop_reconnect;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;

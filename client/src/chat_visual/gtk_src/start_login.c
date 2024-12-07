@@ -32,10 +32,6 @@ bool check_password(char *password) { //Валідація паролю
     return true;
 }
 
-static void login_window_close_wrapper(GTK_data_t *GTK_data) {
-    GTK_start(GTK_data);
-}
-
 void set_error_text(GtkWidget *error_label, bool *error, const char *error_text) {
     gtk_label_set_text(GTK_LABEL(error_label), error_text);
     if (error) {
@@ -48,8 +44,8 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
     GtkWidget **entries = (GtkWidget **)user_data;
     GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
     if(!GTK_data->login_successful){
-        pthread_mutex_destroy(&GTK_data->login_mutex);
-        pthread_cond_destroy(&GTK_data->login_cond);
+        pthread_mutex_destroy(&GTK_data->pthread_mutex);
+        pthread_cond_destroy(&GTK_data->pthread_cond);
         *(GTK_data->stop_login) = true;
         //pthread_join(GTK_data->recv_thread, NULL);
 
@@ -93,17 +89,19 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         // If validation passes, print JSON data
         print_json_data(login_input, password_input, GTK_data->call_data);
 
-        pthread_mutex_lock(&GTK_data->login_mutex);
+        pthread_mutex_lock(&GTK_data->pthread_mutex);
 
         // Wait for the login response
-        pthread_cond_wait(&GTK_data->login_cond, &GTK_data->login_mutex);
-        pthread_mutex_unlock(&GTK_data->login_mutex);
+        pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
+        pthread_mutex_unlock(&GTK_data->pthread_mutex);
 
         if(GTK_data->login_successful){
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
             gtk_widget_set_visible(window, FALSE);
-            login_window_close_wrapper(GTK_data);
+            pthread_mutex_destroy(&GTK_data->pthread_mutex);
+            pthread_cond_destroy(&GTK_data->pthread_cond);
+            GTK_start(GTK_data);
             g_free(entries);
             gtk_window_close(GTK_WINDOW(window));
         }else{
@@ -221,8 +219,8 @@ void start_login(call_data_t *call_data) {
         GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
         GTK_data->call_data = call_data;
         GTK_data->login_successful = false;
-        pthread_mutex_init(&GTK_data->login_mutex, NULL);
-        pthread_cond_init(&GTK_data->login_cond, NULL);
+        pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
+        pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
         app = gtk_application_new("com.example.GtkApplication1", G_APPLICATION_NON_UNIQUE);
         g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);

@@ -22,7 +22,7 @@ void* recv_login_msg_handler(void* arg) {
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
             if (command_code_json) {
                 if ((command_code_json)->valueint == 11) {
-                    pthread_mutex_lock(&GTK_data->login_mutex);
+                    pthread_mutex_lock(&GTK_data->pthread_mutex);
                     if(cJSON_GetObjectItemCaseSensitive(parsed_json, "success")->valueint > 0) {
                         cJSON *session_id_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "session_id");
                         GTK_data->session_id = (char*)calloc(strlen(session_id_json->valuestring)+ 1, sizeof(char));
@@ -40,8 +40,8 @@ void* recv_login_msg_handler(void* arg) {
                         call_data->ssl = setup_new_connection(call_data->host, call_data->port);
                     }
                     
-                    pthread_cond_signal(&GTK_data->login_cond);
-                    pthread_mutex_unlock(&GTK_data->login_mutex);
+                    pthread_cond_signal(&GTK_data->pthread_cond);
+                    pthread_mutex_unlock(&GTK_data->pthread_mutex);
                     cJSON_Delete(parsed_json);
                     free(message);
                     continue;
