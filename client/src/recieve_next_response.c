@@ -60,4 +60,3 @@ int recieve_next_response(SSL *ssl, char **buffer) {
     *buffer = whole_message_buffer;
     return whole_message_length;
 }
-

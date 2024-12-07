@@ -20,4 +20,3 @@ void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidg
         free(data);
     }
 }
-

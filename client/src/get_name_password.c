@@ -1,7 +1,6 @@
 #include "../inc/client.h"
 #include "../inc/password.h"
 
-
 // bool check_password(char *password) { //Валідація паролю
 //     if (password == NULL) { //Перевірка на порожній рядок
 //         return false;
@@ -73,4 +72,3 @@ cJSON* get_name_password(void) {
 
     return json;
 }
-

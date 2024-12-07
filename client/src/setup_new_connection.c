@@ -2,7 +2,6 @@
 #include <ctype.h>
 
 
-
 /**
  * @brief Same as setup_client_socket, but instead of exiting program on error
  *        it just returns -1

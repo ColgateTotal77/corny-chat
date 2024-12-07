@@ -7,4 +7,3 @@ void str_del_newline(char* arr, int length) {
         }
     }
 }
-

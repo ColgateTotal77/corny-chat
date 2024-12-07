@@ -933,4 +933,3 @@ void* recv_msg_handler(void* arg) {
     pthread_detach(pthread_self());
     return NULL;
 }
-
