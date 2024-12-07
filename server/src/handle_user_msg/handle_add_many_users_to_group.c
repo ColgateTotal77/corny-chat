@@ -2,6 +2,7 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 #include "create_json.h"
+#include "command_codes.h"
 
 bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,
                            int **array_ptr, int *array_size) {
@@ -28,6 +29,16 @@ bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,
     *array_size = users_num;
 
     return true;
+}
+
+static cJSON* user_was_added_to_group_notification(int user_id, char *login, char *nickname) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(json, "event_code", USER_WAS_ADDED_TO_GROUP);
+    cJSON_AddNumberToObject(json, "user_id", user_id);
+    cJSON_AddStringToObject(json, "login", login);
+    cJSON_AddStringToObject(json, "nickname", nickname);
+
+    return json;
 }
 
 
@@ -126,6 +137,19 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
         fflush(stdout);
         // Critical resource access: CLIENT USER DATA. Start
         pthread_mutex_lock(&client_data->user_data->mutex);
+
+        cJSON *new_user_was_added_notif = user_was_added_to_group_notification(
+            client_data->user_data->user_id,
+            client_data->user_data->login,
+            client_data->user_data->nickname
+        );
+
+        send_to_group_and_delete_json_no_ht_mutex(
+            call_data, 
+            &new_user_was_added_notif,
+            chat
+        );
+
         update_group_users_and_user_groups(chat, client_data);
         cJSON_AddNumberToObject(user_data, "id", client_data->user_data->user_id);
         cJSON_AddStringToObject(user_data, "nickname", client_data->user_data->nickname);

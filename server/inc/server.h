@@ -95,7 +95,8 @@ void add_offline_user_to_server_cache(sqlite3 *db, ht_t *clients, ht_str_t *logi
                                       int user_id, char *login, char *nickname, 
                                       bool is_admin, bool is_active);
 
-void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data);
+void handle_user_msg(int bytes_received, int *leave_flag,
+                     char *client_msg, call_data_t *call_data);
 enum LoginValidationResult find_and_validate_user(call_data_t *call_data, 
                                                cJSON *json_name_password);
 int handle_login(char *str_json_name_password, call_data_t *call_data);
@@ -137,6 +138,8 @@ void send_to_client_and_delete_json(cJSON **json, client_t* client_data);
 void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t *chat);
 void send_json_to_client(cJSON **json, client_t* client_data);
 void send_to_user_and_delete_json_no_mutexes(call_data_t *call_data, cJSON **json);
+void send_to_group_and_delete_json_no_ht_mutex(call_data_t *call_data, 
+                                               cJSON **json, chat_t *chat);
 
 cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
 
