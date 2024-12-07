@@ -27,7 +27,6 @@ typedef struct {
     GtkWidget *alignment_box;
     GtkWidget *message_label;
     GtkWidget *message_entry;
-    gboolean *is_editing;
     gboolean own_is_editing;
     GtkWidget *send_button;
     GHashTable *messages; 
@@ -35,6 +34,7 @@ typedef struct {
     GtkWidget *cancel_button;
     int message_id;
     SSL* ssl;
+    gboolean *this_chat;
 } message_data_t;
 
 
@@ -58,6 +58,8 @@ typedef struct {
 
     GtkListBox *user_list_for_add;
     GtkListBox *user_list_for_delete;
+    GtkWidget *message_entry;
+    gboolean this_chat;
 } chat_data_t;
 
 typedef struct {
@@ -71,7 +73,6 @@ typedef struct {
     GtkWidget *chat_area_background;
     GtkWidget *chat_user_label;
     GtkWidget *message_entry;
-    gboolean *is_editing;
     GtkWidget *send_button;
     GtkWidget *sidebar;
     GtkWidget *error_label;
@@ -136,6 +137,8 @@ typedef struct {
     pthread_t recv_thread;
     bool *stop_login;
 
+    GtkWidget *message_entry;
+    GtkWidget *entry_overlay;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
