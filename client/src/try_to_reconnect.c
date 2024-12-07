@@ -91,27 +91,26 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
     if (session_id == NULL || host == NULL) {
         return NULL;
     }
-    int count = 0;
+    //int count = 0;
     SSL *new_ssl = NULL;
 
-    while (count < 30 && new_ssl == NULL) {
-        printf("Trying to reconnect %d\n", count);
-        count += 1;
+//  while (new_ssl == NULL && stoper) {
+        printf("Trying to reconnect\n");
+        // count += 1;
         int socket = setup_client_socket_with_silent_errors(host, port);
         if (socket < 0) {
-            sleep(1);
-            continue;
+            return NULL;
         }
         SSL_CTX *ctx = init_ssl_context();
         SSL *ssl = SSL_new(ctx);
         SSL_set_fd(ssl, socket);
         if (SSL_connect(ssl) != 1) { 
-            sleep(1);
-            continue;
-        }
-
-        new_ssl = ssl;
+            return NULL;
+        // sleep(1);
+        // continue;
     }
+    new_ssl = ssl;
+    // }
 
     cJSON *reconect_request = cJSON_CreateObject();
     cJSON_AddStringToObject(reconect_request, "session_id", session_id);
@@ -125,11 +124,12 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
         }
 
         *session_expired = true;
-    
+        // if(session_expired) {
+
+        // }
         SSL_shutdown(new_ssl);//Закриття SSL з'єднання
         SSL_free(new_ssl);
     }
-
     return NULL;
 }
 
