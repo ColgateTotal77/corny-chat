@@ -2,6 +2,7 @@
 #include "cJSON.h"
 #include "../libmx/inc/libmx.h"
 #include "create_json.h"
+#include "command_codes.h"
 
 bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,
                            int **array_ptr, int *array_size) {
@@ -30,8 +31,20 @@ bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,
     return true;
 }
 
+static cJSON* user_was_added_to_group_notification(int user_id, char *login, char *nickname) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(json, "event_code", USER_WAS_ADDED_TO_GROUP);
+    cJSON_AddNumberToObject(json, "user_id", user_id);
+    cJSON_AddStringToObject(json, "login", login);
+    cJSON_AddStringToObject(json, "nickname", nickname);
+
+    return json;
+}
+
 
 cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
+    printf("MUTEX LOG: handle_add_many_users_to_group<--------------------------------\n");
+    fflush(stdout);
     if (!cJSON_HasObjectItem(json, "users_id")
         || !cJSON_HasObjectItem(json, "chat_id")) {
         return create_error_json("Invalid json format\n");
@@ -59,6 +72,8 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
     if (chat->owner_id != call_data->client_data->user_data->user_id) {
         pthread_mutex_unlock(&chat->mutex);
         // Critical resource access: SELECTED CHAT. Possible end
+        printf("MUTEX LOG: unlock(&chat->mutex)\n");
+        fflush(stdout);
 
         return create_error_json("You have to rights\n");
     }
@@ -66,24 +81,36 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
     int *users_to_add = NULL;
     int users_num = 0;
 
+    printf("MUTEX LOG: lock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
     // Critical resource access: CLIENTS HASH TABLE. Start
     pthread_mutex_lock(call_data->general_data->clients_mutex);
     if (!get_int_arr_from_json(call_data, users_id_json, chat, &users_to_add, &users_num)) {
         pthread_mutex_unlock(call_data->general_data->clients_mutex);
         // Critical resource access: CLIENTS HASH TABLE. Possible end
+        printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+        fflush(stdout);
 
         pthread_mutex_unlock(&chat->mutex);
         // Critical resource access: SELECTED CHAT. Possible end
+        printf("MUTEX LOG: unlock(&chat->mutex)\n");
+        fflush(stdout);
 
         return create_error_json("Invalid json format\n");
     }
     
+    printf("MUTEX LOG: lock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
     // Critical resource access: DATABASE. Start
     pthread_mutex_lock(call_data->general_data->db_mutex);
     add_users_to_group(call_data->general_data->db, chat_id, users_to_add, users_num);
     pthread_mutex_unlock(call_data->general_data->db_mutex);
     // Critical resource access: DATABASE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->db_mutex)\n");
+    fflush(stdout);
 
+    printf("MUTEX LOG: lock(&call_data->client_data->user_data->mutex)\n");
+    fflush(stdout);
     // Critical resource access: USER DATA. Start
     pthread_mutex_lock(&call_data->client_data->user_data->mutex);
 
@@ -96,6 +123,8 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
 
     pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
     // Critical resource access: USER DATA. End
+    printf("MUTEX LOG: unlock(&call_data->client_data->user_data->mutex)\n");
+    fflush(stdout);
 
     cJSON *users_array = cJSON_CreateArray();
 
@@ -104,13 +133,30 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
 
         cJSON *user_data = cJSON_CreateObject();
 
+        printf("MUTEX LOG: lock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
         // Critical resource access: CLIENT USER DATA. Start
         pthread_mutex_lock(&client_data->user_data->mutex);
+
+        cJSON *new_user_was_added_notif = user_was_added_to_group_notification(
+            client_data->user_data->user_id,
+            client_data->user_data->login,
+            client_data->user_data->nickname
+        );
+
+        send_to_group_and_delete_json_no_ht_mutex(
+            call_data, 
+            &new_user_was_added_notif,
+            chat
+        );
+
         update_group_users_and_user_groups(chat, client_data);
         cJSON_AddNumberToObject(user_data, "id", client_data->user_data->user_id);
         cJSON_AddStringToObject(user_data, "nickname", client_data->user_data->nickname);
         pthread_mutex_unlock(&client_data->user_data->mutex);
         // Critical resource access: CLIENT USER DATA. End
+        printf("MUTEX LOG: unlock(&client_data->user_data->mutex)\n");
+        fflush(stdout);
 
         cJSON_AddItemToArray(users_array, user_data);
         
@@ -121,9 +167,13 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
 
     pthread_mutex_unlock(call_data->general_data->clients_mutex);
     // Critical resource access: CLIENTS HASH TABLE. End
+    printf("MUTEX LOG: unlock(call_data->general_data->clients_mutex)\n");
+    fflush(stdout);
 
     pthread_mutex_unlock(&chat->mutex);
     // Critical resource access: SELECTED CHAT. End
+    printf("MUTEX LOG: unlock(&chat->mutex)\n");
+    fflush(stdout);
 
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddBoolToObject(response_json, "success", true);
