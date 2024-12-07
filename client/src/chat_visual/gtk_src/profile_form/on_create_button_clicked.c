@@ -13,21 +13,21 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     gpointer *entries = (gpointer *)user_data;
     GtkWidget *login_entry = GTK_WIDGET(entries[0]);
     GtkWidget *password_entry = GTK_WIDGET(entries[1]);
-    GtkWidget *error_label = GTK_WIDGET(entries[2]);
-    GtkWidget *success_label = GTK_WIDGET(entries[5]);
+    GtkWidget *create_error_label = GTK_WIDGET(entries[2]);
+    GtkWidget *create_success_label = GTK_WIDGET(entries[5]);
     GtkWidget *admin_check = GTK_WIDGET(entries[6]);
     GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
     SSL *ssl = GTK_data->call_data->ssl;
 
     // IMPORTANT: Store labels in GTK_data FIRST
-    GTK_data->profile_data->create_error_label = error_label;
-    GTK_data->profile_data->create_success_label = success_label;
+    GTK_data->profile_data->create_error_label = create_error_label;
+    GTK_data->profile_data->create_success_label = create_success_label;
     GTK_data->profile_data->login_entry = login_entry;
     GTK_data->profile_data->password_entry = password_entry;
 
     // Validate individual widgets
     if (!GTK_IS_WIDGET(login_entry) || !GTK_IS_WIDGET(password_entry) || 
-        !GTK_IS_WIDGET(error_label) || !GTK_IS_WIDGET(success_label) || 
+        !GTK_IS_WIDGET(create_error_label) || !GTK_IS_WIDGET(create_success_label) || 
         !GTK_IS_WIDGET(admin_check)) {
         fprintf(stderr, "Error: One or more widgets are invalid.\n");
         return;

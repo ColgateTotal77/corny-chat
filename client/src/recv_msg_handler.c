@@ -161,7 +161,6 @@ void* recv_msg_handler(void* arg) {
                                     chat->last_message_id = msg_id;
                                 }
                                 else if(i == all_mes_qty - 1) {
-                                    printf("\nThis is message: %s\n\n", message);
                                     if (local_time->tm_year > adjusted_time->tm_year || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
@@ -653,9 +652,17 @@ void* recv_msg_handler(void* arg) {
                                 } else {
                                     // Error case
                                     cJSON *err_msg = cJSON_GetObjectItemCaseSensitive(json, "err_msg");
-                                    char *error_text = (err_msg && cJSON_IsString(err_msg)) ? 
-                                                        err_msg->valuestring : "Account creation failed";
+                                    if (err_msg && cJSON_IsString(err_msg)) {
+                                    // Remove the newline character from the error message
+                                    char *error_text = strdup(err_msg->valuestring);
+                                    if (error_text[strlen(error_text) - 1] == '\n') {
+                                        error_text[strlen(error_text) - 1] = '\0';
+                                    }
                                     display_ui_message(GTK_data, error_text, false);
+                                    free(error_text);
+                                    } else {
+                                        display_ui_message(GTK_data, "Account creation failed", false);
+                                    }
                                 }
                             }
                         }
