@@ -11,8 +11,7 @@ void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
     const gchar *user_login = gtk_editable_get_text(GTK_EDITABLE(GTK_data->profile_data->delete_entry));
 
     if (!user_login || strlen(user_login) == 0) {
-        gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->error_label), "Please enter a valid login.");
-        gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->success_label), "");
+        display_ui_message(GTK_data, "Please enter a valid login.", false);
         g_timeout_add(1000, reenable_button_after_delay, button);
         return;
     }
@@ -20,15 +19,11 @@ void on_deactivate_button_clicked(GtkButton *button, gpointer user_data) {
     // Deactivate the user
     deactivate_user(GTK_data->call_data->ssl, (char *)user_login);
 
-    // Update UI labels
-    gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->success_label), "User successfully deactivated.");
-    gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->error_label), "");
+    // Display success message
+    display_ui_message(GTK_data, "User successfully deactivated!", true);
 
     // Clear the entry field
     gtk_editable_set_text(GTK_EDITABLE(GTK_data->profile_data->delete_entry), "");
-
-    // Add timeout to hide the success label
-    g_timeout_add(1500, hide_label_after_timeout, GTK_data->profile_data->success_label);
 
     // Add a 1-second delay before re-enabling the button
     g_timeout_add(1000, reenable_button_after_delay, button);

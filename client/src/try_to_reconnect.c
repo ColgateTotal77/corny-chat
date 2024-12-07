@@ -132,4 +132,3 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
 
     return NULL;
 }
-

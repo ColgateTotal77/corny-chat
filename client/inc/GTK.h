@@ -62,7 +62,7 @@ typedef struct {
 
 typedef struct {
     chat_data_t *chat;
-    SSL* ssl;
+    SSL *ssl;
 } scroll_data_t;
 
 typedef struct {
@@ -178,7 +178,6 @@ const char *find_similar_email(const char *input, GtkListBox *list_box);
 gboolean hide_label_after_timeout(gpointer label);
 char *strdup(const char *str);
 void display_ui_message(GTK_data_t *GTK_data, const char *message, bool is_success);
-void request_user_list(SSL *ssl);
 void on_activate_button_clicked(GtkButton *button, gpointer user_data);
 void on_deactivate_button_clicked(GtkButton *button, gpointer user_data);
 gboolean reenable_button_after_delay(gpointer user_data);

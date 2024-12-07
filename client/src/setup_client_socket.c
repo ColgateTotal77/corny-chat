@@ -34,4 +34,3 @@ int setup_client_socket(char *hostname, int port) {
 
     return sock;
 }
-

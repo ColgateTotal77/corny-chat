@@ -414,6 +414,9 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         gtk_window_set_transient_for(GTK_WINDOW(settings_window), GTK_WINDOW(GTK_data->window));
     }
 
+    gtk_window_set_transient_for(GTK_WINDOW(settings_window), NULL);
+    gtk_window_set_modal(GTK_WINDOW(settings_window), TRUE);
+
     // Create a grid to organize the layout
     GtkWidget *grid = gtk_grid_new();
     gtk_widget_set_margin_start(grid, 10); // Optional: set margins
@@ -603,6 +606,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
     gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
     GTK_data->window = window;
+
+    gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
+    gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 
     // Create the main grid for layout
     GtkWidget *main_grid = gtk_grid_new();

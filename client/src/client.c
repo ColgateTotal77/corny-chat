@@ -86,4 +86,3 @@ int main(int argc, char* argv[]) {
     SSL_CTX_free(ctx);
     return EXIT_SUCCESS;
 }
-

@@ -12,4 +12,3 @@ void check_remember_me(GtkWidget *remember_me_check, const char *login, const ch
         remove("autoLogin");
     }
 }
-
