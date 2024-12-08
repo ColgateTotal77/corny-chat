@@ -633,7 +633,7 @@ button.next-button {
     padding: 12px 16px;
     margin: 5px 0;
     min-height: 20px;
-    min-width: 250px;
+    min-width: 150px;
     color: black;
     font-size: 16px;
     margin-top: 10px;
@@ -664,7 +664,6 @@ button.next-button {
 .nickname-separator {
     background-color: #cccccc; /* Light gray color */
     min-height: 3px; /* Thickness of the separator */
-    margin-bottom: 10px;
     border-radius: 5px; /* Slightly rounded edges */
     border: none;
 }
@@ -703,7 +702,6 @@ button.next-button {
     min-height: 20px;
     font-size: 16px;
     transition: background-color 0.3s ease, transform 0.1s ease;
-    margin-bottom: 10px;
 }
 
 .change-password-button:hover {
