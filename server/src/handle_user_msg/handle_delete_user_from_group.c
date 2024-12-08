@@ -1,7 +1,5 @@
-#include "server.h"
-#include "cJSON.h"
-#include "../libmx/inc/libmx.h"
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 #include "command_codes.h"
 
 static cJSON *notif_you_were_deleted_from_group(int chat_id, char* chat_name) {

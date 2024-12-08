@@ -1,4 +1,3 @@
-#include "server.h"
 #include "create_json.h"
 
 
@@ -20,7 +19,7 @@ cJSON *handle_get_my_groups(call_data_t *call_data) {
 
     // Critical resource access: DATABASE. Start
     pthread_mutex_lock(call_data->general_data->db_mutex);
-    s_group *groups = get_groups_full_list(//
+    s_group *groups = get_groups_full_list(
         call_data->general_data->db,
         call_data->client_data->user_data->user_id, &count
     );

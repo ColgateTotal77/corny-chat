@@ -1,6 +1,3 @@
-#include "server.h"
-#include "cJSON.h"
-#include "../libmx/inc/libmx.h"
 #include "create_json.h"
 
 

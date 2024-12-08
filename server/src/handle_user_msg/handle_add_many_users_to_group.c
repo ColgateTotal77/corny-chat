@@ -1,7 +1,5 @@
-#include "server.h"
-#include "cJSON.h"
-#include "../libmx/inc/libmx.h"
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 #include "command_codes.h"
 
 bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,

@@ -1,4 +1,5 @@
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 #include "command_codes.h"
 
 static cJSON *nickname_changed_notification(int user_id, char *nickname) {

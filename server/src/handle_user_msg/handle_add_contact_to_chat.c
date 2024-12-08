@@ -1,7 +1,5 @@
-#include "server.h"
-#include "cJSON.h"
-#include "../libmx/inc/libmx.h"
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 
 static cJSON *create_error_response(char *error_msg, int contact_id, int chat_id) {
     cJSON *error_response = create_error_json(error_msg);
@@ -75,6 +73,8 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
     pthread_mutex_unlock(&call_data->client_data->user_data->mutex);
     // Critical resource access: USER DATA. End
 
+    append_to_group_users(chat, contact_id);
+
     pthread_mutex_unlock(&chat->mutex);
     // Critical resource access: SELECTED CHAT. End
 
@@ -86,7 +86,7 @@ cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json) {
 
     // Critical resource access: CONTACT USER DATA. Start
     pthread_mutex_lock(&contact_data->user_data->mutex);
-    update_group_users_and_user_groups(chat, contact_data);
+    append_to_users_groups(contact_data->user_data, chat_id);
     pthread_mutex_unlock(&contact_data->user_data->mutex);
     // Critical resource access: CONTACT USER DATA. End
     

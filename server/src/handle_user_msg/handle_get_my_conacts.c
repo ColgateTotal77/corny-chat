@@ -1,4 +1,4 @@
-#include "server.h"
+#include "create_json.h"
 
 static void add_contacts_to_json(call_data_t *call_data, cJSON *response_json) {
     // Critical resource access: USER DATA. Start
@@ -6,7 +6,7 @@ static void add_contacts_to_json(call_data_t *call_data, cJSON *response_json) {
     int contacts_count = call_data->client_data->user_data->contacts_count;
 
     cJSON *contacts_array = cJSON_AddArrayToObject(response_json, "contacts");
-    cJSON_AddNumberToObject(response_json, "contacts_count", contacts_count);//
+    cJSON_AddNumberToObject(response_json, "contacts_count", contacts_count);
 
     int *contacts_list = call_data->client_data->user_data->contacts_id;
     

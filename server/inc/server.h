@@ -22,9 +22,6 @@
 #include <openssl/rand.h>
 
 #define BUF_SIZE 256
-#define MAX_CLIENTS 100
-#define MAX_CHATS 20
-
 
 typedef struct {
     int* users_id;
@@ -76,7 +73,6 @@ typedef struct {
 typedef struct {
     client_t *client_data;
     general_data_t *general_data;
-   // SSL *ssl;
 } call_data_t;
 
 
@@ -113,11 +109,9 @@ char *add_length_to_string(char *str);
 bool user_has_such_contact(user_t *user_data, int contact_id);
 bool group_has_such_user(chat_t *chat_data, int user_id);
 bool user_exists(call_data_t *call_data, int user_id);
-bool group_exists(call_data_t *call_data, int group_id);
 void append_to_group_users(chat_t *chat_data, int user_id);
 void append_to_users_groups(user_t *user_data, int chat_id);
 void update_group_users_and_user_groups(chat_t *chat_data, client_t *client_data);
-bool is_user_group_owner(call_data_t *call_data, int group_id);
 void append_to_users_contacts(user_t *user_data, int contact_id);
 void remove_from_group_users(chat_t *chat_data, int user_id);
 void remove_from_users_groups(user_t *user_data, int chat_id);
@@ -125,22 +119,9 @@ bool get_group_data_and_lock_group_mutex(call_data_t *call_data, int group_id,
                                          chat_t **chat_data);
 
 // send_msg_functions
-void send_message_to_id(call_data_t *call_data, char *message, int user_id);
-void send_message_to_user(call_data_t *call_data, char *message);
-void send_message_to_another_ids(call_data_t *call_data, char *s);
-void send_message_to_chat(call_data_t *call_data, char *message, int chat_id);
-void send_to_user_and_delete_json(call_data_t *call_data, cJSON **json);
-void send_to_id_and_delete_json(call_data_t *call_data, cJSON **json, int id_to_send);
-void send_to_chat_and_delete_json(call_data_t *call_data, cJSON **json, int chat_id);
-void send_to_another_ids_and_delete_json(call_data_t *call_data, cJSON **json);
-void send_user_returned_msg(call_data_t *call_data);
-void send_user_exit_msg(call_data_t *call_data);
-void send_to_client_and_delete_json(cJSON **json, client_t* client_data);
-void send_to_group_and_delete_json(call_data_t *call_data, cJSON **json, chat_t *chat);
-void send_json_to_client(cJSON **json, client_t* client_data);
-void send_to_user_and_delete_json_no_mutexes(call_data_t *call_data, cJSON **json);
-void send_to_group_and_delete_json_no_ht_mutex(call_data_t *call_data, 
-                                               cJSON **json, chat_t *chat);
 
-cJSON *create_response_json(int command_code, bool success_status, char *error_msg);
+
+cJSON *create_error_json(char *err_msg);
+cJSON *you_were_added_to_group_notification(int by_who_id, char *by_who_nickname,
+                                            int group_id, char *group_name);
 

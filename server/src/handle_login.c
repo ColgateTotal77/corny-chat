@@ -1,6 +1,18 @@
-#include "server.h"
+#include "sending_functions.h"
 #include "command_codes.h"
 #include "password.h"
+
+
+static cJSON *create_response_json(bool success_status, char *error_msg) {
+    cJSON *response_json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(response_json, "command_code", LOGIN);
+    cJSON_AddBoolToObject(response_json, "success", success_status);
+    if (error_msg != NULL) {
+        cJSON_AddStringToObject(response_json, "error_msg", error_msg);
+    }
+
+    return response_json;
+}
 
 static bool is_active_user(call_data_t *call_data, char *login) {
 	// Critical resource access: LOGIN_TO_ID HASH MAP. Start
@@ -76,7 +88,7 @@ static void handle_valid_login_via_session_id(call_data_t *call_data,
 static void create_and_send_succesfull_login_data(call_data_t *call_data,
                                                   int user_id, char* login,
                                                   char *client_session_id) {
-    cJSON *response_json = create_response_json(LOGIN, true, NULL);
+    cJSON *response_json = create_response_json(true, NULL);
 	cJSON_AddNumberToObject(response_json, "user_id", user_id);
 	cJSON_AddStringToObject(response_json, "login", login);
 	cJSON_AddStringToObject(response_json, "nickname",
@@ -146,7 +158,7 @@ int handle_login(char *str_json_login_password, call_data_t *call_data) {
    
 	if (is_valid_login == INVALID_INPUT || !is_active_user(call_data, login->valuestring)) {
         printf("Invalid Input\n");
-		cJSON *response_json = create_response_json(LOGIN, false, "Invalid login input\n");
+		cJSON *response_json = create_response_json(false, "Invalid login input\n");
 		send_to_user_and_delete_json_no_mutexes(call_data, &response_json);
 
 		SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії

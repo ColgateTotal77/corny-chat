@@ -1,4 +1,4 @@
-#include "server.h"
+#include "sending_functions.h"
 
 
 void send_to_another_ids_and_delete_json(call_data_t *call_data, cJSON **json) {

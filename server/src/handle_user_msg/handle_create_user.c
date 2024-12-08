@@ -1,8 +1,7 @@
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 #include "password.h"
 #include "command_codes.h"
-
-#include <password.h>
 
 static bool check_login_validity(char *login) {
     if (login == NULL) {

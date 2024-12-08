@@ -1,4 +1,5 @@
-#include "create_json.h"
+#include "cJSON.h"
+#include "stdbool.h"
 
 cJSON *create_error_json(char *err_msg) {
     cJSON *response_json = cJSON_CreateObject();

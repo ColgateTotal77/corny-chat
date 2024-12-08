@@ -1,5 +1,4 @@
 #include "create_json.h"
-#include "../../libmx/inc/libmx.h"
 
 
 static chat_t *init_server_group(int chat_id, char *name, int owner_id) {

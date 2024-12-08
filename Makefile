@@ -18,17 +18,17 @@ JSON_C = json-c/json-c.a
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): $(LIBRARY) $(JSON_C)
-	cd $(SERVER_DIR) && make
+	cd $(SERVER_DIR) && make -j -s
 
 $(CLIENT): $(LIBRARY) $(JSON_C)
-	cd $(CLIENT_DIR) && make
+	cd $(CLIENT_DIR) && make -j -s
 
 # Компиляция библиотек
 $(LIBRARY):
-	cd $(LIBRARYDIR) && make
+	cd $(LIBRARYDIR) && make -j -s
 
 $(JSON_C):
-	cd $(JSON_C_DIR) && make
+	cd $(JSON_C_DIR) && make -j -s
 
 
 # Удаление всех файлов

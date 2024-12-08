@@ -1,6 +1,5 @@
-#include "server.h"
-#include "cJSON.h"
-#include "create_json.h"
+#include "sending_functions.h"
+#include "sql.h"
 #include "command_codes.h"
 
 static cJSON *create_incoming_group_message_json(char *message,

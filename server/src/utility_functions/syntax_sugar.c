@@ -32,12 +32,6 @@ bool user_exists(call_data_t *call_data, int user_id) {
     return user_data != NULL;
 }
 
-bool group_exists(call_data_t *call_data, int group_id) {
-    chat_t *group_data = ht_get(call_data->general_data->chats, group_id);
-
-    return group_data != NULL;
-}
-
 bool user_has_such_contact(user_t *user_data, int contact_id) {
     bool result = num_inarray(user_data->contacts_id, user_data->contacts_count, contact_id);
 
@@ -50,9 +44,3 @@ bool group_has_such_user(chat_t *chat_data, int user_id) {
     return result;
 }
 
-bool is_user_group_owner(call_data_t *call_data, int group_id) {
-    chat_t *chat_data = ht_get(call_data->general_data->chats, group_id);
-    int user_id = call_data->client_data->user_data->user_id;
-
-    return chat_data->owner_id == user_id;
-}

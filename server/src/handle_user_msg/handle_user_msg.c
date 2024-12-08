@@ -1,4 +1,4 @@
-#include "server.h"
+#include "sending_functions.h"
 #include "stdbool.h"
 #include "cJSON.h"
 #include "handlers.h"
@@ -27,12 +27,6 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
     case SEE_ALL_CHATS:
         response_json = handle_see_all_chats(call_data);
         break;
-    //case SEE_ALL_USERS:
-    //    response_json = handle_see_all_users(call_data);
-    //    break;
-    //case ADD_CONTACT:
-    //    response_json = handle_add_contact(call_data, msg_json);
-    //    break;
     case SEE_MY_CONTACTS:
         response_json = handle_see_my_contacts(call_data);
         break;

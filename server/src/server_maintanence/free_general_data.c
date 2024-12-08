@@ -32,7 +32,7 @@ static void free_clients_cache(ht_t *clients) {
 			SSL_shutdown(client_data->ssl);
             SSL_free(client_data->ssl);
 	    }
-		//shutdown(client_data->sockfd, SHUT_RDWR);
+
 		pthread_mutex_destroy(&client_data->mutex);
 		free(client_data);
 		free(entry);

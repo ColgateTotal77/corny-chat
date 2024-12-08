@@ -1,6 +1,5 @@
 #include "create_json.h"
 
-
 cJSON* handle_get_last_msgs_between(call_data_t *call_data, cJSON *json) {
     if (!cJSON_HasObjectItem(json, "user2")
         || !cJSON_HasObjectItem(json, "before")
