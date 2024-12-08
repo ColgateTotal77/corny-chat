@@ -716,7 +716,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
+    gtk_window_set_default_size(GTK_WINDOW(window), 1000, 400); //1800, 800 було
+    gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
     GTK_data->window = window;
 
     gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
@@ -778,6 +779,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *sidebar_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(sidebar_background, "sidebar-background");
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_background, 0, 1, 1, 1);
+    // gtk_widget_set_hexpand(sidebar_background, TRUE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_background, TRUE); // Make the main grid vertically expandable
 
     GtkWidget *sidebar_scroll_users = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_users), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -785,11 +788,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_users);
     
     GtkWidget *sidebar_users = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar_users, 350, -1);
+    gtk_widget_set_size_request(sidebar_users, 250, -1);
     gtk_widget_add_css_class(sidebar_users, "sidebar");
     gtk_widget_set_hexpand(sidebar_users, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_users), sidebar_users);
-    // gtk_widget_set_visible(sidebar_users, FALSE);
+
+    // gtk_widget_set_visible(sidebar_scroll_users, FALSE);
+    // gtk_widget_set_hexpand(sidebar_users, TRUE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_users, TRUE); // Make the main grid vertically expandable
 
     GtkWidget *sidebar_scroll_groups = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -797,11 +803,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_groups);
 
     GtkWidget *sidebar_groups = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar_groups, 350, -1);
+    // gtk_widget_set_size_request(sidebar_groups, 250, -1);
     gtk_widget_add_css_class(sidebar_groups, "sidebar");
     gtk_widget_set_hexpand(sidebar_groups, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
     gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
+    // gtk_widget_set_hexpand(sidebar_groups, TRUE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_groups, TRUE); // Make the main grid vertically expandable
 
     // Add new group button
     GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
@@ -816,11 +824,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(sidebar_container, "sidebar-container");
 
     // Set fixed size
-    gtk_widget_set_size_request(sidebar_container, 400, 60);  // Width: 400px, Height: 60px
+    // gtk_widget_set_size_request(sidebar_container, 200, 60);  // Width: 400px, Height: 60px
 
     // Prevent expansion
     gtk_widget_set_hexpand(sidebar_container, FALSE);
-    gtk_widget_set_vexpand(sidebar_container, FALSE);
+    // gtk_widget_set_vexpand(sidebar_container, FALSE);
+    // gtk_widget_set_hexpand(sidebar_container, TRUE);
+    gtk_widget_set_vexpand(sidebar_container, TRUE);
 
     // Keep alignment
     gtk_widget_set_halign(sidebar_container, GTK_ALIGN_FILL);
@@ -868,6 +878,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *chat_area_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(chat_area_background, "chat-area-background");
     gtk_grid_attach(GTK_GRID(main_grid), chat_area_background, 1, 1, 1, 1);
+    gtk_widget_set_vexpand(chat_area_background, TRUE);
 
     // Chat header
     GtkWidget *chat_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -1012,7 +1023,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *select_a_chat_label = gtk_label_new("Select a chat to start messaging");
     gtk_widget_add_css_class(select_a_chat_label, "placeholder-message");
     gtk_grid_attach(GTK_GRID(main_grid), select_a_chat_label, 1, 1, 1, 1);
-    gtk_widget_set_size_request(select_a_chat_label, -1, 500);
+    gtk_widget_set_size_request(select_a_chat_label, -1, 300);
+    gtk_widget_set_vexpand(chat_area_background, true);
     gtk_widget_set_hexpand(select_a_chat_label, true);
     gtk_widget_set_visible(select_a_chat_label, true);
     chat_manager->select_a_chat_label = select_a_chat_label;

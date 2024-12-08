@@ -141,7 +141,7 @@ void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 500);
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
 
     // To center the window in GTK4
     gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
