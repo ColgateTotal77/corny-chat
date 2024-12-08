@@ -83,10 +83,10 @@ void* recv_msg_handler(void* arg) {
 
             cJSON *command_code_json = cJSON_GetObjectItemCaseSensitive(parsed_json, "command_code");
             if (command_code_json) {
-                if (command_code_json->valueint == 17 && stop_flag) {                 
+                if (command_code_json->valueint == 17 && stop_flag) {                   
                     cJSON *users = cJSON_GetObjectItemCaseSensitive(parsed_json, "users");
                     number_of_users = cJSON_GetObjectItemCaseSensitive(parsed_json, "number_of_users")->valueint;
-                    
+
                     for (int i = 0; i < number_of_users; i++) {
                         cJSON *user = cJSON_GetArrayItem(users, i);
                         
@@ -114,6 +114,7 @@ void* recv_msg_handler(void* arg) {
                         }                      
                         get_num_of_msgs_with_user(call_data->ssl, new_chat->contact_id, new_chat->last_message_id, unread_messages + 15);
                     }
+
                     continue;
                 }
                 else if(command_code_json->valueint == 24 && counter < number_of_users) {
@@ -900,7 +901,7 @@ void* recv_msg_handler(void* arg) {
             }
             cJSON_Delete(parsed_json);
             free(message);
-        } 
+        }
         else if (bytes_received == 0) {
             printf("\n%s\n\n", session_id);
             if (*(call_data->stop_flag)) {
@@ -923,6 +924,7 @@ void* recv_msg_handler(void* arg) {
             pthread_mutex_unlock(&GTK_data->pthread_mutex);
 
             printf("TYT\n");
+            break;
 
             // create loading window
 

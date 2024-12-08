@@ -192,6 +192,9 @@ int main(int argc, char * argv[]) {
     int threads_count = 0;
     int connfd = 0;
 
+    int *sockets = malloc(0);
+    int sockets_count = 0;
+
 
     while (!stop_server) {
         connfd = accept(sock, NULL, NULL);
@@ -238,6 +241,7 @@ int main(int argc, char * argv[]) {
         pthread_create(&new_thread_id, NULL, &handle_client, (void*)call_data);
 
         append_thread_to_array(&threads_ids, &threads_count, &new_thread_id);
+        append_to_intarr(&sockets, &sockets_count, connfd);
 
 		/* Reduce CPU usage */
 		sleep(1);
@@ -252,6 +256,11 @@ int main(int argc, char * argv[]) {
 	fflush(stdout);
 
     int cached_clients_count = 0;
+
+    for (int i = 0; i < sockets_count; i++) {
+        shutdown(sockets[i], SHUT_RDWR);
+    }
+    free(sockets);
 
     // Critical resource access: CLIENTS HASH TABLE. Start
 	pthread_mutex_lock(general_data->clients_mutex);
