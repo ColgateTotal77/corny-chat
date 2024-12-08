@@ -10,6 +10,8 @@ static void print_json_data(const char *login, const char *password, call_data_t
     cJSON_AddStringToObject(json, "name", login);
     cJSON_AddStringToObject(json, "password", password);
 
+    printf("\nprint_json_data\n\n");
+
     send_and_delete_json(call_data->ssl, &json);
 }
 
@@ -63,12 +65,17 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
     printf("\nlogin_button_clicked\n\n");
+    printf("\nentries\n\n");
     GtkWidget **entries = (GtkWidget **)user_data;
+    printf("\nentries\n\n");
     const char *login_input = gtk_editable_get_text(GTK_EDITABLE(entries[0]));
+    printf("\nlogin_input\n\n");
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(entries[1]));
+    printf("\npassword_input\n\n");
     GtkWidget *error_label = entries[2];
+    printf("\nerror_label\n\n");
     GTK_data_t *GTK_data = (GTK_data_t *)entries[3];
-
+    printf("\nGTK_data\n\n");
     // Check login validity: length 2-30 characters
     bool valid_login = login_input && strlen(login_input) >= 2 && strlen(login_input) <= 30;
 
@@ -78,7 +85,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     // Reset error label text
     gtk_label_set_text(GTK_LABEL(error_label), "");
     bool is_error_appear = false;
-
+    printf("\nis_error_appear\n\n");
     // Determine the error message based on validation results
     if (!valid_login && !valid_password) {
         set_error_text(error_label, &is_error_appear, "Both login and password are invalid.");
@@ -93,14 +100,14 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         printf("\nafter sending data\n\n");
         printf("\nlogin_button_clicked\n\n");
         pthread_mutex_lock(&GTK_data->pthread_mutex);
-
+        printf("\npthread_mutex_lock(&GTK_data->pthread_mutex);\n\n");
         // Wait for the login response
         pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
+        printf("\npthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);\n\n");
         pthread_mutex_unlock(&GTK_data->pthread_mutex);
-
+        printf("\npthread_mutex_unlock(&GTK_data->pthread_mutex);\n\n");
         if(GTK_data->login_successful){
             printf("\nlogin_success\n\n");
-            //GTK_data->login_successful = false;
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
             // gtk_widget_set_visible(window, FALSE);
@@ -111,6 +118,7 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             // g_free(entries);
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
+            printf("\nset_error_text(error_label, &is_error_appear, Login or password incorrect. Please try again.);\n\n");
         }
     }
 
@@ -223,7 +231,7 @@ void on_activate(GtkApplication *app, gpointer user_data) {
 
 void start_login(call_data_t *call_data) {
 
-    GtkApplication *app = gtk_application_new("com.example.ProfileForm", G_APPLICATION_NON_UNIQUE);
+    GtkApplication *app = gtk_application_new("com.example.LoginForm", G_APPLICATION_NON_UNIQUE);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), call_data);
     g_application_run(G_APPLICATION(app), 0, NULL);
     g_object_unref(app);
