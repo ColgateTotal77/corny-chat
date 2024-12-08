@@ -110,12 +110,11 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
             printf("\nlogin_success\n\n");
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
-            // gtk_widget_set_visible(window, FALSE);
-            // pthread_mutex_destroy(&GTK_data->pthread_mutex);
-            // pthread_cond_destroy(&GTK_data->pthread_cond);
-            gtk_window_close(GTK_WINDOW(window));
+            pthread_mutex_destroy(&GTK_data->pthread_mutex);
+            pthread_cond_destroy(&GTK_data->pthread_cond);
+            gtk_window_destroy(GTK_WINDOW(window));
+            //g_free(entries);
             GTK_start(GTK_data);
-            // g_free(entries);
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
             printf("\nset_error_text(error_label, &is_error_appear, Login or password incorrect. Please try again.);\n\n");

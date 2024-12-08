@@ -936,7 +936,6 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
         }
-        //memset(message, 0, sizeof(message));
     }
     free(local_time);
     free(session_id);

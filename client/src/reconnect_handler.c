@@ -15,12 +15,10 @@ void* reconnect_handler(void* arg) {
 
         new_ssl = try_to_reconnect(session_id, call_data->host, 
                                         call_data->port, &session_expired);
-        sleep(3);
         if(new_ssl != NULL || session_expired != false)  {
             break;
         }
     }
-    printf("1\n");
     //new_ssl!=NULL && session_expired = false - successful
     //session_expired = true close all open login
     if (new_ssl == NULL && session_expired == false) {
@@ -35,12 +33,12 @@ void* reconnect_handler(void* arg) {
     }
 
     else if(session_expired == true && new_ssl == NULL) {
-        printf("\nsigment?\n\n");
         call_data->ssl = setup_new_connection(call_data->host, call_data->port);
-        gtk_window_close(GTK_WINDOW(GTK_data->window));
+        gtk_window_destroy(GTK_WINDOW(GTK_data->window));
+        //g_signal_emit_by_name(GTK_data->window, "destroy");
+        //sleep(3);
         start_login(call_data);
     }
-
     else{
         printf("\nConnection recover!\n");
         SSL_free(call_data->ssl);
