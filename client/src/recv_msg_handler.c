@@ -911,13 +911,7 @@ void* recv_msg_handler(void* arg) {
             printf("WAIT\n");
             // Wait for the login response
             pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
-            pthread_mutex_unlock(&GTK_data->pthread_mutex);
-
-            printf("TYT\n");
-
-            // create loading window
-
-            // pthread_cond wait        
+            pthread_mutex_unlock(&GTK_data->pthread_mutex);      
             } 
         else {
             int err = SSL_get_error(call_data->ssl, bytes_received);
@@ -925,7 +919,6 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
         }
-        //memset(message, 0, sizeof(message));
     }
     free(local_time);
     free(session_id);
