@@ -132,7 +132,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Header section
     GtkWidget *header_box = gtk_grid_new();
-    gtk_widget_set_size_request(header_box, 800, 60);
+
     gtk_widget_set_hexpand(header_box, TRUE);
     gtk_widget_set_vexpand(header_box, FALSE);
     gtk_widget_add_css_class(header_box, "header_box");
@@ -227,7 +227,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Nickname Section
     GtkWidget *nickname_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(nickname_box, 300, -1);
+    gtk_widget_set_size_request(nickname_box, 300, -60);
     GtkWidget *nickname_label = gtk_label_new("Enter new nickname:");
     gtk_widget_set_halign(nickname_label, GTK_ALIGN_START);
 
@@ -249,6 +249,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Store the error label in profile_data
     GTK_data->profile_data->nickname_error_label = nickname_error_label;
 
+    GtkWidget *nickname_success_label = gtk_label_new("");
+    gtk_widget_add_css_class(nickname_success_label, "success-label");
+    gtk_widget_set_halign(nickname_success_label, GTK_ALIGN_START);
+    gtk_widget_set_margin_top(nickname_success_label, 2); // Reduce margin from the top
+    gtk_widget_set_margin_bottom(nickname_success_label, 0); // Optional: Remove bottom margin
+
+    GTK_data->profile_data->nickname_success_label = nickname_success_label;
+
     // Connect the "Update" button signal
     g_signal_connect(update_button, "clicked", G_CALLBACK(on_update_button_clicked), GTK_data);
 
@@ -259,6 +267,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(nickname_box), nickname_label);
     gtk_box_append(GTK_BOX(nickname_box), nickname_input_box);
     gtk_box_append(GTK_BOX(nickname_box), nickname_error_label); // Add error label to the box
+    gtk_box_append(GTK_BOX(nickname_box), nickname_success_label);
 
     GtkWidget *nickname_separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);;
     gtk_widget_set_size_request(nickname_separator, 300, 3);
@@ -270,6 +279,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Change Password Section
     GtkWidget *change_password_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_widget_set_size_request(change_password_box, 300, -1);
 
     // Old Password
     GtkWidget *old_password_label = gtk_label_new("Enter old password:");
@@ -278,6 +288,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Old password input with eye button
     GtkWidget *old_password_box = gtk_overlay_new();
     GtkWidget *old_password_entry = gtk_entry_new();
+    gtk_widget_set_size_request(old_password_box, 300, -1);
     gtk_entry_set_placeholder_text(GTK_ENTRY(old_password_entry), "Enter old password");
     gtk_entry_set_visibility(GTK_ENTRY(old_password_entry), FALSE);
     gtk_widget_add_css_class(old_password_entry, "password-entry");
@@ -632,12 +643,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *delete_error_label = gtk_label_new("");
     gtk_widget_add_css_class(delete_error_label, "error-label");
     gtk_widget_set_halign(delete_error_label, GTK_ALIGN_START);
-    GTK_data->profile_data->error_label = delete_error_label;
+    GTK_data->profile_data->activate_error_label = delete_error_label;
 
     GtkWidget *delete_success_label = gtk_label_new("");
     gtk_widget_add_css_class(delete_success_label, "success-label");
     gtk_widget_set_halign(delete_success_label, GTK_ALIGN_START);
-    GTK_data->profile_data->success_label = delete_success_label;
+    GTK_data->profile_data->activate_success_label = delete_success_label;
 
     // Add the labels to the delete_box
     gtk_box_append(GTK_BOX(delete_box), delete_error_label);

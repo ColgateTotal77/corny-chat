@@ -95,13 +95,14 @@ typedef struct {
     GtkWidget *name_label;
     GtkWidget *nickname_entry;
     GtkWidget *nickname_error_label;
+    GtkWidget *nickname_success_label;
     GtkWidget *password_error_label;
     GtkWidget *password_success_label;
     GtkWidget *new_password_entry_1;
     GtkWidget *new_password_entry_2;
     GtkWidget *old_password_entry;
     GtkWidget *activate_entry;
-    GtkWidget *deactivate_error_label;
+    GtkWidget *deactivate_success_label;
     GtkWidget *create_error_label;  // For create user error messages
     GtkWidget *create_success_label;  // For create user success messages
     GtkWidget *login_entry;         // For login field
@@ -114,7 +115,9 @@ typedef struct {
     GtkWidget *delete_entry;      // Entry field for deactivation
     GtkWidget *error_label;       // General error label
     GtkWidget *success_label; 
-    GtkWidget *deactivate_success_label; 
+    GtkWidget *deactivate_error_label;
+    GtkWidget *activate_success_label; 
+    GtkWidget *activate_error_label; 
     GtkWidget *right_side_container; 
 } profile_data_t;
 
