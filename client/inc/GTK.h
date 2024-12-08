@@ -191,4 +191,5 @@ void on_activate_button_clicked(GtkButton *button, gpointer user_data);
 void on_deactivate_button_clicked(GtkButton *button, gpointer user_data);
 gboolean reenable_button_after_delay(gpointer user_data);
 void on_admin_change_password_button_clicked(GtkButton *button, gpointer user_data);
-
+char *wrap_text_to_width(const char *message_text, int max_width, PangoContext *context);
+void prepare_message_label(GtkWidget *message_label, const char *message_text);

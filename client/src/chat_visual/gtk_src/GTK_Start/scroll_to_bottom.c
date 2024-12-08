@@ -20,6 +20,6 @@ void scroll_to_bottom(GtkWidget *container) {
         gtk_widget_queue_resize(container);
         
         // Add slight delay to ensure layout is complete
-        g_timeout_add(50, scroll_idle_callback, adj);
+        g_timeout_add(100, scroll_idle_callback, adj);
     }
 }
