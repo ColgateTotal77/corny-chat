@@ -251,8 +251,8 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
 
     // Create a box to hold the content
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_margin_top(box, 20);
-    gtk_widget_set_margin_bottom(box, 20);
+    gtk_widget_set_margin_top(box, 10);
+    gtk_widget_set_margin_bottom(box, 10);
     gtk_widget_set_margin_start(box, 20);
     gtk_widget_set_margin_end(box, 20);
 
@@ -449,10 +449,10 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_box_set_homogeneous(GTK_BOX(page_controller_container), TRUE); // Make all children the same size
 
     // Page controller container
-    gtk_widget_set_margin_top(page_controller_container, 30);
-    gtk_widget_set_margin_bottom(page_controller_container, 30);
-    gtk_widget_set_margin_start(page_controller_container, 30);
-    gtk_widget_set_margin_end(page_controller_container, 30);
+    gtk_widget_set_margin_top(page_controller_container, 10);
+    gtk_widget_set_margin_bottom(page_controller_container, 10);
+    gtk_widget_set_margin_start(page_controller_container, 20);
+    gtk_widget_set_margin_end(page_controller_container, 20);
 
 
     // Left button
@@ -484,8 +484,8 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_widget_set_vexpand(slider_container, TRUE);
 
     // Slider container
-    gtk_widget_set_margin_top(slider_container, 30);
-    gtk_widget_set_margin_bottom(slider_container, 30);
+    gtk_widget_set_margin_top(slider_container, 10);
+    gtk_widget_set_margin_bottom(slider_container, 10);
     gtk_widget_set_margin_start(slider_container, 30);
     gtk_widget_set_margin_end(slider_container, 30);
 
@@ -565,11 +565,11 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_grid_attach(GTK_GRID(grid), small_button, 0, 1, 1, 1); // Attach to grid at (0, 1)
     gtk_widget_set_hexpand(small_button, TRUE); // Allow horizontal expansion
     gtk_widget_set_vexpand(small_button, FALSE); // Do not allow vertical expansion
-    gtk_widget_set_size_request(small_button, -1, 70); // Set a fixed height for the button
+    gtk_widget_set_size_request(small_button, -1, 60); // Set a fixed height for the button
 
     // Small button
-    gtk_widget_set_margin_top(small_button, 30);
-    gtk_widget_set_margin_bottom(small_button, 30);
+    gtk_widget_set_margin_top(small_button, 10);
+    gtk_widget_set_margin_bottom(small_button, 10);
     gtk_widget_set_margin_start(small_button, 30);
     gtk_widget_set_margin_end(small_button, 30);
 
@@ -788,7 +788,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_users);
     
     GtkWidget *sidebar_users = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar_users, 250, -1);
+    gtk_widget_set_size_request(sidebar_users, 300, -1);
     gtk_widget_add_css_class(sidebar_users, "sidebar");
     gtk_widget_set_hexpand(sidebar_users, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_users), sidebar_users);
@@ -803,7 +803,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_groups);
 
     GtkWidget *sidebar_groups = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    // gtk_widget_set_size_request(sidebar_groups, 250, -1);
+    gtk_widget_set_size_request(sidebar_groups, 300, -1);
     gtk_widget_add_css_class(sidebar_groups, "sidebar");
     gtk_widget_set_hexpand(sidebar_groups, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
@@ -882,16 +882,16 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     // Chat header
     GtkWidget *chat_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_widget_set_size_request(chat_header, -1, 60);
+    gtk_widget_set_size_request(chat_header, -1, 40);
     gtk_widget_add_css_class(chat_header, "chat-header");
 
     GtkWidget *avatar_circle = gtk_image_new_from_file("src/chat_visual/images/person.svg");
-    gtk_widget_set_size_request(avatar_circle, 60, 60);
+    gtk_widget_set_size_request(avatar_circle, 40, 40);
     //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
     GtkWidget *avatar_circle_group = gtk_image_new_from_file("src/chat_visual/images/group.svg");
-    gtk_widget_set_size_request(avatar_circle_group, 60, 60);
+    gtk_widget_set_size_request(avatar_circle_group, 40, 40);
     gtk_widget_set_margin_start(avatar_circle_group, 10);
     gtk_widget_set_margin_end(avatar_circle_group, 10);
     gtk_widget_set_margin_top(avatar_circle_group, 9);
@@ -948,7 +948,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *smile_icon = gtk_image_new_from_icon_name("face-smile-symbolic");
     gtk_widget_set_size_request(smile_icon, 45, 45);
     gtk_button_set_child(GTK_BUTTON(smile_button), smile_icon);
-    gtk_box_append(GTK_BOX(input_box), smile_button);
+    // gtk_box_append(GTK_BOX(input_box), smile_button);
 
     // Connect smile button click handler
     g_signal_connect(smile_button, "clicked", G_CALLBACK(on_smile_button_clicked), GTK_data);
