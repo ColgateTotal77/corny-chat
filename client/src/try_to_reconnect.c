@@ -124,9 +124,9 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
         }
 
         *session_expired = true;
-        // if(session_expired) {
-
-        // }
+        if (session_expired) {
+            printf("\nsession_expired true!!!!\n\n");
+        }
         SSL_shutdown(new_ssl);//Закриття SSL з'єднання
         SSL_free(new_ssl);
     }

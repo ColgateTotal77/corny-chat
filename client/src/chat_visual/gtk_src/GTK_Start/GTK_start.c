@@ -166,38 +166,38 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
 }
 
 static void on_window_destroy(GtkWindow *window, gpointer user_data) {
-    //(void)window;
-    GtkWidget **entries = (GtkWidget **)user_data;
-    GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
+    //GtkWidget **entries = (GtkWidget **)user_data;
+    //GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
+    (void)window;
+    (void)user_data;
+    // GList *user_list = g_hash_table_get_keys(GTK_data->group_manager->chats);
+    // GList *iter;
 
-    GList *user_list = g_hash_table_get_keys(GTK_data->group_manager->chats);
-    GList *iter;
+    // for (iter = user_list; iter != NULL; iter = iter->next) {
+    //     gpointer key = iter->data;
+    //     chat_data_t *user_chat = g_hash_table_lookup(GTK_data->group_manager->chats, key);
+    //     g_object_unref(user_chat->message_entry);
+    //     g_object_unref(user_chat->user_list_for_add);
+    //     g_object_unref(user_chat->user_list_for_delete);
+    // }
 
-    for (iter = user_list; iter != NULL; iter = iter->next) {
-        gpointer key = iter->data;
-        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->group_manager->chats, key);
-        g_object_unref(user_chat->message_entry);
-        g_object_unref(user_chat->user_list_for_add);
-        g_object_unref(user_chat->user_list_for_delete);
-    }
+    // user_list = g_hash_table_get_keys(GTK_data->chat_manager->chats);
 
-    user_list = g_hash_table_get_keys(GTK_data->chat_manager->chats);
+    // for (iter = user_list; iter != NULL; iter = iter->next) {
+    //     gpointer key = iter->data;
+    //     chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
+    //     g_object_unref(user_chat->message_entry);
 
-    for (iter = user_list; iter != NULL; iter = iter->next) {
-        gpointer key = iter->data;
-        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
-        g_object_unref(user_chat->message_entry);
-
-    }
-    g_list_free(user_list);
+    // }
+    // g_list_free(user_list);
     
-    send_exit_command(GTK_data->call_data->ssl);
-    *(GTK_data->call_data->stop_flag) = true;
-    free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
-    GTK_data = NULL;
-    g_free(entries); 
-    printf("\nclosing the window\n");
-    gtk_window_destroy(window);
+    // send_exit_command(GTK_data->call_data->ssl);
+    // *(GTK_data->call_data->stop_flag) = true;
+    //free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
+    //GTK_data = NULL;
+    //g_free(entries); 
+    printf("\nclosing the main window\n");
+    gtk_window_close(window);
 }
 
 static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
@@ -919,7 +919,7 @@ void GTK_start(GTK_data_t *GTK_data) {
         switch_settings_in_group = false;
         GTK_data->profile_data = (profile_data_t *)malloc(sizeof(profile_data_t));
         GTK_data->profile_data->login_list = NULL;
-        
+
         pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
         pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
