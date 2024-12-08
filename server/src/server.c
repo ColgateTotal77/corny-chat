@@ -42,6 +42,7 @@ void free_client_data(call_data_t *call_data) {
             SSL_shutdown(call_data->client_data->ssl); //Коректне завершення SSL-сесії
             SSL_free(call_data->client_data->ssl);
             client_data->ssl = NULL;
+            client_data->socket = -1;
             pthread_mutex_unlock(&client_data->mutex);
 	        // Critical resource access: CLIENT CONNECTION DATA. End
 
@@ -226,11 +227,11 @@ int main(int argc, char * argv[]) {
 		//client_data->sockfd = connfd;
 		client_data->user_data = NULL;
         client_data->ssl = ssl;
+        client_data->socket = connfd;
         
 		call_data_t *call_data = (call_data_t*)malloc(sizeof(call_data_t));
         call_data->client_data = client_data;
 		call_data->general_data = general_data;    
-        call_data->client_data->ssl = ssl;
 
         pthread_t new_thread_id;
 
@@ -249,11 +250,33 @@ int main(int argc, char * argv[]) {
 
     printf("Waiting for clients to disconnect\n");
 	fflush(stdout);
+
+    int cached_clients_count = 0;
+
+    // Critical resource access: CLIENTS HASH TABLE. Start
+	pthread_mutex_lock(general_data->clients_mutex);
+	entry_t **clients_hash_slots = ht_dump(general_data->clients, &cached_clients_count);
+
+	for (int i = 0; i < cached_clients_count; i++) {
+		entry_t *entry = clients_hash_slots[i];
+        client_t *client_data = entry->value;
+
+		// Critical resource access: CLIENT CONNECTION DATA. Start
+	    pthread_mutex_lock(&client_data->mutex);
+		if (client_data->socket >= 0) {
+			shutdown(client_data->socket, SHUT_RDWR);
+	    }
+	    pthread_mutex_unlock(&client_data->mutex);
+	    // Critical resource access: CLIENT CONNECTION DATA. End
+	}
+	pthread_mutex_unlock(general_data->clients_mutex);
+    // Critical resource access: CLIENTS HASH TABLE. End
+    free(clients_hash_slots);
       
 
-    //for(int i = 0; i < threads_count; i++) {
-    //    pthread_join(threads_ids[i], NULL);
-    //}
+    for(int i = 0; i < threads_count; i++) {
+        pthread_join(threads_ids[i], NULL);
+    }
     free(threads_ids);
     
 

@@ -4,7 +4,8 @@
 cJSON* json_get_starting_messages(call_data_t *call_data) {
     int user_id = call_data->client_data->user_data->user_id;
     int textings_num = 0;
-    s_texting* textings = get_starting_messages(call_data->general_data->db, user_id, &textings_num);
+    s_texting* textings = get_starting_messages(call_data->general_data->db, 
+                                                user_id, &textings_num);
 
     cJSON *json = cJSON_CreateObject();
     cJSON_AddNumberToObject(json, "unreaded_chats_qty",  textings_num);

@@ -7,7 +7,8 @@ cJSON* handle_get_all_talks(call_data_t *call_data) {
 
     // Critical resource access: DATABASE. Start
     pthread_mutex_lock(call_data->general_data->db_mutex);
-    s_texting* textings = get_starting_messages(call_data->general_data->db, user_id, &textings_num);
+    s_texting* textings = get_starting_messages(call_data->general_data->db, 
+                                                user_id, &textings_num);
     pthread_mutex_unlock(call_data->general_data->db_mutex);
     // Critical resource access: DATABASE. End
 

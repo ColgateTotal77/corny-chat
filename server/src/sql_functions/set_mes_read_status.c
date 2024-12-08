@@ -13,7 +13,8 @@
  * @return number of set up messages or -1 if something went wrong
  */
 int set_mes_read_status(sqlite3* db, const int user_id, const int sender_id) {
-	char* sql = "UPDATE messages SET readed = TRUE WHERE targetUserId = ? AND ownerId = ? AND readed = FALSE;";
+	char* sql = "UPDATE messages SET readed = TRUE "
+	            "WHERE targetUserId = ? AND ownerId = ? AND readed = FALSE;";
 
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);

@@ -9,7 +9,8 @@ static void notify_user_about_new_contact(call_data_t *call_data,
     cJSON *notification_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(notification_json, "event_code", NEW_CONTACT_WAS_ADDED);
     cJSON_AddNumberToObject(notification_json, "new_contact_id", new_contact_id);
-    cJSON_AddStringToObject(notification_json, "nickname", call_data->client_data->user_data->nickname);
+    cJSON_AddStringToObject(notification_json, "nickname", 
+                            call_data->client_data->user_data->nickname);
 
     char buffer[BUF_SIZE];
     sprintf(buffer, "%s added you to contacts\n", call_data->client_data->user_data->login);

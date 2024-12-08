@@ -11,7 +11,8 @@ char *six_var_strbuilder(char *s1, char *s2, char *s3, char *s4, char *s5, char 
 
 
 /**
- * @brief returns an array of groups that the user is included in. If user_id = 0 returns all groups;
+ * @brief returns an array of groups that the user is included in. 
+ * @brief If user_id = 0 returns all groups;
  * @warning function allocates memory. Use free_groups_full_list function to free.
  * @note if user_id == 0 unread_mes_qty == -1
  *
@@ -22,7 +23,8 @@ char *six_var_strbuilder(char *s1, char *s2, char *s3, char *s4, char *s5, char 
  */
 s_group *get_groups_full_list(sqlite3 *db, const int user_id, int *group_qty) {
     char *sql = NULL;
-    char *sql_first_line_user = "SELECT g.id, g.name, g.createdAt, g.ownerId, gu.qty, gu2.unreadNum ";
+    char *sql_first_line_user = "SELECT g.id, g.name, g.createdAt, "
+                                "g.ownerId, gu.qty, gu2.unreadNum ";
     char *sql_first_line_no_user = "SELECT g.id, g.name, g.createdAt, g.ownerId, gu.qty ";
     char *sql_basic = "FROM groups g "
             "JOIN "

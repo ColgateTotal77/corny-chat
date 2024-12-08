@@ -14,7 +14,8 @@ static cJSON *init_message_json(s_message db_message) {
     return message_json;
 }
 
-static void convert_db_messages_to_json(call_data_t *call_data, s_message* db_messages, int messages_num, cJSON **json, char *array_name) {
+static void convert_db_messages_to_json(call_data_t *call_data, s_message* db_messages, 
+                                        int messages_num, cJSON **json, char *array_name) {
     cJSON *messages_json = cJSON_AddArrayToObject(*json, array_name);
 
     for (int i = 0; i < messages_num; i++) {

@@ -28,7 +28,8 @@ cJSON *handle_see_all_chats(call_data_t *call_data) {
 
             // Critical resource access: CLIENTS HASH TABLE. Start
             pthread_mutex_lock(call_data->general_data->clients_mutex);
-            client_t *member_data = ht_get(call_data->general_data->clients, chat_data->users_id[i]);
+            client_t *member_data = ht_get(call_data->general_data->clients, 
+                                           chat_data->users_id[i]);
             pthread_mutex_unlock(call_data->general_data->clients_mutex);
             // Critical resource access: CLIENTS HASH TABLE. End
 

@@ -16,8 +16,10 @@
  * @param s_key secret key can be NULL (not implemented yet )
  * @return message_id - id of saved message or -1 if something went wrong
  */
-int insert_private_message(sqlite3* db, int owner_id, int target_id, char* message, unsigned char* s_key) {
-	const char* sql = "INSERT INTO messages (ownerId, targetUserId,message,sKey) VALUES (?, ?, ?, ?);";
+int insert_private_message(sqlite3* db, int owner_id, int target_id, 
+                           char* message, unsigned char* s_key) {
+	const char* sql = "INSERT INTO messages "
+	                  "(ownerId, targetUserId,message,sKey) VALUES (?, ?, ?, ?);";
 	sqlite3_stmt* stmt;
 	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 

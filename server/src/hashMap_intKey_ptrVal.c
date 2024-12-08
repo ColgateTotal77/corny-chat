@@ -89,8 +89,6 @@ void *ht_get(ht_t *hashtable, int key) {
 void ht_del(ht_t *hashtable, int key) {
     int bucket = hash(key, hashtable->size);
 
-    printf("key %d. hash %d. curr_size %d. size %d\n", key, bucket, hashtable->current_size, hashtable->size);
-
     entry_t *entry = hashtable->entries[bucket];
 
     if (entry == NULL) {
@@ -121,7 +119,8 @@ void ht_del(ht_t *hashtable, int key) {
             free(entry);
             hashtable->current_size = hashtable->current_size - 1;
 
-            if (hashtable->current_size > TABLE_SIZE && hashtable->current_size < (hashtable->size/4)) {
+            if (hashtable->current_size > TABLE_SIZE 
+                && hashtable->current_size < (hashtable->size/4)) {
                 shrink_table(hashtable);
             }
 

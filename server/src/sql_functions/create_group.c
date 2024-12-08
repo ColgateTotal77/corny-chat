@@ -41,7 +41,8 @@ static int create_new_group(sqlite3* db, const int owner_id, char* name) {
  * @brief creates new group and adds users
  * @brief users_list can be empty and list_len can be 0 then group will contain only the owner
  *
- * @warning you CAN NOT add owner id to users_list or add the same user id in the users_list twice. That causes errors.
+ * @warning you CAN NOT add owner id to users_list 
+ * @warning or add the same user id in the users_list twice. That causes errors.
  *
  * @param db
  * @param owner_id user that creates the group

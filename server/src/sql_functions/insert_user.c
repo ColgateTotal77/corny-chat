@@ -26,7 +26,8 @@ int create_user(sqlite3 *db, user_create usr) {
 
     // Привязка параметров
     sqlite3_bind_text(stmt, 1, usr.login, -1, SQLITE_STATIC); // Привязываем логин
-    sqlite3_bind_blob(stmt, 2, usr.password, sizeof(usr.password), SQLITE_STATIC); // Привязываем хеш пароля
+    sqlite3_bind_blob(stmt, 2, usr.password, 
+                      sizeof(usr.password), SQLITE_STATIC); // Привязываем хеш пароля
     sqlite3_bind_text(stmt, 3, usr.nickname, -1, SQLITE_STATIC); // Привязываем никнейм
     sqlite3_bind_int(stmt, 4, usr.role_id); // Привязываем роль
 

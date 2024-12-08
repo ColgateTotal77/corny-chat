@@ -4,20 +4,20 @@
 
 #include <password.h>
 
-static bool check_login_validity(char *login) { //Валидация логина
-    if (login == NULL) { //Проверка на пустую строку
+static bool check_login_validity(char *login) {
+    if (login == NULL) {
         return false;
     }
 
     int login_length = mx_strlen(login);
-    if (login_length < 3 || login_length > 39) { //Проверка на длинну, котора должна быть больше 2 и меньше 40
+    if (login_length < 3 || login_length > 39) {
         return false;
     }
 
     for (int i = 0; i < login_length; i++) {
         if (mx_check_space(login[i]) || !((login[i] >= '0' && login[i] <= '9') || 
         (login[i] >= 'A' && login[i] <= 'Z') || (login[i] >= 'a' && login[i] <= 'z')
-        || login[i] == '_')) { //Проверка логина на невалидные символы, тут разрешены: цифры, англ буквы большие и маленькие и символ "_"
+        || login[i] == '_')) {
 
             return false;
         }
@@ -85,7 +85,8 @@ cJSON *handle_create_user(call_data_t *call_data, cJSON *json) {
         return create_error_json("User already exists\n");
     }
 
-    unsigned char *input_hash = hash_password(password_json->valuestring, login_json->valuestring);
+    unsigned char *input_hash = hash_password(password_json->valuestring, 
+                                              login_json->valuestring);
     int user_id = create_new_user_and_return_id(call_data, login_json->valuestring,
                                                 input_hash, is_admin_json->valueint);
     pthread_mutex_unlock(call_data->general_data->db_mutex);
@@ -115,7 +116,8 @@ cJSON *handle_create_user(call_data_t *call_data, cJSON *json) {
     pthread_mutex_unlock(call_data->general_data->clients_mutex);
     // Critical resource access: CLIENTS HASH TABLE. End
 
-    cJSON *notif_about_new_user = create_json_notif_about_new_user(user_id, login_json->valuestring);
+    cJSON *notif_about_new_user = create_json_notif_about_new_user(user_id, 
+                                                                   login_json->valuestring);
     send_to_another_ids_and_delete_json(call_data, &notif_about_new_user);
 
     cJSON *response_json = cJSON_CreateObject();

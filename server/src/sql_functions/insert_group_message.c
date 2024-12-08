@@ -20,7 +20,8 @@ int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *m
     sqlite3_stmt *stmt, *stmt2;
     int rc;
 
-    const char *sql = "INSERT INTO messages (ownerId, targetGroupId,message,sKey) VALUES (?, ?, ?, ?);";
+    const char *sql = "INSERT INTO messages "
+                      "(ownerId, targetGroupId,message,sKey) VALUES (?, ?, ?, ?);";
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (rc != SQLITE_OK) {
@@ -45,7 +46,8 @@ int insert_group_message(sqlite3 *db, int owner_id, int target_group_id, char *m
     const int message_id = (int) sqlite3_last_insert_rowid(db);
     sqlite3_finalize(stmt);
 
-    const char* sql2 = "UPDATE group_users SET unreadNum = unreadNum +1 WHERE groupId = ? AND userId != ?;";
+    const char* sql2 = "UPDATE group_users "
+                       "SET unreadNum = unreadNum +1 WHERE groupId = ? AND userId != ?;";
     rc = sqlite3_prepare_v2(db, sql2, -1, &stmt2, NULL);
 
     if (rc != SQLITE_OK) {

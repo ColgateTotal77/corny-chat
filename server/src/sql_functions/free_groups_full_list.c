@@ -4,7 +4,8 @@
 
 #include "../../inc/sql.h"
 
-/** function frees allocated memory. Use it to free array that is obtained in get_group_occupants_list func.
+/** function frees allocated memory.
+ *  Use it to free array that is obtained in get_group_occupants_list func.
  *
  * @param groups
  * @param groups_qty

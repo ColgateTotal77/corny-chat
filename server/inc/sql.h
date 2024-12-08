@@ -91,7 +91,8 @@ int update_password_hash(sqlite3 *db, const int usr_id, const unsigned char *has
 
 int update_nickname(sqlite3 *db, const int usr_id, const char *new_nickname);
 
-int insert_private_message(sqlite3 *db, int owner_id, int target_id, char *message, unsigned char *s_key);
+int insert_private_message(sqlite3 *db, int owner_id, int target_id,
+                           char *message, unsigned char *s_key);
 
 void init_message(s_message *msg, const int id, const char *created_at, const char *updated_at,
                   const int owner_id, const int target_id, const int target_group_id,
@@ -99,7 +100,8 @@ void init_message(s_message *msg, const int id, const char *created_at, const ch
 
 int get_message_by_id(sqlite3 *db, s_message *message, const int mes_id);
 
-s_message *get_new_mess_between(sqlite3 *db, const int user1_id, const int user2_id, int *mes_qty);
+s_message *get_new_mess_between(sqlite3 *db, const int user1_id, 
+                                const int user2_id, int *mes_qty);
 
 s_unread *get_senders_list(sqlite3 *db, int receiver_id, int *senders_num);
 

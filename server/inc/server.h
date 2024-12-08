@@ -53,6 +53,7 @@ typedef struct {
 typedef struct {
 	char time_created_session_id[20];
     SSL *ssl;
+    int socket;
 	user_t* user_data;
     pthread_mutex_t mutex;
 } client_t;

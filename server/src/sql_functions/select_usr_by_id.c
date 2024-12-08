@@ -13,7 +13,8 @@
  * @return success or error code
  */
 int select_user_by_id(sqlite3 *db, s_user *user, int id) {
-    const char *sql = "SELECT id, createdAt, login, nickname, roleId, active FROM users WHERE id = ?";
+    const char *sql = "SELECT id, createdAt, login, "
+                      "nickname, roleId, active FROM users WHERE id = ?";
     sqlite3_stmt *stmt;
 
     // Подготовка SQL-запроса

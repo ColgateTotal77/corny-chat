@@ -20,7 +20,6 @@ int setup_server_socket(int port) {
     signal(SIGPIPE, SIG_IGN);
     int option = 1;
 
-    //if (setsockopt(sock, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option, sizeof(option)) < 0){
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,(char*)&option, sizeof(option)) < 0){
         fprintf(stderr, "ERROR: setsockopt failed");
         return EXIT_FAILURE;

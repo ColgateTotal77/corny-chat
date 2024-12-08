@@ -2,7 +2,8 @@
 #include "server.h"
 #include "cJSON.h"
 
-void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data);
+void handle_user_msg(int bytes_received, int *leave_flag, 
+                     char *client_msg, call_data_t *call_data);
 cJSON *handle_add_contact_to_chat(call_data_t *call_data, cJSON *json);
 cJSON *handle_join_chat(call_data_t *call_data, cJSON *json);
 cJSON *handle_add_contact(call_data_t *call_data, cJSON *json);

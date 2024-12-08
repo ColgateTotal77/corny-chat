@@ -4,7 +4,7 @@
 #include <string.h>
 #include "hashTable.h"
 
-static unsigned int hash(const char *key) {
+static unsigned int hash(const char *key, int size) {
     unsigned long int value = 0;
     unsigned int i = 0;
     unsigned int key_len = strlen(key);
@@ -13,7 +13,7 @@ static unsigned int hash(const char *key) {
         value = value * 37 + key[i];
     }
 
-    value = value % TABLE_SIZE;
+    value = value % size;
 
     return value;
 }
@@ -31,6 +31,8 @@ entry_str_t *ht_str_pair(char* key, int value) {
 ht_str_t *ht_str_create(void) {
     ht_str_t *hashtable = malloc(sizeof(ht_str_t) * 1);
     hashtable->entries = malloc(sizeof(entry_str_t*) * TABLE_SIZE);
+    hashtable->size = TABLE_SIZE;
+    hashtable->current_size = 0;
 
     for (int i = 0; i < TABLE_SIZE; ++i) {
         hashtable->entries[i] = NULL;
@@ -40,12 +42,18 @@ ht_str_t *ht_str_create(void) {
 }
 
 void ht_str_set(ht_str_t *hashtable, char *key, int value) {
-    int slot = hash(key);
+    int slot = hash(key, hashtable->size);
 
     entry_str_t *entry = hashtable->entries[slot];
 
     if (entry == NULL) {
         hashtable->entries[slot] = ht_str_pair(key, value);
+        hashtable->current_size = 1 + hashtable->current_size;
+
+        if (hashtable->current_size > hashtable->size) {
+            enlarge_str_table(hashtable);
+        }
+
         return;
     }
 
@@ -62,10 +70,15 @@ void ht_str_set(ht_str_t *hashtable, char *key, int value) {
     }
 
     prev->next = ht_str_pair(key, value);
+    hashtable->current_size = 1 + hashtable->current_size;
+
+    if (hashtable->current_size > hashtable->size) {
+        enlarge_str_table(hashtable);
+    }
 }
 
 int ht_str_get(ht_str_t *hashtable, char *key) {
-    int slot = hash(key);
+    int slot = hash(key, hashtable->size);
 
     entry_str_t *entry = hashtable->entries[slot];
 
@@ -85,7 +98,7 @@ int ht_str_get(ht_str_t *hashtable, char *key) {
 }
 
 void ht_str_del(ht_str_t *hashtable, char *key) {
-    int bucket = hash(key);
+    int bucket = hash(key, hashtable->size);
 
     entry_str_t *entry = hashtable->entries[bucket];
 
@@ -116,6 +129,14 @@ void ht_str_del(ht_str_t *hashtable, char *key) {
 
             free(entry->key);
             free(entry);
+
+            hashtable->current_size = hashtable->current_size - 1;
+
+            if (hashtable->current_size > TABLE_SIZE 
+                && hashtable->current_size < (hashtable->size/4)) {
+                shrink_str_table(hashtable);
+            }
+
             return;
         }
 
@@ -129,7 +150,7 @@ void ht_str_del(ht_str_t *hashtable, char *key) {
 entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count) {
     int size = 0;
     entry_str_t** entries = malloc(0);
-    for (int i = 0; i < TABLE_SIZE; ++i) {
+    for (int i = 0; i < hashtable->size; ++i) {
         entry_str_t *entry = hashtable->entries[i];
         
         if (entry == NULL) {
@@ -165,4 +186,50 @@ void delete_str_table(ht_str_t **hashtable) {
 	free((*hashtable)->entries);
 	free(*hashtable);
     *hashtable = NULL;
+}
+
+void enlarge_str_table(ht_str_t *hashtable) {
+    int old_entries_count = 0;
+    entry_str_t** old_entries = ht_str_dump(hashtable, &old_entries_count);
+
+    free(hashtable->entries);
+    hashtable->size = 2 * hashtable->size;
+    printf("Enlarging str hash table<-------%d----------------------%d--------------"
+           "-------------\n", hashtable->current_size, hashtable->size);
+    hashtable->current_size = 0;
+    hashtable->entries = malloc(sizeof(entry_str_t*) * hashtable->size);
+
+    for (int i = 0; i < hashtable->size; ++i) {
+        hashtable->entries[i] = NULL;
+    }
+
+    for (int i = 0; i < old_entries_count; i++) {
+        ht_str_set(hashtable, old_entries[i]->key, old_entries[i]->value);
+        free(old_entries[i]->key);
+        free(old_entries[i]);
+    }
+    free(old_entries);
+}
+
+void shrink_str_table(ht_str_t *hashtable) {
+    int old_entries_count = 0;
+    entry_str_t** old_entries = ht_str_dump(hashtable, &old_entries_count);
+
+    free(hashtable->entries);
+    hashtable->size = hashtable->size / 2;
+    printf("Shrinking str hash table<-------%d----------------------%d-----------"
+           "----------------\n", hashtable->current_size, hashtable->size);
+    hashtable->current_size = 0;
+    hashtable->entries = malloc(sizeof(entry_str_t*) * hashtable->size);
+
+    for (int i = 0; i < hashtable->size; ++i) {
+        hashtable->entries[i] = NULL;
+    }
+
+    for (int i = 0; i < old_entries_count; i++) {
+        ht_str_set(hashtable, old_entries[i]->key, old_entries[i]->value);
+        free(old_entries[i]->key);
+        free(old_entries[i]);
+    }
+    free(old_entries);
 }

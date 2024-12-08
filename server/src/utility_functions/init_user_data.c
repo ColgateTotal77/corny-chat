@@ -2,7 +2,8 @@
 #include "sql.h"
 #include "../libmx/inc/libmx.h"
 
-static void set_user_contacts(sqlite3 *db, int user_id, int **contacts_list, int *contacts_count) {
+static void set_user_contacts(sqlite3 *db, int user_id, 
+                              int **contacts_list, int *contacts_count) {
 	int chat_users_num = 0;
 	chat_user* chat_users = get_clients_userslist(db, user_id, false, &chat_users_num);
 
@@ -44,7 +45,8 @@ user_t* init_user_data(sqlite3 *db, int id, char *login, char *nickname,
 		fflush(stdout);
 	}
 	if (db != NULL) {
-	    set_user_contacts(db, user_data->user_id, &user_data->contacts_id, &user_data->contacts_count);
+	    set_user_contacts(db, user_data->user_id, 
+		                  &user_data->contacts_id, &user_data->contacts_count);
 	}
 	user_data->is_online = is_online;
 	user_data->is_admin = is_admin;

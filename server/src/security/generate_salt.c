@@ -1,6 +1,6 @@
 #include <password.h>
 
-char *generate_salt(void) { //Функція колись використовувалася замість логіну у шифруванні, можна буде перевикористовувати для створення рандомного поролю
+char *generate_salt(void) {
     srand(time(NULL));
     char *salt = mx_strnew(16);
 

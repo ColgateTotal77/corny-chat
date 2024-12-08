@@ -20,7 +20,8 @@
  * @return pointer to the new allocated string
  */
 char* six_var_strbuilder(char* s1, char* s2, char* s3, char* s4, char* s5, char* s6) {
-	const int len = (int)(strlen(s1) + strlen(s2) + strlen(s3) + strlen(s4) + strlen(s5) + strlen(s6));
+	const int len = (int)(strlen(s1) + strlen(s2) + strlen(s3) 
+	                    + strlen(s4) + strlen(s5) + strlen(s6));
 	char* result = mx_strnew(len);
 	mx_strcpy(result, s1);
 	mx_strcat(result, s2);

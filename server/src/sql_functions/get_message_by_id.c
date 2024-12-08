@@ -13,7 +13,8 @@
  * @return SQLITE_OK or rc code
  */
 int get_message_by_id(sqlite3* db, s_message *message, const int mes_id) {
-	const char* sql = "SELECT m.id, m.createdAt, m.updatedAt,  m.ownerId, m.targetUserId, m.targetGroupId, m.message, m.readed "
+	const char* sql = "SELECT m.id, m.createdAt, m.updatedAt,  "
+	    "m.ownerId, m.targetUserId, m.targetGroupId, m.message, m.readed "
 		"FROM messages m "
 		"WHERE id = ?;";
 	sqlite3_stmt* stmt;

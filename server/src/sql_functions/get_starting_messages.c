@@ -6,7 +6,8 @@
 
 /**
  * @brief function returns array of texting when client connects to server
- * this array contains texting history between client and other clients that he has unread messages from
+ * this array contains texting history between client 
+ * and other clients that he has unread messages from
  * @attention use function <free_texting> to free memory correctly
  * @example
  *	int num = 0;

@@ -31,7 +31,8 @@ cJSON *handle_deactivate_user(call_data_t *call_data, cJSON *json) {
 
     // Critical resource access: LOGIN_TO_ID HASH TABLE. Start
     pthread_mutex_lock(call_data->general_data->login_to_id_mutex);
-    int user_to_deactivate = ht_str_get(call_data->general_data->login_to_id, user_login_json->valuestring);
+    int user_to_deactivate = ht_str_get(call_data->general_data->login_to_id, 
+                                        user_login_json->valuestring);
     pthread_mutex_unlock(call_data->general_data->login_to_id_mutex);
     // Critical resource access: LOGIN_TO_ID HASH TABLE. End
 

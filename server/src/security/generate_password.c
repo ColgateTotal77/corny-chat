@@ -1,6 +1,6 @@
 #include <password.h>
 
-char *generate_password(void) { //Функція колись використовувалася замість логіну у шифруванні, можна буде перевикористовувати для створення рандомного поролю
+char *generate_password(void) {
     srand(time(NULL));
     int passwordLen = rand() % 8 + 8; //от 8 до 16
     char *password = mx_strnew(passwordLen);

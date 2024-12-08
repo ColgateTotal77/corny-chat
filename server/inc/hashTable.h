@@ -30,6 +30,8 @@ typedef struct entry_str_t {
 
 typedef struct {
     entry_str_t **entries;
+    int size;
+    int current_size;
 } ht_str_t;
 
 ht_str_t *ht_str_create(void);
@@ -38,4 +40,6 @@ int ht_str_get(ht_str_t *hashtable, char* key);
 void ht_str_del(ht_str_t *hashtable, char* key);
 entry_str_t** ht_str_dump(ht_str_t *hashtable, int* count);
 void delete_str_table(ht_str_t **hashtable);
+void enlarge_str_table(ht_str_t *hashtable);
+void shrink_str_table(ht_str_t *hashtable);
 

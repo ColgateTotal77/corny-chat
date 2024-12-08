@@ -11,7 +11,8 @@ void send_message_to_user(call_data_t *call_data, char *message) {
     
     int write_len = SSL_write(call_data->client_data->ssl, message, strlen(message));
     if (write_len <= 0) { 
-        fprintf(stderr, "SSL_write failed with error: %d\n", SSL_get_error(call_data->client_data->ssl, write_len));
+        fprintf(stderr, "SSL_write failed with error: %d\n", 
+                SSL_get_error(call_data->client_data->ssl, write_len));
         ERR_print_errors_fp(stderr);
     }
     

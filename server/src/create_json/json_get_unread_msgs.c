@@ -6,7 +6,8 @@ cJSON *json_get_unread_msgs_counts(call_data_t *call_data) {
     int user_id = call_data->client_data->user_data->user_id;
     int senders_num = 0;
 
-    s_unread* unread_msgs_counts = get_senders_list(call_data->general_data->db, user_id, &senders_num);
+    s_unread* unread_msgs_counts = get_senders_list(call_data->general_data->db,
+                                                    user_id, &senders_num);
 
     cJSON *json = cJSON_CreateObject();
     cJSON *unread_msgs_info = cJSON_AddArrayToObject(json, "unread_messages_counts");

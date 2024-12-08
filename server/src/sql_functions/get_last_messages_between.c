@@ -28,7 +28,8 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
                                      const int qty, const int before) {
 	const char* sql = NULL;
 	if (before <= 0) {
-		sql = "SELECT id, createdAt, updatedAt, ownerId, targetUserId, targetGroupId, message, readed "
+		sql = "SELECT id, createdAt, updatedAt, ownerId, "
+		    "targetUserId, targetGroupId, message, readed "
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) "
@@ -37,7 +38,8 @@ s_texting* get_last_messages_between(sqlite3* db, const int usr1_id, const int u
 			"ORDER BY id;";
 	}
 	else {
-		sql = "SELECT id, createdAt, updatedAt, ownerId, targetUserId, targetGroupId, message, readed "
+		sql = "SELECT id, createdAt, updatedAt, ownerId, "
+		    "targetUserId, targetGroupId, message, readed "
 			"FROM (SELECT * "
 			"FROM messages m "
 			"WHERE m.ownerId IN (?, ?) AND  m.targetUserId IN (?, ?) AND m.id < ?"

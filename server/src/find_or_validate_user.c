@@ -6,7 +6,7 @@
 #include "time.h"
 
 
-static enum LoginValidationResult validate_login_via_session_id(call_data_t *call_data, 
+static enum LoginValidationResult validate_login_via_session_id(call_data_t *call_data,
                                                                 cJSON *json) {
     cJSON *session_id = cJSON_GetObjectItemCaseSensitive(json, "session_id");
     

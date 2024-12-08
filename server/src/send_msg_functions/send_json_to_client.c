@@ -29,12 +29,14 @@ void send_json_to_client(cJSON **json, client_t* client_data) {
     fflush(stdout);
     
     if (!is_online || !client_data->ssl) {
-        fprintf(stderr, "User with id %d is not available or offline\n", client_data->user_data->user_id);
+        fprintf(stderr, "User with id %d is not available or offline\n",
+                client_data->user_data->user_id);
     }
     else {
         int write_len = SSL_write(client_data->ssl, response, strlen(response));
         if (write_len <= 0) {
-            fprintf(stderr, "SSL_write failed with error: %d\n", SSL_get_error(client_data->ssl, write_len));
+            fprintf(stderr, "SSL_write failed with error: %d\n", 
+                    SSL_get_error(client_data->ssl, write_len));
             ERR_print_errors_fp(stderr);
         }
     }

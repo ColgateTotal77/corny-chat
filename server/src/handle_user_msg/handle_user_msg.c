@@ -126,7 +126,8 @@ static void handle_user_valid_msg(char *client_msg, int *leave_flag, call_data_t
 }
 
 
-void handle_user_msg(int bytes_received, int *leave_flag, char *client_msg, call_data_t *call_data) {
+void handle_user_msg(int bytes_received, int *leave_flag, 
+                     char *client_msg, call_data_t *call_data) {
     if (bytes_received > 0) {
 		if (strlen(client_msg) <= 0) { return; }
 

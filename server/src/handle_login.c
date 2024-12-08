@@ -47,6 +47,7 @@ static void update_server_client_data(call_data_t *call_data, int client_id) {
 	// Critical resource access: CLIENT USER DATA. Start
 	pthread_mutex_lock(&cached_client_data->user_data->mutex);
 	cached_client_data->ssl = client_data->ssl;
+	cached_client_data->socket = client_data->socket;
 	cached_client_data->user_data->is_online = true;
     pthread_mutex_unlock(&cached_client_data->user_data->mutex);
 	// Critical resource access: CLIENT USER DATA. End
@@ -57,7 +58,8 @@ static void update_server_client_data(call_data_t *call_data, int client_id) {
 	call_data->client_data = cached_client_data;
 }
 
-static void handle_valid_login_via_session_id(call_data_t *call_data, cJSON *json_login_password) {
+static void handle_valid_login_via_session_id(call_data_t *call_data, 
+                                              cJSON *json_login_password) {
     cJSON *session_id = cJSON_GetObjectItemCaseSensitive(json_login_password, "session_id");
     
     // Critical resource access: LOGIN_TO_ID HASH MAP. Start
@@ -71,12 +73,14 @@ static void handle_valid_login_via_session_id(call_data_t *call_data, cJSON *jso
 	send_user_returned_msg(call_data);
 }
 
-static void create_and_send_succesfull_login_data(call_data_t *call_data, int user_id, char* login,
+static void create_and_send_succesfull_login_data(call_data_t *call_data,
+                                                  int user_id, char* login,
                                                   char *client_session_id) {
     cJSON *response_json = create_response_json(LOGIN, true, NULL);
 	cJSON_AddNumberToObject(response_json, "user_id", user_id);
 	cJSON_AddStringToObject(response_json, "login", login);
-	cJSON_AddStringToObject(response_json, "nickname", call_data->client_data->user_data->nickname);
+	cJSON_AddStringToObject(response_json, "nickname",
+	                        call_data->client_data->user_data->nickname);
 	cJSON_AddStringToObject(response_json, "session_id", client_session_id);
 	cJSON_AddBoolToObject(response_json, "is_admin", call_data->client_data->user_data->is_admin);
     send_to_user_and_delete_json(call_data, &response_json);

@@ -2,7 +2,8 @@
 #include "command_codes.h"
 
 
-cJSON *message_deleted_notification(int message_id, int sender_id, bool is_group_message, int group_id) {
+cJSON *message_deleted_notification(int message_id, int sender_id, 
+                                    bool is_group_message, int group_id) {
     cJSON *notification_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(notification_json, "event_code", DELETED_MESSAGE);
     cJSON_AddNumberToObject(notification_json, "message_type", 
