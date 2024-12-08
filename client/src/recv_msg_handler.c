@@ -902,6 +902,7 @@ void* recv_msg_handler(void* arg) {
             free(message);
         } 
         else if (bytes_received == 0) {
+            printf("\n%s\n\n", session_id);
             if (*(call_data->stop_flag)) {
                 printf("SSL = NULL\nServer disconnected!\n");
                 free(session_id);
@@ -909,7 +910,7 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
 
-            GTK_data->stop_reconnect = false;
+            //GTK_data->stop_reconnect = false;
             if (pthread_create(&GTK_data->reconnect_thread, NULL, &reconnect_handler, (void*)GTK_data) != 0) {
                 printf("ERROR: pthread\n");
             }

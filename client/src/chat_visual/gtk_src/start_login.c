@@ -62,6 +62,7 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
 /* Callback function to handle the login button click */
 static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
+    printf("\nlogin_button_clicked\n\n");
     GtkWidget **entries = (GtkWidget **)user_data;
     const char *login_input = gtk_editable_get_text(GTK_EDITABLE(entries[0]));
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(entries[1]));
@@ -86,9 +87,11 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     } else if (!valid_password) {
         set_error_text(error_label, &is_error_appear, "Invalid password. Must be 8-20 characters with no spaces.");
     } else {
+        printf("\nbefore sending data\n\n");
         // If validation passes, print JSON data
         print_json_data(login_input, password_input, GTK_data->call_data);
-
+        printf("\nafter sending data\n\n");
+        printf("\nlogin_button_clicked\n\n");
         pthread_mutex_lock(&GTK_data->pthread_mutex);
 
         // Wait for the login response
@@ -96,14 +99,16 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
         pthread_mutex_unlock(&GTK_data->pthread_mutex);
 
         if(GTK_data->login_successful){
+            printf("\nlogin_success\n\n");
+            //GTK_data->login_successful = false;
             GtkWidget *window = entries[4];
             check_remember_me(entries[5], login_input, password_input);
-            gtk_widget_set_visible(window, FALSE);
-            pthread_mutex_destroy(&GTK_data->pthread_mutex);
-            pthread_cond_destroy(&GTK_data->pthread_cond);
-            GTK_start(GTK_data);
-            g_free(entries);
+            // gtk_widget_set_visible(window, FALSE);
+            // pthread_mutex_destroy(&GTK_data->pthread_mutex);
+            // pthread_cond_destroy(&GTK_data->pthread_cond);
             gtk_window_close(GTK_WINDOW(window));
+            GTK_start(GTK_data);
+            // g_free(entries);
         }else{
             set_error_text(error_label, &is_error_appear, "Login or password incorrect. Please try again.");
         }
@@ -117,9 +122,15 @@ static void on_login_button_clicked(GtkWidget *button, gpointer user_data) {
     }
 }
 
-void on_activate(GtkApplication *app, gpointer GTK_data) {
-    GTK_data_t *GTK_data1 = (GTK_data_t*)GTK_data;
+void on_activate(GtkApplication *app, gpointer user_data) {
+    call_data_t *call_data = (call_data_t*)user_data;
     
+    GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
+    GTK_data->call_data = call_data;
+    GTK_data->login_successful = false;
+    pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
+    pthread_cond_init(&GTK_data->pthread_cond, NULL);
+
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 500);
@@ -184,7 +195,7 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     entries[0] = login_entry;
     entries[1] = password_entry;
     entries[2] = error_label;
-    entries[3] = GTK_data;
+    entries[3] = (gpointer)GTK_data;
     entries[4] = window;
     entries[5] = remember_me_check;
 
@@ -204,32 +215,16 @@ void on_activate(GtkApplication *app, gpointer GTK_data) {
     gtk_window_set_child(GTK_WINDOW(window), main_container);
     gtk_window_present(GTK_WINDOW(window));
 
-    if (pthread_create(&GTK_data1->recv_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
+    if (pthread_create(&GTK_data->recv_thread, NULL, &recv_login_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
     g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
 }
 
 void start_login(call_data_t *call_data) {
-    // Use a static variable to track the application instance
-    static GtkApplication *app = NULL;
-    
-    // If no app exists, create a new one
-    if (app == NULL) {
-        GTK_data_t *GTK_data = (GTK_data_t *)malloc(sizeof(GTK_data_t));
-        GTK_data->call_data = call_data;
-        GTK_data->login_successful = false;
-        pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
-        pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
-        app = gtk_application_new("com.example.GtkApplication1", G_APPLICATION_NON_UNIQUE);
-        g_signal_connect(app, "activate", G_CALLBACK(on_activate), GTK_data);
-    }
-    
-    // Activate the application
+    GtkApplication *app = gtk_application_new("com.example.ProfileForm", G_APPLICATION_NON_UNIQUE);
+    g_signal_connect(app, "activate", G_CALLBACK(on_activate), call_data);
     g_application_run(G_APPLICATION(app), 0, NULL);
-    
-    // Optional: Uncomment if you want to reset the app after closing
-    // g_object_unref(app);
-    // app = NULL;
+    g_object_unref(app);
 }

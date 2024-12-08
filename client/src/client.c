@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
     call_data->sockfd = sock; 
     call_data->ssl = ssl;
     call_data->stop_flag = &stop_flag;
+    
     call_data->host = argv[1];
     call_data->port = atoi(argv[2]);
     // strcpy(call_data->name, name_json->valuestring);
