@@ -172,10 +172,12 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
     }
     
     // Prepend message_box to the top of the container
+    // After adding the message to the container
     gtk_box_append(GTK_BOX(chat->messages_container), alignment_box);
-    
-    if(is_sent) {
-        scroll_to_bottom(chat->messages_container);
+    if(is_sent){
+    // Force a layout update and scroll
+    gtk_widget_queue_resize(chat->messages_container);
+    scroll_to_bottom(chat->messages_container);
     }
 }
 
