@@ -36,7 +36,7 @@ void* reconnect_handler(void* arg) {
 
     else if(session_expired == true && new_ssl == NULL) {
         printf("\nsigment?\n\n");
-        // g_signal_emit_by_name(GTK_data->window, "destroy");
+        call_data->ssl = setup_new_connection(call_data->host, call_data->port);
         gtk_window_close(GTK_WINDOW(GTK_data->window));
         start_login(call_data);
     }
