@@ -15,7 +15,7 @@ void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_dat
 void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id), new_chat);
     GtkWidget *new_group_item = create_chat_item(chat_name, chat_id, "None", "", false, true, GTK_data);
-    
+
     new_chat->user_list_for_add = GTK_LIST_BOX(gtk_list_box_new());
     new_chat->user_list_for_delete = GTK_LIST_BOX(gtk_list_box_new());
     gtk_widget_add_css_class(GTK_WIDGET(new_chat->user_list_for_add), "settings_list_box");
@@ -29,24 +29,29 @@ void create_group_in_sidebar(const int chat_id, const char* chat_name, GTK_data_
     for (iter = user_list; iter != NULL; iter = iter->next) {
         gpointer key = iter->data;
         chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
-        GtkWidget *row = gtk_list_box_row_new();
-        GtkWidget *label = gtk_label_new(user_chat->contact_name);
-        gtk_widget_set_halign(label, GTK_ALIGN_START);
-        gtk_widget_set_margin_start(label, 10);
-        gtk_widget_set_margin_end(label, 10);
-        gtk_widget_set_margin_top(label, 5);
-        gtk_widget_set_margin_bottom(label, 5);
-        gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
-        gtk_list_box_append(GTK_LIST_BOX(new_chat->user_list_for_add), row);
-        g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_chat->contact_id));
+
+        // Filter only active users
+        if (user_chat != NULL && user_chat->is_active) {
+            GtkWidget *row = gtk_list_box_row_new();
+            GtkWidget *label = gtk_label_new(user_chat->contact_name);
+            gtk_widget_set_halign(label, GTK_ALIGN_START);
+            gtk_widget_set_margin_start(label, 10);
+            gtk_widget_set_margin_end(label, 10);
+            gtk_widget_set_margin_top(label, 5);
+            gtk_widget_set_margin_bottom(label, 5);
+            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+            gtk_list_box_append(GTK_LIST_BOX(new_chat->user_list_for_add), row);
+            g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_chat->contact_id));
+        }
     }
     g_list_free(user_list);
-    
+
     g_object_set_data(G_OBJECT(new_chat->user_list_for_add), "chat_id", GINT_TO_POINTER(chat_id));
     g_object_set_data(G_OBJECT(new_chat->user_list_for_delete), "chat_id", GINT_TO_POINTER(chat_id));
     
     gtk_box_append(GTK_BOX(GTK_data->group_manager->sidebar), new_group_item);
 }
+
 
 void* recv_msg_handler(void* arg) {
     GTK_data_t *GTK_data = (GTK_data_t*)arg;
