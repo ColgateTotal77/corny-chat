@@ -48,7 +48,6 @@ void on_admin_change_password_button_clicked(GtkButton *button, gpointer user_da
     }
 
     if (GTK_data->call_data == NULL || GTK_data->call_data->ssl == NULL) {
-        g_print("Error: SSL is not initialized.\n");
         
         // Clear success label and its styling
         gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->admin_success_label), "");

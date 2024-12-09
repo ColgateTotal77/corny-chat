@@ -50,9 +50,6 @@ static SSL_CTX *init_ssl_context(void) {
         ERR_print_errors_fp(stderr);
         exit(1);
     }
-
-    // Set minimum TLS version
-    //SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
     return ctx;
 }
 

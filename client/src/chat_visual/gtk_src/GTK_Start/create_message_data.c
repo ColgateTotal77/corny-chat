@@ -7,4 +7,3 @@ message_data_t* create_message_data (int message_id, chat_data_t* chat) {
     
     return message_data;
 }
-

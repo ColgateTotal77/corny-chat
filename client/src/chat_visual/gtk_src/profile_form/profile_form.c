@@ -5,13 +5,13 @@ int current_index = 0;
 
 static gboolean is_transitioning = FALSE;
 
-static GtkWidget *current_window_label = NULL;  // Add this global variable
+static GtkWidget *current_window_label = NULL;
 
 // Fallback function to reset is_transitioning
 static gboolean reset_transition_flag(gpointer data) {
-    (void)data; // Avoid unused parameter warning
+    (void)data;
     is_transitioning = FALSE;
-    return G_SOURCE_REMOVE; // Stop the timeout
+    return G_SOURCE_REMOVE;
 }
 
 // Update the update_window_title function
@@ -31,7 +31,7 @@ void update_window_title(const char *stack_name) {
         title = "Profile Form";
         
     gtk_label_set_text(GTK_LABEL(current_window_label), title);
-    is_transitioning = TRUE; // Set flag for transition
+    is_transitioning = TRUE;
     g_timeout_add(500, reset_transition_flag, NULL);
 }
 
@@ -43,7 +43,7 @@ void on_transition_done(GtkStack *stack, GParamSpec *pspec, gpointer user_data) 
     const char *current_child = gtk_stack_get_visible_child_name(stack);
     update_window_title(current_child);
     g_print("Transition completed to: %s\n", current_child);
-    is_transitioning = TRUE; // Set flag for transition
+    is_transitioning = TRUE;
     g_timeout_add(500, reset_transition_flag, NULL);
 }
 
@@ -70,10 +70,10 @@ void on_prev_button_clicked(GtkButton *button, gpointer user_data) {
 
     if (is_transitioning) {
         g_print("Transition already in progress. Ignoring button press.\n");
-        return; // Prevent triggering a new transition
+        return;
     }
 
-    is_transitioning = TRUE; // Set flag for transition
+    is_transitioning = TRUE;
 
     // Calculate the previous index
     current_index = (current_index - 1 + G_N_ELEMENTS(stack_children)) % G_N_ELEMENTS(stack_children);
@@ -89,8 +89,8 @@ static void gtk_window_close_wrapper(gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
     if (GTK_data && GTK_IS_WINDOW(GTK_data->profile_window)) {
         // Cleanup before closing
-        current_window_label = NULL; // Reset global variable
-        is_transitioning = FALSE;    // Reset transition flag
+        current_window_label = NULL;
+        is_transitioning = FALSE;
 
         gtk_window_close(GTK_WINDOW(GTK_data->profile_window));
     }
@@ -100,8 +100,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t *)user_data; 
     SSL *ssl = GTK_data->call_data->ssl;
 
-    int window_width = 800; // default width
-    int window_height = 500; // default height
+    int window_width = 800;
+    int window_height = 500;
 
     if (!GTK_data->is_admin) {
         window_width = 400;
@@ -127,8 +127,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
         gdk_monitor_get_geometry(first_monitor, &geometry);
         
         // Calculate window size based on FIRST monitor geometry
-        window_width = geometry.width * 0.7;  // 70% of first monitor width
-        window_height = geometry.height * 0.7; // 70% of first monitor height
+        window_width = geometry.width * 0.7;
+        window_height = geometry.height * 0.7;
     }
 
     // Create the main window
@@ -387,6 +387,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *change_password_button = gtk_button_new_with_label("Change Password");
     gtk_widget_add_css_class(change_password_button, "change-password-button");
+
     // Append widgets to the box
     gtk_box_append(GTK_BOX(change_password_box), old_password_label);
     gtk_box_append(GTK_BOX(change_password_box), old_password_box);
@@ -396,7 +397,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(change_password_box), new_password_box_2);
     gtk_box_append(GTK_BOX(change_password_box), change_password_button);
     // gtk_widget_set_vexpand(change_password_button, TRUE);
-
 
     // Assigning widgets to GTK_data->profile_data
     GTK_data->profile_data->old_password_entry = old_password_entry;
@@ -654,8 +654,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_container), login_list);
     GTK_data->profile_data->login_list = GTK_LIST_BOX(login_list);
-
-    //update_login_list(GTK_LIST_BOX(login_list), parced_json);
 
     GtkEventController *key_controller = gtk_event_controller_key_new();
     g_object_set_data(G_OBJECT(key_controller), "list-box", login_list);

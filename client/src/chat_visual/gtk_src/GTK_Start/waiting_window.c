@@ -9,15 +9,8 @@ gboolean waiting_window_wrapper(gpointer user_data) {
 static gboolean on_delete_event(GtkWindow *dialog, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t *)user_data;
     (void)dialog;
-    printf("\nwaiting_window delete event!!!\n\n");
-    //gtk_window_destroy(dialog);
-    //g_signal_emit_by_name(GTK_data->window, "close-request", GTK_data->entries);
     on_main_window_destroy(GTK_data);
-    // send_exit_command(GTK_data->call_data->ssl);
     *(GTK_data->call_data->stop_flag) = true;
-    // free(GTK_data);
-    // GTK_data = NULL;
-    // g_free(GTK_data->entries); 
     return false;
 }
 

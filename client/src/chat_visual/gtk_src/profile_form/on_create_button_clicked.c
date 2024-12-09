@@ -29,7 +29,6 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     if (!GTK_IS_WIDGET(login_entry) || !GTK_IS_WIDGET(password_entry) || 
         !GTK_IS_WIDGET(create_error_label) || !GTK_IS_WIDGET(create_success_label) || 
         !GTK_IS_WIDGET(admin_check)) {
-        fprintf(stderr, "Error: One or more widgets are invalid.\n");
         return;
     }
 
@@ -37,25 +36,18 @@ void on_create_button_clicked(GtkButton *button, gpointer user_data) {
     const char *login_input = gtk_editable_get_text(GTK_EDITABLE(login_entry));
     const char *password_input = gtk_editable_get_text(GTK_EDITABLE(password_entry));
 
-    // Add debug prints to verify values
-    printf("Login input: %s\n", login_input);
-    printf("Password input: %s\n", password_input);
-
     if (!login_input || !*login_input || !password_input || !*password_input) {
-        printf("Displaying empty fields error\n");
         display_ui_message(GTK_data, "Error: Login and password cannot be empty.", false);
         return;
     }
 
     // Validate login and password
     if (strlen(login_input) < 2 || strlen(login_input) > 30) {
-        printf("Displaying login length error\n");
         display_ui_message(GTK_data, "Error: Login must be 2-30 characters.", false);
         return;
     }
     
     if (!check_password((char *)password_input)) {
-        printf("Displaying password error\n");
         display_ui_message(GTK_data, "Error: Invalid password. Must be 8-20 characters.", false);
         return;
     }

@@ -9,7 +9,7 @@ void update_nickname_in_header(GTK_data_t *GTK_data, const char *new_nickname) {
     // Free the old username memory if it was dynamically allocated
     if (GTK_data->username) {
         free(GTK_data->username);
-        GTK_data->username = NULL; // Prevent double free
+        GTK_data->username = NULL;
     }
 
     // Allocate new memory for the username
@@ -21,6 +21,4 @@ void update_nickname_in_header(GTK_data_t *GTK_data, const char *new_nickname) {
 
     // Update the label in the header-box
     gtk_label_set_text(GTK_LABEL(GTK_data->profile_data->name_label), new_nickname);
-
-    printf("Nickname updated to: %s\n", new_nickname); // Debugging message to confirm the change
 }

@@ -8,7 +8,6 @@ void str_overwrite_stdout(void) {
 void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
     GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data);
-    // if(false) printf("%d,%s,%d\n", user_id, nickname,is_online);
     gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 
@@ -75,7 +74,6 @@ void* recv_msg_handler(void* arg) {
     int counter = 0;
     int group_counter = 0;
     while (!*(call_data->stop_flag)) {
-        //bzero(message, 1024);
         char* message = NULL;
         int bytes_received = recieve_next_response(call_data->ssl, &message); 
 
@@ -365,7 +363,7 @@ void* recv_msg_handler(void* arg) {
                                 gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
                                 gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
 
-                                break; // Exit the loop since we've handled the match
+                                break;
                             }
 
                             // Move to the next child
@@ -463,7 +461,7 @@ void* recv_msg_handler(void* arg) {
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
                             gtk_widget_set_visible(GTK_data->group_manager->select_a_chat_label, true);
-                            gtk_widget_set_visible(chat->button, false); //Це заплатка, потрібно зробити нормально!!!!
+                            gtk_widget_set_visible(chat->button, false);
                             gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
                             gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
                             gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
@@ -679,14 +677,6 @@ void* recv_msg_handler(void* arg) {
                     }
                     case 2:
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
-                            // Print the parsed_json
-                            // char *json_string = cJSON_Print(parsed_json); // Convert cJSON to string
-                            // if (json_string) {
-                            //     printf("\nparsed_json:\n %s\n\n", json_string); // Now it's a char *
-                            //     free(json_string); // Free the allocated string to avoid memory leaks
-                            // } else {
-                            //     printf("Failed to print JSON\n");
-                            // }
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             char *chat_name = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_name")->valuestring;
 
@@ -695,7 +685,6 @@ void* recv_msg_handler(void* arg) {
                             chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data, GTK_data->user_id);
                             create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
                             gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
-                            // create_group_in_sidebar(chat_id, chat_name, GTK_data);
                         }
                         break;
                     case 1:
@@ -727,15 +716,9 @@ void* recv_msg_handler(void* arg) {
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             int message_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                            // char *created_at = cJSON_GetObjectItemCaseSensitive(parsed_json, "time_reached_server")->valuestring;
                             char *message = cJSON_GetObjectItemCaseSensitive(parsed_json, "message")->valuestring;
                             chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
 
-                            // strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
-                            // time_t time_value = mktime(&message_time);
-                            // time_value += time_zone; 
-                            // adjusted_time = localtime(&time_value);
-                            // strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
                             add_message(message, time_to_send, true, false, GTK_data->group_manager, call_data->ssl, message_id, chat, "None");
                                 
                             g_object_ref(chat->button);
@@ -969,7 +952,6 @@ void* recv_msg_handler(void* arg) {
                 break;
             }
 
-            //GTK_data->stop_reconnect = false;
             if (pthread_create(&GTK_data->reconnect_thread, NULL, &reconnect_handler, (void*)GTK_data) != 0) {
                 printf("ERROR: pthread\n");
             }
@@ -977,18 +959,12 @@ void* recv_msg_handler(void* arg) {
             pthread_mutex_lock(&GTK_data->pthread_mutex);
 
             printf("WAIT\n");
-            // GTK_data->wait = waiting_window(GTK_data->window);
             g_idle_add(waiting_window_wrapper, GTK_data);
-            // Wait for the login response
             pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
             pthread_mutex_unlock(&GTK_data->pthread_mutex);
 
             printf("TYT\n");
-            break;
-
-            // create loading window
-
-            // pthread_cond wait        
+            break;     
             } 
         else {
             int err = SSL_get_error(call_data->ssl, bytes_received);

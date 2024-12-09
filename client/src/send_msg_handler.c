@@ -44,7 +44,6 @@ void* send_msg_handler(void* arg) {
     call_data_t *call_data = GTK_data->call_data;
 
     char message[BUF_SIZE];
-    //char buffer[BUF_SIZE + 32];
     int chat_id;
     int contact_id;
     int user_id;
@@ -146,7 +145,6 @@ void* send_msg_handler(void* arg) {
             fgets(message, BUF_SIZE, stdin);
             str_del_newline(message, BUF_SIZE);
             send_to_user(call_data->ssl, user_id, message);
-            // add_message(messages_container, message, "10:01", TRUE);
             break;
         case CREATE_CHAT:
             bzero(message, BUF_SIZE);
@@ -461,7 +459,6 @@ void* send_msg_handler(void* arg) {
         }
         sleep(1);
         bzero(message, BUF_SIZE);
-       // bzero(buffer, BUF_SIZE + 32);
     }
 
     *(call_data->stop_flag) = true;

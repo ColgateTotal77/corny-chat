@@ -51,9 +51,6 @@ static SSL_CTX *init_ssl_context(void) {
         ERR_print_errors_fp(stderr);
         exit(1);
     }
-
-    // Set minimum TLS version
-    //SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
     return ctx;
 }
 
@@ -91,26 +88,19 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
     if (session_id == NULL || host == NULL) {
         return NULL;
     }
-    //int count = 0;
     SSL *new_ssl = NULL;
-
-//  while (new_ssl == NULL && stoper) {
-        // printf("Trying to reconnect\n");
-        // count += 1;
-        int socket = setup_client_socket_with_silent_errors(host, port);
-        if (socket < 0) {
-            return NULL;
-        }
-        SSL_CTX *ctx = init_ssl_context();
-        SSL *ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, socket);
-        if (SSL_connect(ssl) != 1) { 
-            return NULL;
-        // sleep(1);
-        // continue;
+    int socket = setup_client_socket_with_silent_errors(host, port);
+    if (socket < 0) {
+        return NULL;
+    }
+    SSL_CTX *ctx = init_ssl_context();
+    SSL *ssl = SSL_new(ctx);
+    SSL_set_fd(ssl, socket);
+    if (SSL_connect(ssl) != 1) { 
+        return NULL;
     }
     new_ssl = ssl;
-    // }
+
 
     cJSON *reconect_request = cJSON_CreateObject();
     cJSON_AddStringToObject(reconect_request, "session_id", session_id);
@@ -126,7 +116,7 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
         *session_expired = true;
         if (session_expired) {
         }
-        SSL_shutdown(new_ssl);//Закриття SSL з'єднання
+        SSL_shutdown(new_ssl);
         SSL_free(new_ssl);
     }
     return NULL;
