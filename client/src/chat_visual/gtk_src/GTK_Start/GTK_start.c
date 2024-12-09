@@ -729,8 +729,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_margin_bottom(main_grid, 20);
     gtk_widget_set_margin_start(main_grid, 20);
     gtk_widget_set_margin_end(main_grid, 20);
+
     gtk_widget_set_hexpand(main_grid, TRUE); // Make the main grid horizontally expandable
     gtk_widget_set_vexpand(main_grid, TRUE); // Make the main grid vertically expandable
+
+    gtk_grid_set_row_homogeneous(GTK_GRID(main_grid), FALSE);
+    gtk_grid_set_row_spacing(GTK_GRID(main_grid), 10);
 
     // --- Top Panel (Settings and Search Bar) ---
     GtkWidget *top_panel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -779,7 +783,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *sidebar_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(sidebar_background, "sidebar-background");
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_background, 0, 1, 1, 1);
-    // gtk_widget_set_hexpand(sidebar_background, TRUE); // Make the main grid horizontally expandable
+    
+    gtk_widget_set_hexpand(sidebar_background, FALSE); // Make the main grid horizontally expandable
     gtk_widget_set_vexpand(sidebar_background, TRUE); // Make the main grid vertically expandable
 
     GtkWidget *sidebar_scroll_users = gtk_scrolled_window_new();
@@ -830,7 +835,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_hexpand(sidebar_container, FALSE);
     // gtk_widget_set_vexpand(sidebar_container, FALSE);
     // gtk_widget_set_hexpand(sidebar_container, TRUE);
-    gtk_widget_set_vexpand(sidebar_container, TRUE);
+    gtk_widget_set_vexpand(sidebar_container, FALSE);
 
     // Keep alignment
     gtk_widget_set_halign(sidebar_container, GTK_ALIGN_FILL);
@@ -841,6 +846,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_margin_bottom(sidebar_container, 17);
     gtk_widget_set_margin_start(sidebar_container, 10);
     gtk_widget_set_margin_end(sidebar_container, 10);
+    // gtk_box_append(GTK_BOX(sidebar_background),sidebar_container);
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_container, 0, 2, 1, 1);
 
     // Left button
@@ -918,6 +924,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
     gtk_widget_set_margin_top(input_container, 10);
+    // gtk_widget_set_size_request(input_container, 40, 40);
 
     GtkWidget *error_label = gtk_label_new("Too long message > 500");
     gtk_widget_add_css_class(error_label, "error-label");
@@ -939,7 +946,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_entry_set_placeholder_text(GTK_ENTRY(GTK_data->message_entry), "Enter message");
     gtk_widget_set_hexpand(GTK_data->message_entry, TRUE);
     gtk_widget_add_css_class(GTK_data->message_entry, "message-entry");
-    gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), GTK_data->message_entry);
+    // gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), GTK_data->message_entry);
     GTK_data->entry_overlay = entry_overlay;
 
     // Add smile button
@@ -948,7 +955,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *smile_icon = gtk_image_new_from_icon_name("face-smile-symbolic");
     gtk_widget_set_size_request(smile_icon, 45, 45);
     gtk_button_set_child(GTK_BUTTON(smile_button), smile_icon);
-    // gtk_box_append(GTK_BOX(input_box), smile_button);
+    gtk_box_append(GTK_BOX(input_box), smile_button);
 
     // Connect smile button click handler
     g_signal_connect(smile_button, "clicked", G_CALLBACK(on_smile_button_clicked), GTK_data);
@@ -1022,10 +1029,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *select_a_chat_label = gtk_label_new("Select a chat to start messaging");
     gtk_widget_add_css_class(select_a_chat_label, "placeholder-message");
-    gtk_grid_attach(GTK_GRID(main_grid), select_a_chat_label, 1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(main_grid), select_a_chat_label, 1, 1, 1, 2);
     gtk_widget_set_size_request(select_a_chat_label, -1, 300);
+
     gtk_widget_set_vexpand(chat_area_background, true);
     gtk_widget_set_hexpand(select_a_chat_label, true);
+    gtk_widget_set_vexpand(chat_area_background, true);
+
+
     gtk_widget_set_visible(select_a_chat_label, true);
     chat_manager->select_a_chat_label = select_a_chat_label;
     group_manager->select_a_chat_label = select_a_chat_label;

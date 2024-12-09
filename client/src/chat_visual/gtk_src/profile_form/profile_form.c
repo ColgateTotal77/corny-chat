@@ -139,7 +139,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Left side of header (Back button and nickname)
     GtkWidget *header_left_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_widget_set_halign(header_left_box, GTK_ALIGN_START);
     gtk_widget_set_hexpand(header_left_box, TRUE);
 
     // Back button
@@ -166,12 +165,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
     if (GTK_data->is_admin) {
         // Right side of header (Navigation buttons and title)
         GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-        gtk_widget_set_halign(header_right_box, GTK_ALIGN_END);
-        gtk_widget_add_css_class(header_right_box, "header_right_box");
+        gtk_widget_add_css_class(header_right_box, "header_right_box");   
+        gtk_widget_set_hexpand(header_right_box, true);
 
         // Set the same size as the "Create" button container
         gtk_widget_set_size_request(header_right_box, 400, 60);
-        gtk_widget_set_margin_end(header_right_box, 23);
+        gtk_widget_set_margin_start(header_right_box, 85);
 
         // Previous button
         GtkWidget *prev_button = gtk_button_new();
@@ -183,7 +182,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
         // Window title
         current_window_label = gtk_label_new("Create New User");
         gtk_widget_add_css_class(current_window_label, "window-title");
-        gtk_widget_set_size_request(current_window_label, 200, -1); // Fixed size for title
+        // gtk_widget_set_size_request(current_window_label, 200, -1); // Fixed size for title
+        gtk_widget_set_hexpand(current_window_label, true);
         gtk_label_set_xalign(GTK_LABEL(current_window_label), 0.5);
 
         // Next button
@@ -220,6 +220,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Left Box (Nickname and Password Sections)
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(left_box, TRUE);
+    gtk_widget_set_vexpand(left_box, TRUE);
     gtk_widget_set_size_request(left_box, 250, -1);
 
     // Nickname Section
@@ -265,6 +266,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(nickname_box), nickname_input_box);
     gtk_box_append(GTK_BOX(nickname_box), nickname_error_label); // Add error label to the box
     gtk_box_append(GTK_BOX(nickname_box), nickname_success_label);
+    gtk_widget_set_vexpand(nickname_box, TRUE);
 
     GtkWidget *nickname_separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);;
     gtk_widget_set_size_request(nickname_separator, 250, 3);
@@ -364,6 +366,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(change_password_box), new_password_label_2);
     gtk_box_append(GTK_BOX(change_password_box), new_password_box_2);
     gtk_box_append(GTK_BOX(change_password_box), change_password_button);
+    // gtk_widget_set_vexpand(change_password_button, TRUE);
+
 
     // Assigning widgets to GTK_data->profile_data
     GTK_data->profile_data->old_password_entry = old_password_entry;
@@ -445,6 +449,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(admin_check, "admin-checkbox");
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     gtk_widget_add_css_class(create_button, "create-button");
+    gtk_widget_set_hexpand(create_button, TRUE);
 
     GtkWidget *create_error_label = gtk_label_new("");
     gtk_widget_add_css_class(create_error_label, "error-label");
@@ -580,6 +585,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
     gtk_widget_add_css_class(delete_entry, "delete-entry");
     GTK_data->profile_data->delete_entry = delete_entry;
+    gtk_widget_set_hexpand(delete_entry, TRUE);
 
     GtkWidget *delete_button = gtk_button_new_with_label("Deactivation");
     gtk_widget_add_css_class(delete_button, "delete-button");
