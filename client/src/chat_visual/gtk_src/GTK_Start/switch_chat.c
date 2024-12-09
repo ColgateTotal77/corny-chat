@@ -168,7 +168,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         gtk_widget_set_visible(GTK_data->group_manager->settings_group_button, FALSE);
         gtk_widget_set_visible(GTK_data->chat_manager->avatar_circle, TRUE);
     }
-
+    
     if (GTK_IS_LABEL(chat_user_label)) {
         gtk_label_set_text(GTK_LABEL(chat_user_label), contact_name);
     } else {
