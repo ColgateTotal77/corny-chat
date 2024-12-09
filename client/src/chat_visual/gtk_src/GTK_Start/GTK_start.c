@@ -411,7 +411,11 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
 
     // Create a new window
     GtkWidget *settings_window = gtk_window_new();
+    if (GTK_data->group_manager->active_chat->owner_id != GTK_data->user_id) {
+    gtk_window_set_title(GTK_WINDOW(settings_window), "Group users list");
+    }else{
     gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
+    }
     gtk_window_set_default_size(GTK_WINDOW(settings_window), 400, 300);
 
     // Set the new window as transient for the main window
