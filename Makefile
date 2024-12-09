@@ -7,8 +7,8 @@ SERVER_DIR = ./server
 CLIENT_DIR = ./client
 
 
-SERVER = server/server
-CLIENT = client/client
+SERVER = server/uchat_server
+CLIENT = client/uchat
 LIBRARY = libmx/libmx.a
 JSON_C = json-c/json-c.a
 

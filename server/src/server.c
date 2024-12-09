@@ -6,7 +6,7 @@
 
 bool stop_server;
 
-SSL_CTX *init_ssl_context(void) { 
+static SSL_CTX *init_ssl_context(void) { 
     SSL_library_init();
     SSL_load_error_strings();
     OpenSSL_add_all_algorithms();
@@ -32,7 +32,7 @@ SSL_CTX *init_ssl_context(void) {
     return ctx;  
 }
 
-void free_client_data(call_data_t *call_data) {
+static void free_client_data(call_data_t *call_data) {
 	client_t *client_data = call_data->client_data;
 
 	if (client_data != NULL) {
@@ -62,7 +62,7 @@ void free_client_data(call_data_t *call_data) {
 	free(call_data);
 }
 
-void *handle_client(void *arg) {
+static void *handle_client(void *arg) {
 	call_data_t *call_data = (call_data_t*)arg;
 	general_data_t *general_data = call_data->general_data;
 
@@ -131,15 +131,48 @@ void *handle_client(void *arg) {
     return NULL;
 }
 
-void catch_ctrl_c_and_exit(int sig) {
+static void catch_ctrl_c_and_exit(int sig) {
 	stop_server = true;
 	printf("catched %d signal\n", sig);
 }
 
-void append_thread_to_array(pthread_t** arr, int* arr_size, pthread_t *thread_id) {
+static void append_thread_to_array(pthread_t** arr, int* arr_size, pthread_t *thread_id) {
     *arr = (pthread_t*)realloc(*arr, (*arr_size + 1) * sizeof(pthread_t));
     (*arr)[*arr_size] = *thread_id;
     *arr_size = *arr_size + 1;
+}
+
+static void demonize_process(void) {
+    pid_t pid;
+
+    pid = fork();
+
+    if (pid < 0) {
+        exit(1);
+    }
+    if (pid > 0) {
+        exit(0);
+    }
+    if (setsid() < 0) {
+        exit(1);
+    }
+
+    pid = fork();
+
+    if (pid < 0) {
+        exit(1);
+    }
+    if (pid > 0) {
+        printf("daemon started with pid=%d\n", pid);
+        printf("Use 'ps -jx | grep 'PID\\|%d'' to show process info\n", pid);
+        printf("Use 'kill -SIGINT %d' to correctly stop process\n", pid);
+        exit(0);
+    }
+
+    int x;
+    for (x = sysconf(_SC_OPEN_MAX); x>=0; x--) {
+        close (x);
+    }
 }
 
 int main(int argc, char * argv[]) {
@@ -160,6 +193,8 @@ int main(int argc, char * argv[]) {
         free(new_password_hash);
         sqlite3_close(db);
     }
+
+    demonize_process();
 
 	SSL_CTX *ctx = init_ssl_context();
 
