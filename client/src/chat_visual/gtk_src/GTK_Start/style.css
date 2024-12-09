@@ -491,6 +491,11 @@ button.search-erase-button > label {
     background-color: #C9C9C9;
 }
 
+.copy-button-popover{
+    background: transparent;
+    border: none;
+}
+
 .edit-button-popover{
     background: transparent;
     border: none;
@@ -499,6 +504,11 @@ button.search-erase-button > label {
 .delete-button-popover{
     background: transparent;
     border: none;
+}
+
+button.copy-button-popover > label{
+    background-color: #C9C9C9;
+    color: #000000;
 }
 
 button.edit-button-popover > label{

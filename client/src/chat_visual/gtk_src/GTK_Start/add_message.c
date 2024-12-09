@@ -60,22 +60,53 @@ void change_message(GtkWidget *widget, gpointer user_data) {
     }
 }
 
-
-void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
+void on_copy_button_clicked(GtkButton *button, gpointer user_data) {
     GtkWidget *alignment_box = GTK_WIDGET(user_data);
     message_data_t *message_data = g_object_get_data(G_OBJECT(alignment_box), "message_data");
-    reset_all_message_own_is_editing(message_data->messages);
-    g_signal_connect(message_data->send_button, "clicked", G_CALLBACK(change_message), message_data);    
-    g_signal_connect(message_data->message_entry, "activate", G_CALLBACK(change_message), message_data);  
-
-    g_signal_connect(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), "clicked", G_CALLBACK(cancel_changing_message), message_data);  
-    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), true);
     
+    // Get the message text from the label
+    const char *message_text = gtk_label_get_text(GTK_LABEL(message_data->message_label));
+    
+    // Get the clipboard and set its content
+    GdkClipboard *clipboard = gtk_widget_get_clipboard(alignment_box);
+    gdk_clipboard_set_text(clipboard, message_text);
+
+    // Close the popover
+    GtkWidget *popover = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_POPOVER);
+    if (GTK_IS_POPOVER(popover)) {
+        gtk_popover_popdown(GTK_POPOVER(popover));
+    }
+}
+
+void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
+    GtkWidget *alignment_box = GTK_WIDGET(user_data);
+    message_data_t *message_data = g_object_get_data(G_OBJECT(alignment_box), "message_data");
+
+    reset_all_message_own_is_editing(message_data->messages);
+
+    g_signal_connect(message_data->send_button, "clicked", G_CALLBACK(change_message), message_data);
+    g_signal_connect(message_data->message_entry, "activate", G_CALLBACK(change_message), message_data);
+    g_signal_connect(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), "clicked", G_CALLBACK(cancel_changing_message), message_data);
+    
+    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), true);
+
+    // Set the text in the entry to the current message text
     gtk_editable_set_text(GTK_EDITABLE(message_data->message_entry), gtk_label_get_text(GTK_LABEL(message_data->message_label)));
+
+    // Focus the message entry immediately
+    gtk_widget_grab_focus(message_data->message_entry);
+
+    // Set the is_editing state
     g_object_set_data(G_OBJECT(message_data->message_entry), "is_editing", GINT_TO_POINTER(true));
     message_data->own_is_editing = true;
+
+    // Close the popover
+    GtkWidget *popover = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_POPOVER);
+    if (GTK_IS_POPOVER(popover)) {
+        gtk_popover_popdown(GTK_POPOVER(popover));
+    }
 }
+
 
 void on_delete_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
@@ -97,6 +128,11 @@ void on_message_edit(GtkGestureClick *gesture) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_popover_set_child(GTK_POPOVER(popover), box);
     gtk_widget_add_css_class(box, "box-popover");
+
+    GtkWidget *copy_button = gtk_button_new_with_label("Copy");
+    gtk_box_append(GTK_BOX(box), copy_button);
+    gtk_widget_add_css_class(copy_button, "copy-button-popover");
+    g_signal_connect(copy_button, "clicked", G_CALLBACK(on_copy_button_clicked), alignment_box);
 
     GtkWidget *edit_button = gtk_button_new_with_label("Change");
     gtk_box_append(GTK_BOX(box), edit_button);
