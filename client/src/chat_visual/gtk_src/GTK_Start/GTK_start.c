@@ -258,10 +258,38 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
     (void)widget;
     GTK_data_t *GTK_data = (GTK_data_t *)data;
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 300;  // default width
+    int window_height = 150; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.2;  // 20% of first monitor width
+    }
+    
+
     // Create a new dialog window
     GtkWidget *dialog = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(dialog), "Create New Group");
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), window_width, window_height);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
 
     // Make dialog a transient window of the main window, but still allow independent movement
     if (GTK_data && GTK_data->window) {
@@ -274,8 +302,8 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
 
     // Create a box to hold the content
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_margin_top(box, 20);
-    gtk_widget_set_margin_bottom(box, 20);
+    gtk_widget_set_margin_top(box, 10);
+    gtk_widget_set_margin_bottom(box, 10);
     gtk_widget_set_margin_start(box, 20);
     gtk_widget_set_margin_end(box, 20);
 
@@ -432,15 +460,41 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 400;  // default width
+    int window_height = 300; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.4;  // 40% of first monitor width
+        window_height = geometry.height * 0.5; // 50% of first monitor height
+    }
+
     // Create a new window
     GtkWidget *settings_window = gtk_window_new();
     if (GTK_data->group_manager->active_chat->owner_id != GTK_data->user_id) {
-    gtk_window_set_title(GTK_WINDOW(settings_window), "Group users list");
+        gtk_window_set_title(GTK_WINDOW(settings_window), "Group users list");
     }else{
-    gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
+        gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
+        gtk_window_set_default_size(GTK_WINDOW(settings_window), window_width, window_height);
     }
-    gtk_window_set_default_size(GTK_WINDOW(settings_window), 400, 300);
-
     // Set the new window as transient for the main window
     if (GTK_data && GTK_data->window) {
         gtk_window_set_transient_for(GTK_WINDOW(settings_window), GTK_WINDOW(GTK_data->window));
@@ -521,10 +575,10 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_box_set_homogeneous(GTK_BOX(page_controller_container), TRUE); // Make all children the same size
 
     // Page controller container
-    gtk_widget_set_margin_top(page_controller_container, 30);
-    gtk_widget_set_margin_bottom(page_controller_container, 30);
-    gtk_widget_set_margin_start(page_controller_container, 30);
-    gtk_widget_set_margin_end(page_controller_container, 30);
+    gtk_widget_set_margin_top(page_controller_container, 10);
+    gtk_widget_set_margin_bottom(page_controller_container, 10);
+    gtk_widget_set_margin_start(page_controller_container, 20);
+    gtk_widget_set_margin_end(page_controller_container, 20);
 
         // Left button
         GtkWidget *left_button = gtk_button_new();
@@ -555,8 +609,8 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         gtk_widget_set_vexpand(slider_container, TRUE);
 
         // Slider container
-        gtk_widget_set_margin_top(slider_container, 30);
-        gtk_widget_set_margin_bottom(slider_container, 30);
+        gtk_widget_set_margin_top(slider_container, 10);
+        gtk_widget_set_margin_bottom(slider_container, 10);
         gtk_widget_set_margin_start(slider_container, 30);
         gtk_widget_set_margin_end(slider_container, 30);
 
@@ -636,11 +690,11 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         gtk_grid_attach(GTK_GRID(grid), small_button, 0, 1, 1, 1); // Attach to grid at (0, 1)
         gtk_widget_set_hexpand(small_button, TRUE); // Allow horizontal expansion
         gtk_widget_set_vexpand(small_button, FALSE); // Do not allow vertical expansion
-        gtk_widget_set_size_request(small_button, -1, 70); // Set a fixed height for the button
+        gtk_widget_set_size_request(small_button, -1, 60); // Set a fixed height for the button
 
         // Small button
-        gtk_widget_set_margin_top(small_button, 30);
-        gtk_widget_set_margin_bottom(small_button, 30);
+        gtk_widget_set_margin_top(small_button, 10);
+        gtk_widget_set_margin_bottom(small_button, 10);
         gtk_widget_set_margin_start(small_button, 30);
         gtk_widget_set_margin_end(small_button, 30);
 
@@ -651,14 +705,13 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         entries[2] = slider_inner_container_2;
         entries[3] = center_label;
 
-    // Add buttons connections
-    //Functioal buttons
-    g_object_set_data(G_OBJECT(add_button), "entry", name_entry);
-    g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), GTK_data);
-    g_object_set_data(G_OBJECT(del_button), "entry", name_entry_2);
-    g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), GTK_data);
-    g_signal_connect(GTK_data->group_manager->user_list_for_add, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry);
-    g_signal_connect(GTK_data->group_manager->user_list_for_delete, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry_2);
+        //Functioal buttons
+        g_object_set_data(G_OBJECT(add_button), "entry", name_entry);
+        g_signal_connect(add_button, "clicked", G_CALLBACK(add_name_to_list), GTK_data);
+        g_object_set_data(G_OBJECT(del_button), "entry", name_entry_2);
+        g_signal_connect(del_button, "clicked", G_CALLBACK(delete_name_from_list), GTK_data);
+        g_signal_connect(GTK_data->group_manager->user_list_for_add, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry);
+        g_signal_connect(GTK_data->group_manager->user_list_for_delete, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry_2);
 
         //delete group
         g_signal_connect(small_button, "clicked", G_CALLBACK(group_delete), GTK_data);
@@ -784,10 +837,40 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
     pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 1100;  // default width
+    int window_height = 400; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.8;  // 80% of first monitor width
+        window_height = geometry.height * 0.7; // 70% of first monitor height
+    }
+
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1800, 800); //1800, 1000 було
+
+    gtk_window_set_default_size(GTK_WINDOW(window), window_width, window_height);
+
+    gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
     GTK_data->window = window;
 
     gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
@@ -799,8 +882,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_margin_bottom(main_grid, 20);
     gtk_widget_set_margin_start(main_grid, 20);
     gtk_widget_set_margin_end(main_grid, 20);
+
     gtk_widget_set_hexpand(main_grid, TRUE); // Make the main grid horizontally expandable
     gtk_widget_set_vexpand(main_grid, TRUE); // Make the main grid vertically expandable
+
+    gtk_grid_set_row_homogeneous(GTK_GRID(main_grid), FALSE);
+    gtk_grid_set_row_spacing(GTK_GRID(main_grid), 10);
 
     // --- Top Panel (Settings and Search Bar) ---
     GtkWidget *top_panel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -849,6 +936,9 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *sidebar_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(sidebar_background, "sidebar-background");
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_background, 0, 1, 1, 1);
+    
+    gtk_widget_set_hexpand(sidebar_background, FALSE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_background, TRUE); // Make the main grid vertically expandable
 
     GtkWidget *sidebar_scroll_users = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_users), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -856,11 +946,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_users);
     
     GtkWidget *sidebar_users = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar_users, 350, -1);
+    gtk_widget_set_size_request(sidebar_users, 300, -1);
     gtk_widget_add_css_class(sidebar_users, "sidebar");
     gtk_widget_set_hexpand(sidebar_users, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_users), sidebar_users);
-    // gtk_widget_set_visible(sidebar_users, FALSE);
+
+    // gtk_widget_set_visible(sidebar_scroll_users, FALSE);
+    // gtk_widget_set_hexpand(sidebar_users, TRUE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_users, TRUE); // Make the main grid vertically expandable
 
     GtkWidget *sidebar_scroll_groups = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -868,11 +961,13 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(sidebar_background), sidebar_scroll_groups);
 
     GtkWidget *sidebar_groups = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(sidebar_groups, 350, -1);
+    gtk_widget_set_size_request(sidebar_groups, 300, -1);
     gtk_widget_add_css_class(sidebar_groups, "sidebar");
     gtk_widget_set_hexpand(sidebar_groups, FALSE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(sidebar_scroll_groups), sidebar_groups);
     gtk_widget_set_visible(sidebar_scroll_groups, FALSE);
+    // gtk_widget_set_hexpand(sidebar_groups, TRUE); // Make the main grid horizontally expandable
+    gtk_widget_set_vexpand(sidebar_groups, TRUE); // Make the main grid vertically expandable
 
     // Add new group button
     GtkWidget *add_group_button = gtk_button_new_with_label("Add new group");
@@ -887,10 +982,12 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(sidebar_container, "sidebar-container");
 
     // Set fixed size
-    gtk_widget_set_size_request(sidebar_container, 400, 60);  // Width: 400px, Height: 60px
+    // gtk_widget_set_size_request(sidebar_container, 200, 60);  // Width: 400px, Height: 60px
 
     // Prevent expansion
     gtk_widget_set_hexpand(sidebar_container, FALSE);
+    // gtk_widget_set_vexpand(sidebar_container, FALSE);
+    // gtk_widget_set_hexpand(sidebar_container, TRUE);
     gtk_widget_set_vexpand(sidebar_container, FALSE);
 
     // Keep alignment
@@ -902,6 +999,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_margin_bottom(sidebar_container, 17);
     gtk_widget_set_margin_start(sidebar_container, 10);
     gtk_widget_set_margin_end(sidebar_container, 10);
+    // gtk_box_append(GTK_BOX(sidebar_background),sidebar_container);
     gtk_grid_attach(GTK_GRID(main_grid), sidebar_container, 0, 2, 1, 1);
 
     // Left button
@@ -939,19 +1037,20 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *chat_area_background = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_add_css_class(chat_area_background, "chat-area-background");
     gtk_grid_attach(GTK_GRID(main_grid), chat_area_background, 1, 1, 1, 1);
+    gtk_widget_set_vexpand(chat_area_background, TRUE);
 
     // Chat header
     GtkWidget *chat_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_widget_set_size_request(chat_header, -1, 60);
+    gtk_widget_set_size_request(chat_header, -1, 40);
     gtk_widget_add_css_class(chat_header, "chat-header");
 
     GtkWidget *avatar_circle = gtk_image_new_from_file("src/chat_visual/images/person.svg");
-    gtk_widget_set_size_request(avatar_circle, 60, 60);
+    gtk_widget_set_size_request(avatar_circle, 40, 40);
     //gtk_widget_add_css_class(avatar_circle, "avatar-circle");
     gtk_box_append(GTK_BOX(chat_header), avatar_circle);
 
     GtkWidget *avatar_circle_group = gtk_image_new_from_file("src/chat_visual/images/group.svg");
-    gtk_widget_set_size_request(avatar_circle_group, 60, 60);
+    gtk_widget_set_size_request(avatar_circle_group, 40, 40);
     gtk_widget_set_margin_start(avatar_circle_group, 10);
     gtk_widget_set_margin_end(avatar_circle_group, 10);
     gtk_widget_set_margin_top(avatar_circle_group, 9);
@@ -978,6 +1077,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *input_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); 
     gtk_widget_set_margin_top(input_container, 10);
+    // gtk_widget_set_size_request(input_container, 40, 40);
 
     GtkWidget *error_label = gtk_label_new("Too long message > 500");
     gtk_widget_add_css_class(error_label, "error-label");
@@ -999,7 +1099,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_entry_set_placeholder_text(GTK_ENTRY(GTK_data->message_entry), "Enter message");
     gtk_widget_set_hexpand(GTK_data->message_entry, TRUE);
     gtk_widget_add_css_class(GTK_data->message_entry, "message-entry");
-    gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), GTK_data->message_entry);
+    // gtk_overlay_set_child(GTK_OVERLAY(entry_overlay), GTK_data->message_entry);
     GTK_data->entry_overlay = entry_overlay;
 
     // Add smile button
@@ -1082,9 +1182,14 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *select_a_chat_label = gtk_label_new("Select a chat to start messaging");
     gtk_widget_add_css_class(select_a_chat_label, "placeholder-message");
-    gtk_grid_attach(GTK_GRID(main_grid), select_a_chat_label, 1, 1, 1, 1);
-    gtk_widget_set_size_request(select_a_chat_label, -1, 500);
+    gtk_grid_attach(GTK_GRID(main_grid), select_a_chat_label, 1, 1, 1, 2);
+    gtk_widget_set_size_request(select_a_chat_label, -1, 300);
+
+    gtk_widget_set_vexpand(chat_area_background, true);
     gtk_widget_set_hexpand(select_a_chat_label, true);
+    gtk_widget_set_vexpand(chat_area_background, true);
+
+
     gtk_widget_set_visible(select_a_chat_label, true);
     chat_manager->select_a_chat_label = select_a_chat_label;
     group_manager->select_a_chat_label = select_a_chat_label;

@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "password.h"
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 
 //#include <time.h>
 

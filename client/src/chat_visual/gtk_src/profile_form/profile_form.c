@@ -100,14 +100,43 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t *)user_data; 
     SSL *ssl = GTK_data->call_data->ssl;
 
+    int window_width = 800; // default width
+    int window_height = 500; // default height
+
+    if (!GTK_data->is_admin) {
+        window_width = 400;
+    }
+
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.7;  // 70% of first monitor width
+        window_height = geometry.height * 0.7; // 70% of first monitor height
+    }
+
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Profile Form");
-    if (GTK_data->is_admin) {
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);
-    } else {
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 500);
-    }
+
+    gtk_window_set_default_size(GTK_WINDOW(window), window_width, window_height);
+
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 
     GTK_data->profile_window = window;
@@ -120,15 +149,15 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
     gtk_widget_set_margin_start(main_box, 30);
     gtk_widget_set_margin_end(main_box, 30);
-    gtk_widget_set_margin_top(main_box, 20);
-    gtk_widget_set_margin_bottom(main_box, 20);
+    gtk_widget_set_margin_top(main_box, 10);
+    gtk_widget_set_margin_bottom(main_box, 10);
     gtk_widget_set_hexpand(main_box, TRUE);
     gtk_widget_set_vexpand(main_box, TRUE);
 
     // Create Stack for Carousel
     GtkWidget *carousel_stack = gtk_stack_new();
     gtk_stack_set_transition_type(GTK_STACK(carousel_stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
-    gtk_stack_set_transition_duration(GTK_STACK(carousel_stack), 300);
+    gtk_stack_set_transition_duration(GTK_STACK(carousel_stack), 250);
 
     // Header section
     GtkWidget *header_box = gtk_grid_new();
@@ -139,14 +168,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Left side of header (Back button and nickname)
     GtkWidget *header_left_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_widget_set_halign(header_left_box, GTK_ALIGN_START);
     gtk_widget_set_hexpand(header_left_box, TRUE);
 
     // Back button
     GtkWidget *back_button = gtk_button_new();
     gtk_widget_add_css_class(back_button, "back-button");
     GtkWidget *back_icon = gtk_image_new_from_file("src/chat_visual/images/back.svg");
-    gtk_widget_set_margin_bottom(back_button, 14);
     gtk_button_set_child(GTK_BUTTON(back_button), back_icon);
     g_signal_connect_swapped(back_button, "clicked", G_CALLBACK(gtk_window_close_wrapper), GTK_data);
 
@@ -154,7 +181,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *name_label = gtk_label_new(GTK_data->username ? GTK_data->username : "Unknown User");
     gtk_widget_add_css_class(name_label, "header-label");
     gtk_widget_set_size_request(name_label, 200, -1); // Fixed width for nickname
-    gtk_widget_set_margin_bottom(name_label, 12);
     gtk_label_set_ellipsize(GTK_LABEL(name_label), PANGO_ELLIPSIZE_END); // Ellipsize long nicknames
     GTK_data->profile_data->name_label = GTK_WIDGET(name_label);
 
@@ -168,13 +194,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
     if (GTK_data->is_admin) {
         // Right side of header (Navigation buttons and title)
         GtkWidget *header_right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-        gtk_widget_set_halign(header_right_box, GTK_ALIGN_END);
-        gtk_widget_add_css_class(header_right_box, "header_right_box");
+        gtk_widget_add_css_class(header_right_box, "header_right_box");   
+        gtk_widget_set_hexpand(header_right_box, true);
 
         // Set the same size as the "Create" button container
         gtk_widget_set_size_request(header_right_box, 400, 60);
-        gtk_widget_set_margin_bottom(header_right_box, 14);
-        gtk_widget_set_margin_end(header_right_box, 23);
+        gtk_widget_set_margin_start(header_right_box, 85);
 
         // Previous button
         GtkWidget *prev_button = gtk_button_new();
@@ -186,7 +211,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
         // Window title
         current_window_label = gtk_label_new("Create New User");
         gtk_widget_add_css_class(current_window_label, "window-title");
-        gtk_widget_set_size_request(current_window_label, 200, -1); // Fixed size for title
+        // gtk_widget_set_size_request(current_window_label, 200, -1); // Fixed size for title
+        gtk_widget_set_hexpand(current_window_label, true);
         gtk_label_set_xalign(GTK_LABEL(current_window_label), 0.5);
 
         // Next button
@@ -223,11 +249,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Left Box (Nickname and Password Sections)
     GtkWidget *left_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(left_box, TRUE);
-    gtk_widget_set_size_request(left_box, 300, -1);
+    gtk_widget_set_vexpand(left_box, TRUE);
+    gtk_widget_set_size_request(left_box, 250, -1);
 
     // Nickname Section
     GtkWidget *nickname_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(nickname_box, 300, -60);
+    gtk_widget_set_size_request(nickname_box, 150, -60);
     GtkWidget *nickname_label = gtk_label_new("Enter new nickname:");
     gtk_widget_set_halign(nickname_label, GTK_ALIGN_START);
 
@@ -243,7 +270,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *nickname_error_label = gtk_label_new("");
     gtk_widget_add_css_class(nickname_error_label, "error-label");
     gtk_widget_set_halign(nickname_error_label, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(nickname_error_label, 2); // Reduce margin from the top
+    gtk_widget_set_margin_top(nickname_error_label, 0); // Optional: Remove bottom margin
     gtk_widget_set_margin_bottom(nickname_error_label, 0); // Optional: Remove bottom margin
 
     // Store the error label in profile_data
@@ -252,7 +279,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *nickname_success_label = gtk_label_new("");
     gtk_widget_add_css_class(nickname_success_label, "success-label");
     gtk_widget_set_halign(nickname_success_label, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(nickname_success_label, 2); // Reduce margin from the top
+    gtk_widget_set_margin_top(nickname_success_label, 0); // Optional: Remove bottom margin
     gtk_widget_set_margin_bottom(nickname_success_label, 0); // Optional: Remove bottom margin
 
     GTK_data->profile_data->nickname_success_label = nickname_success_label;
@@ -268,18 +295,19 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(nickname_box), nickname_input_box);
     gtk_box_append(GTK_BOX(nickname_box), nickname_error_label); // Add error label to the box
     gtk_box_append(GTK_BOX(nickname_box), nickname_success_label);
+    gtk_widget_set_vexpand(nickname_box, TRUE);
 
     GtkWidget *nickname_separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);;
-    gtk_widget_set_size_request(nickname_separator, 300, 3);
+    gtk_widget_set_size_request(nickname_separator, 250, 3);
     gtk_widget_add_css_class(nickname_separator, "nickname-separator");
-    gtk_widget_set_margin_bottom(nickname_separator, 10);
+    gtk_widget_set_margin_bottom(nickname_separator, 5);
     gtk_box_append(GTK_BOX(nickname_box), nickname_separator);
 
     gtk_box_append(GTK_BOX(left_box), nickname_box);
 
     // Change Password Section
     GtkWidget *change_password_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_widget_set_size_request(change_password_box, 300, -1);
+    gtk_widget_set_size_request(change_password_box, 250, -1);
 
     // Old Password
     GtkWidget *old_password_label = gtk_label_new("Enter old password:");
@@ -288,7 +316,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Old password input with eye button
     GtkWidget *old_password_box = gtk_overlay_new();
     GtkWidget *old_password_entry = gtk_entry_new();
-    gtk_widget_set_size_request(old_password_box, 300, -1);
+    gtk_widget_set_size_request(old_password_box, 250, -1);
     gtk_entry_set_placeholder_text(GTK_ENTRY(old_password_entry), "Enter old password");
     gtk_entry_set_visibility(GTK_ENTRY(old_password_entry), FALSE);
     gtk_widget_add_css_class(old_password_entry, "password-entry");
@@ -367,6 +395,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(change_password_box), new_password_label_2);
     gtk_box_append(GTK_BOX(change_password_box), new_password_box_2);
     gtk_box_append(GTK_BOX(change_password_box), change_password_button);
+    // gtk_widget_set_vexpand(change_password_button, TRUE);
+
 
     // Assigning widgets to GTK_data->profile_data
     GTK_data->profile_data->old_password_entry = old_password_entry;
@@ -392,7 +422,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Right Box (Carousel Content)
     right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_hexpand(right_box, TRUE);
-    gtk_widget_set_size_request(right_box, 300, -1);
+    gtk_widget_set_size_request(right_box, 250, -1);
 
     // Create "Create" Window
     GtkWidget *create_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -412,7 +442,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *password_box = gtk_overlay_new();
     gtk_widget_set_halign(password_box, GTK_ALIGN_FILL);
     gtk_widget_set_valign(password_box, GTK_ALIGN_CENTER);
-    gtk_widget_set_margin_top(password_box, 10);
+    gtk_widget_set_margin_top(password_box, 5);
 
     // Password entry field
     GtkWidget *password_entry = gtk_entry_new();
@@ -448,6 +478,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(admin_check, "admin-checkbox");
     GtkWidget *create_button = gtk_button_new_with_label("Create");
     gtk_widget_add_css_class(create_button, "create-button");
+    gtk_widget_set_hexpand(create_button, TRUE);
 
     GtkWidget *create_error_label = gtk_label_new("");
     gtk_widget_add_css_class(create_error_label, "error-label");
@@ -583,6 +614,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_entry_set_placeholder_text(GTK_ENTRY(delete_entry), "Enter login");
     gtk_widget_add_css_class(delete_entry, "delete-entry");
     GTK_data->profile_data->delete_entry = delete_entry;
+    gtk_widget_set_hexpand(delete_entry, TRUE);
 
     GtkWidget *delete_button = gtk_button_new_with_label("Deactivation");
     gtk_widget_add_css_class(delete_button, "delete-button");

@@ -8,7 +8,7 @@ void str_overwrite_stdout(void) {
 void create_user_in_sidebar(int user_id, char* nickname, bool is_online, GTK_data_t *GTK_data, chat_data_t *new_chat) {
     g_hash_table_insert(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id), new_chat);
     GtkWidget *new_chat_item = create_chat_item(nickname, user_id, "None", "", is_online, FALSE, GTK_data);
-
+    // if(false) printf("%d,%s,%d\n", user_id, nickname,is_online);
     gtk_box_append(GTK_BOX(GTK_data->chat_manager->sidebar), new_chat_item);
 }
 

@@ -8,14 +8,14 @@ window {
     background-color: #D9D9D9; /* Adjust color as needed */
     border-radius: 40px;
     padding: 10px; /* Add padding to create spacing between background and sidebar */
-    margin: 30px;
+    margin: 20px;
     margin-right: 20px;
 }
 
 /* done*/
 .sidebar {
     background-color: #C9C9C9;
-    padding: 20px;
+    padding: 10px;
     box-shadow: none; /* Remove any box shadow */
     border: none; /* Remove any border if it's causing the shadow effect */
     border-radius: 25px;
@@ -91,8 +91,8 @@ button.settings-button {
     background-image: none; /* Remove any default background image */
     color: #333333; /* Icon color */
     border-radius: 50%; /* Circular shape */
-    min-width: 60px;
-    min-height: 60px;
+    min-width: 50px;
+    min-height: 50px;
     border: none;
     transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions */
     padding-top: 10px;
@@ -126,8 +126,8 @@ button.settings-group-button {
     background-image: none; /* Remove any default background image */
     color: #333333; /* Icon color */
     border-radius: 50%; /* Circular shape */
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 30px;
+    min-height: 30px;
     border: none;
     transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transitions */
     margin-top: 10px;
@@ -145,15 +145,15 @@ button.settings-group-button:active {
 }
 
 .settings-group-button img {
-    min-width: 24px; /* Icon size */
-    min-height: 24px;
+    min-width: 20px; /* Icon size */
+    min-height: 20px;
 }
 
 
 /* done*/
 .search-container {
     background-color: #D9D9D9; /* Light gray background */
-    padding: 10px 15px; /* Adjust for padding around the icon and input */
+    padding: 0px 15px; /* Adjust for padding around the icon and input */
     border-radius: 40px; /* Rounded corners */
     box-shadow: none; /* Remove any shadow */
     border: none; /* Remove border */
@@ -166,8 +166,8 @@ button.settings-group-button:active {
 /* Search icon styling inside the container */
 .search-icon{
     margin-right: 10px; /* Space between icon and text field */
-    min-width: 35px;
-    min-height: 35px;
+    min-width: 30px;
+    min-height: 30px;
 }
 
 
@@ -180,7 +180,7 @@ button.settings-group-button:active {
     font-size: 28px;
     color: #555555; /* Text color */
     min-width: 280px;
-    min-height: 30px;
+    min-height: 40px;
     margin-top: 10px;
 }
 
@@ -201,7 +201,7 @@ button.settings-group-button:active {
     font-size: 16px;
     padding-top: 10px; /* Adjust padding for vertical space */
     padding-bottom: 10px; /* Adjust as needed */
-    min-height: 40px; /* Minimum height for the button */
+    min-height: 30px; /* Minimum height for the button */
     min-width: 200px;
     border-radius: 20px;
     margin-top: 20px;
@@ -219,7 +219,7 @@ button.add-group-button {
     padding: 15px;
     border-radius: 40px;
     min-width: 180px;
-    min-height: 40px;
+    min-height: 30px;
     margin-top: 20px;
     border: none;
     transition: all 0.3s ease; /* Added transition for all properties */
@@ -294,7 +294,7 @@ button.add-group-button > label {
 .chat-area-background {
     background-color: #D9D9D9; /* Light gray */
     border-radius: 20px;
-    padding: 15px;
+    padding: 10px;
     margin: 10px;
 }
 
@@ -610,6 +610,7 @@ button.delete-button-popover > label{
 .sticker-popover scrollbar slider:active {
     background-color: #888888;
 }
+
 /* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE */
 
 
@@ -733,7 +734,7 @@ button.next-button {
     padding: 12px 16px;
     margin: 5px 0;
     min-height: 20px;
-    min-width: 250px;
+    min-width: 150px;
     color: black;
     font-size: 16px;
     margin-top: 10px;
@@ -764,7 +765,6 @@ button.next-button {
 .nickname-separator {
     background-color: #cccccc; /* Light gray color */
     min-height: 3px; /* Thickness of the separator */
-    margin-bottom: 10px;
     border-radius: 5px; /* Slightly rounded edges */
     border: none;
 }
@@ -803,7 +803,6 @@ button.next-button {
     min-height: 20px;
     font-size: 16px;
     transition: background-color 0.3s ease, transform 0.1s ease;
-    margin-bottom: 10px;
 }
 
 .change-password-button:hover {
