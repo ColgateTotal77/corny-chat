@@ -1,25 +1,6 @@
 #include "../inc/client.h"
 #include "../inc/password.h"
 
-// bool check_password(char *password) { //Валідація паролю
-//     if (password == NULL) { //Перевірка на порожній рядок
-//         return false;
-//     }
-
-//     int password_length = mx_strlen(password);
-
-//     if (password_length < 8 || password_length > 20) { //Перевірка на довжину, яка має бути більше 7 і менше 20
-//         return false;
-//     }
-
-//     for (int i = 0; i < password_length; i++) {
-//         if (mx_check_space(password[i]) || password[i] < 33 || password[i] > 126) { //Перевірка пароля на невалідні символи по ASCII, тут дозволені від '!' до '~'
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-
 char* get_name(void) {
     printf("Name must be less than 30 and more than 1 characters.\n");
     printf("Please enter your name: ");
@@ -47,11 +28,7 @@ char* get_password(void) {
     fgets(password, 22, stdin);
     str_del_newline(password, strlen(password));
     int password_length = strlen(password);
-    // if (!check_password(password)) {
-	// 	printf("Invalid input. Password is incorrest!.\n");
-	// 	exit(EXIT_FAILURE);
-	// }
-    // printf("%d", password_length);
+
     char *password_buffer = (char*)malloc(password_length * sizeof(char) + 1);
     password_buffer[password_length] = '\0';
     strncpy(password_buffer, password, password_length);

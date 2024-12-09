@@ -8,10 +8,8 @@ void* reconnect_handler(void* arg) {
     sleep(3);
     bool session_expired = false;
     SSL* new_ssl = NULL;
-    // *(GTK_data->stop_reconnect) = true;
     pthread_mutex_lock(&GTK_data->pthread_mutex);
     printf("Trying to reconnect\n");
-    // gtk_widget_set_visible(GTK_data->wait, true);
 
     while (true) {
 
@@ -21,8 +19,6 @@ void* reconnect_handler(void* arg) {
             break;
         }
     }
-    //new_ssl!=NULL && session_expired = false - successful
-    //session_expired = true close all open login
     if (new_ssl == NULL && session_expired == false) {
         printf("SSL = NULL\nServer disconnected!\n");
         if(session_id){
@@ -30,23 +26,18 @@ void* reconnect_handler(void* arg) {
             session_id = NULL;
         }
         *(call_data->stop_flag) = true;
-        // break;
-
     }
 
     else if(session_expired == true && new_ssl == NULL) {
         call_data->ssl = setup_new_connection(call_data->host, call_data->port);
         on_main_window_destroy(GTK_data);
-        //g_signal_emit_by_name(GTK_data->window, "destroy");
         gtk_window_destroy(GTK_WINDOW(GTK_data->wait));
-        //sleep(3);
         start_login(call_data);
     }
     else{
         printf("\nConnection recover!\n");
         SSL_free(call_data->ssl);
         call_data->ssl = new_ssl;
-        // continue;
     }
 
     printf("Stop thread\n");

@@ -15,8 +15,6 @@ SSL_CTX *init_ssl_context(void) {
         exit(1);
     }
 
-    // Set minimum TLS version
-    //SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
     return ctx;
 }
 
@@ -35,9 +33,6 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "usage: %s <hostname> <port_number>\n", argv[0]);
         return EXIT_FAILURE;
     }
-
-
-    //cJSON *json_name_and_password = get_name_password(); //закоментить
     
     int port = atoi(argv[2]);
 
@@ -64,17 +59,12 @@ int main(int argc, char* argv[]) {
     
     call_data->host = argv[1];
     call_data->port = atoi(argv[2]);
-    // strcpy(call_data->name, name_json->valuestring);
-    // cJSON_Delete(json_name_and_password);
 
     start_login(call_data);
-    // GTK_start(call_data);
 
     while (1) {
         if (stop_flag) {
-            //pthread_join(send_msg_thread, NULL);
             printf("\nBye\n");
-            // SSL_shutdown(ssl);//Закриття SSL з'єднання
             SSL_free(ssl);
             break;
         }

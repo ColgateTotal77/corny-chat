@@ -4,7 +4,7 @@
 char *wrap_text_to_width(const char *message_text, int max_width, PangoContext *context) {
     // Create a PangoLayout to measure and wrap the text
     PangoLayout *layout = pango_layout_new(context);
-    pango_layout_set_width(layout, max_width * PANGO_SCALE); // Set max width in Pango units
+    pango_layout_set_width(layout, max_width * PANGO_SCALE);
     pango_layout_set_text(layout, message_text, -1);
     pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
 

@@ -47,7 +47,7 @@ void on_change_password_button_clicked(GtkButton *button, gpointer user_data) {
     change_password(GTK_data->call_data->ssl, (char *)old_password, (char *)new_password_1);
 
     // Simulated response for success (Replace with server response handling)
-    bool success = true; // Replace with actual server response
+    bool success = true;
 
     if (success) {
         gtk_label_set_text(GTK_LABEL(password_success_label), "Password changed successfully.");

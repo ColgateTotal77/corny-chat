@@ -40,8 +40,7 @@ void change_message(GtkWidget *widget, gpointer user_data) {
             // Check if the message is empty
             if (strlen(message_text) == 0) {
 
-
-                return; // Do not proceed with updating the message
+                return;
             }
 
             gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
@@ -153,12 +152,10 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
                  bool changed, chat_manager_t *manager, SSL* ssl, 
                  int msg_id, chat_data_t *chat, char *nickname) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    //gtk_widget_add_css_class(message_box, "message-bubble");
 
     // Usage example
     GtkWidget *message_label = gtk_label_new(NULL);
     prepare_message_label(message_label, message_text);
-    // gtk_widget_set_valign(message_label, GTK_ALIGN_CENTER);
 
     GtkWidget *time_label = gtk_label_new(time_text);
     gtk_widget_add_css_class(time_label, "message-time");
@@ -218,13 +215,9 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
         gtk_widget_set_halign(edited_label, GTK_ALIGN_START);
     }
     
-    // Prepend message_box to the top of the container
-    // After adding the message to the container
     gtk_box_append(GTK_BOX(chat->messages_container), alignment_box);
     if(is_sent){
-    // Force a layout update and scroll
-    gtk_widget_queue_resize(chat->messages_container);
-    scroll_to_bottom(chat->messages_container);
+        gtk_widget_queue_resize(chat->messages_container);
+        scroll_to_bottom(chat->messages_container);
     }
 }
-

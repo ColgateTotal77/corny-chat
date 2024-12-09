@@ -14,17 +14,8 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     chat_manager_t *current_manager = is_group ? GTK_data->group_manager : GTK_data->chat_manager;
     chat_manager_t *other_manager = !is_group ? GTK_data->group_manager : GTK_data->chat_manager;
 
-    // // Check if current_manager is NULL
-    // if (current_manager == NULL) {
-    //     printf("ERROR: Current manager is NULL\n");
-    //     return;
-    // }
-
     if(current_manager->active_chat == NULL) {
         if(current_manager->select_a_chat_label && other_manager->select_a_chat_label){
-            // gtk_widget_unparent(current_manager->select_a_chat_label); // відв'язили
-            // current_manager->select_a_chat_label = NULL;
-            // other_manager->select_a_chat_label = NULL;
             gtk_widget_set_visible(current_manager->select_a_chat_label, false);
         } else{
             printf("ERROR: current_manager->select_a_chat_label && other_manager->select_a_chat_label not available\n");
@@ -76,35 +67,14 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         current_manager->active_chat->this_chat = false;
     }
 
-    // g_print("DEBUG: select_a_chat_label = %p\n", (void *)current_manager->select_a_chat_label);
-
-    // if (current_manager->select_a_chat_label != NULL) {
-    //     g_print("DEBUG: select_a_chat_label is not NULL\n");
-    //     if (!GTK_IS_WIDGET(current_manager->select_a_chat_label)) {
-    //         printf("ERROR: select_a_chat_label is not a valid GTK widget\n");
-    //         return;
-    //     }
-    // }
-
-    // // Handle initial chat setup
-    // if (GTK_IS_WIDGET(current_manager->select_a_chat_label)) {
-    //     g_print("DEBUG: select_a_chat_label is a valid widget\n");
-    //     gtk_widget_unparent(current_manager->select_a_chat_label);
-    //     current_manager->select_a_chat_label = NULL;
-    // } else {
-    //     printf("ERROR: select_a_chat_label is not a valid widget\n");
-    // }
 
     if (current_manager->input_box && GTK_IS_WIDGET(current_manager->input_box)) {
-        // printf("2s\n");
         gtk_widget_set_visible(current_manager->input_box, true);
     }
     if (current_manager->chat_area_background && GTK_IS_WIDGET(current_manager->chat_area_background)) {
-        // printf("3s\n");
         gtk_widget_set_visible(current_manager->chat_area_background, true);
     }
     if (current_manager->chat_header && GTK_IS_WIDGET(current_manager->chat_header)) {
-        // printf("4s\n");
         gtk_widget_set_visible(current_manager->chat_header, true);
     }
 
@@ -200,7 +170,6 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         gtk_widget_set_visible(g_object_get_data(G_OBJECT(GTK_data->message_entry), "cancel_button"), true);
     }
 
-    // gtk_widget_set_visible(GTK_data->message_entry, true);
     gtk_widget_grab_focus(GTK_data->message_entry);
 
     if(new_chat->is_group) {

@@ -2,7 +2,7 @@
 
 // Callback to handle row selection and set the email in the delete input field
 void on_login_row_selected(GtkListBox *list_box, GtkListBoxRow *row, gpointer user_data) {
-    (void)list_box; // Suppress unused parameter warning
+    (void)list_box;
 
     // Use delete_entry instead of login_entry
     GtkEntry *delete_entry = GTK_ENTRY(user_data);

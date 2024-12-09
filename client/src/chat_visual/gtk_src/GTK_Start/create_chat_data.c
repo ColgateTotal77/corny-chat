@@ -1,7 +1,6 @@
 #include "GTK.h"
 
 chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_data_t *scroll_data, int owner_id) {
-    //(void)chat_area_background;
     chat_data_t *chat_data = g_new(chat_data_t, 1);
 
     chat_data->contact_name = g_strdup(contact_name);
@@ -12,7 +11,6 @@ chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_d
     chat_data->owner_id = owner_id;
     
     gtk_widget_add_css_class(chat_data->messages_container_wrapper, "messages-container");
-    // gtk_box_append(GTK_BOX(chat_area_background), chat_data->messages_container_wrapper);
 
     // Important: Ref the widgets to prevent destruction when removed from parent
     g_object_ref(chat_data->messages_container_wrapper);
@@ -23,4 +21,3 @@ chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_d
     }
     return chat_data;
 }
-
