@@ -146,6 +146,9 @@ typedef struct {
 
     pthread_t reconnect_thread;
     bool *stop_reconnect;
+    GtkWidget *wait;
+    GtkWidget **entries;
+    bool reconnect_flag;
 } GTK_data_t;
 
 //extern GtkWidget *messages_container;
@@ -166,6 +169,10 @@ message_data_t* create_message_data (int message_id, chat_data_t* chat);
 void on_message_edit(GtkGestureClick *gesture);
 void change_message_from_others(chat_data_t *chat, int msg_id, char* new_message);
 void delete_message_from_others(chat_data_t *chat, int msg_id);
+GtkWidget *waiting_window(GTK_data_t *GTK_data);
+gboolean waiting_window_wrapper(gpointer user_data);
+GtkWidget *waiting_window(GTK_data_t *GTK_data);
+void on_main_window_destroy(GTK_data_t *GTK_data);
 
 void GTK_start(GTK_data_t *GTK_data);
 void input_saved_data(GtkWidget *login_entry, GtkWidget *password_entry, GtkWidget *remember_me_check);

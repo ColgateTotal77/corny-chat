@@ -55,7 +55,7 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
         free(GTK_data);
         GTK_data = NULL;
         g_free(entries);
-        printf("\nclosing the window\n");
+        printf("\nclosing the login window\n");
         gtk_window_destroy(window);
     }
 }
