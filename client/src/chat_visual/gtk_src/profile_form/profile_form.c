@@ -100,14 +100,43 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GTK_data_t *GTK_data = (GTK_data_t *)user_data; 
     SSL *ssl = GTK_data->call_data->ssl;
 
+    int window_width = 800; // default width
+    int window_height = 500; // default height
+
+    if (!GTK_data->is_admin) {
+        window_width = 400;
+    }
+
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.7;  // 70% of first monitor width
+        window_height = geometry.height * 0.7; // 70% of first monitor height
+    }
+
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Profile Form");
-    if (GTK_data->is_admin) {
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);
-    } else {
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 500);
-    }
+
+    gtk_window_set_default_size(GTK_WINDOW(window), window_width, window_height);
+
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 
     GTK_data->profile_window = window;

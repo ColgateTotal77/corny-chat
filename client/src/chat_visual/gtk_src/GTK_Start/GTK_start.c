@@ -235,10 +235,38 @@ void on_add_group_button_clicked(GtkWidget *widget, gpointer data) {
     (void)widget;
     GTK_data_t *GTK_data = (GTK_data_t *)data;
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 300;  // default width
+    int window_height = 150; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.2;  // 20% of first monitor width
+    }
+    
+
     // Create a new dialog window
     GtkWidget *dialog = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(dialog), "Create New Group");
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), window_width, window_height);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
 
     // Make dialog a transient window of the main window, but still allow independent movement
     if (GTK_data && GTK_data->window) {
@@ -409,10 +437,37 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
     GTK_data_t *GTK_data = (GTK_data_t*)user_data;
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 400;  // default width
+    int window_height = 300; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.4;  // 40% of first monitor width
+        window_height = geometry.height * 0.5; // 50% of first monitor height
+    }
+
     // Create a new window
     GtkWidget *settings_window = gtk_window_new();
     gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
-    gtk_window_set_default_size(GTK_WINDOW(settings_window), 400, 300);
+    gtk_window_set_default_size(GTK_WINDOW(settings_window), window_width, window_height);
 
     // Set the new window as transient for the main window
     if (GTK_data && GTK_data->window) {
@@ -713,10 +768,39 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
     pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
+    // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 1100;  // default width
+    int window_height = 400; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.8;  // 80% of first monitor width
+        window_height = geometry.height * 0.7; // 70% of first monitor height
+    }
+
     // Create the main window
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Chat Application");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1000, 400); //1800, 800 було
+
+    gtk_window_set_default_size(GTK_WINDOW(window), window_width, window_height);
+
     gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
     GTK_data->window = window;
 

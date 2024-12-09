@@ -139,9 +139,36 @@ void on_activate(GtkApplication *app, gpointer user_data) {
     pthread_mutex_init(&GTK_data->pthread_mutex, NULL);
     pthread_cond_init(&GTK_data->pthread_cond, NULL);
 
+        // Get the default display
+    GdkDisplay *display = gdk_display_get_default();
+
+    // Get the list of monitors
+    GListModel *monitors = gdk_display_get_monitors(display);
+    guint num_monitors = g_list_model_get_n_items(monitors);
+
+    // Explicitly get the first monitor (index 0)
+    GdkMonitor *first_monitor = NULL;
+    if (num_monitors > 0) {
+        first_monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    // Fallback to default window size if monitor retrieval fails
+    int window_width = 400;  // default width
+    int window_height = 300; // default height
+
+    if (first_monitor) {
+        // Get first monitor geometry
+        GdkRectangle geometry;
+        gdk_monitor_get_geometry(first_monitor, &geometry);
+        
+        // Calculate window size based on FIRST monitor geometry
+        window_width = geometry.width * 0.3;  // 30% of first monitor width
+        window_height = geometry.height * 0.4; // 40% of first monitor height
+    }
+
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Login");
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+    gtk_window_set_default_size(GTK_WINDOW(window), window_width, window_height);
 
     // To center the window in GTK4
     gtk_window_set_transient_for(GTK_WINDOW(window), NULL);
