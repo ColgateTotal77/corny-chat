@@ -697,6 +697,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *activate_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(activate_entry), "Enter login");
     gtk_widget_add_css_class(activate_entry, "activate-entry");
+    gtk_widget_set_hexpand(activate_entry, TRUE);
     GTK_data->profile_data->activate_entry = activate_entry;
 
     GtkWidget *activate_button = gtk_button_new_with_label("Activation");
