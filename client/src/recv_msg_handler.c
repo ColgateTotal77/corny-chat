@@ -883,7 +883,7 @@ void* recv_msg_handler(void* arg) {
                 case 62: {
                     int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
-                    gtk_widget_set_visible(chat->button, false); //Це заплатка, потрібно зробити нормально!!!!
+                    gtk_widget_set_visible(chat->button, false); 
                     gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
                     gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
                     gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
@@ -909,6 +909,8 @@ void* recv_msg_handler(void* arg) {
             pthread_mutex_lock(&GTK_data->pthread_mutex);
 
             printf("WAIT\n");
+            // GTK_data->wait = waiting_window(GTK_data->window);
+            g_idle_add(waiting_window_wrapper, GTK_data);
             // Wait for the login response
             pthread_cond_wait(&GTK_data->pthread_cond, &GTK_data->pthread_mutex);
             pthread_mutex_unlock(&GTK_data->pthread_mutex);      

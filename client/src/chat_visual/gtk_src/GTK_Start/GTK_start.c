@@ -165,7 +165,32 @@ void switch_between_groups_chats(GtkWidget *widget, gpointer user_data) {
 
 }
 
-static void on_window_destroy(GtkWindow *window, gpointer user_data) {
+void on_main_window_destroy(GTK_data_t *GTK_data) {
+    printf("\nclosing the main window\n");
+
+    GList *user_list = g_hash_table_get_keys(GTK_data->group_manager->chats);
+    GList *iter;
+
+    for (iter = user_list; iter != NULL; iter = iter->next) {
+        gpointer key = iter->data;
+        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->group_manager->chats, key);
+        g_object_unref(user_chat->message_entry);
+        g_object_unref(user_chat->user_list_for_add);
+        g_object_unref(user_chat->user_list_for_delete);
+    }
+
+    user_list = g_hash_table_get_keys(GTK_data->chat_manager->chats);
+
+    for (iter = user_list; iter != NULL; iter = iter->next) {
+        gpointer key = iter->data;
+        chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
+        g_object_unref(user_chat->message_entry);
+    }
+    g_list_free(user_list);
+    gtk_window_destroy(GTK_WINDOW(GTK_data->window));
+}
+
+static gboolean on_delete_event(GtkWindow *window, gpointer user_data) {
     GtkWidget **entries = (GtkWidget **)user_data;
     GTK_data_t *GTK_data = (GTK_data_t *)entries[0];
     (void)window;
@@ -187,17 +212,15 @@ static void on_window_destroy(GtkWindow *window, gpointer user_data) {
         gpointer key = iter->data;
         chat_data_t *user_chat = g_hash_table_lookup(GTK_data->chat_manager->chats, key);
         g_object_unref(user_chat->message_entry);
-
     }
     g_list_free(user_list);
-    
-    // send_exit_command(GTK_data->call_data->ssl);
-    // *(GTK_data->call_data->stop_flag) = true;
-    // free(GTK_data); //Потрібно продивитися яку виділену пам'ять мы тримаемо у GTK_data і теж її очистити!!!!!!!
-    // GTK_data = NULL;
-    // g_free(entries); 
-    printf("\nclosing the main window\n");
-    //gtk_window_close(window);
+    send_exit_command(GTK_data->call_data->ssl);
+    *(GTK_data->call_data->stop_flag) = true;
+    free(GTK_data);
+    GTK_data = NULL;
+    g_free(entries); 
+    printf("\nclosing the main window by user!!! \n");
+    return false;
 }
 
 static void on_create_group_clicked(GtkWidget *button, gpointer user_data) {
@@ -894,11 +917,16 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     entries[3] = sidebar_scroll_users;
     entries[4] = center_label;
 
+    GTK_data->entries = entries;
+
     // Buttons connects functions
     g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries);
     g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_groups_chats), entries); 
-    g_signal_connect(settings_group_button, "clicked", G_CALLBACK(on_settings_group_button_clicked), user_data);   
-    g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
+    g_signal_connect(settings_group_button, "clicked", G_CALLBACK(on_settings_group_button_clicked), user_data); 
+    
+    g_signal_connect(window, "close-request", G_CALLBACK(on_delete_event), entries);
+    //g_signal_connect(window, "destroy", G_CALLBACK(on_window_destroy), entries);
+
     // Layout setup
     gtk_grid_attach(GTK_GRID(main_grid), chat_header, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(main_grid), input_container, 1, 2, 1, 1);
@@ -916,7 +944,8 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, (void*)GTK_data) != 0) {
         printf("ERROR: pthread\n");
     }
-
+    //GTK_data->wait = waiting_window(window);
+    // gtk_widget_set_visible(GTK_data->wait, false);
 }
 
 void GTK_start(GTK_data_t *GTK_data) {

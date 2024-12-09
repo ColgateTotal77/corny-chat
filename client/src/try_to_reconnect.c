@@ -95,7 +95,7 @@ SSL *try_to_reconnect(char *session_id, char *host, int port, bool *session_expi
     SSL *new_ssl = NULL;
 
 //  while (new_ssl == NULL && stoper) {
-        printf("Trying to reconnect\n");
+        // printf("Trying to reconnect\n");
         // count += 1;
         int socket = setup_client_socket_with_silent_errors(host, port);
         if (socket < 0) {
