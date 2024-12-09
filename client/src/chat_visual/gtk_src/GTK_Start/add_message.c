@@ -32,10 +32,17 @@ void change_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
 
     message_data_t *message_data = (message_data_t*)user_data;
-    if(*(message_data->this_chat)) {
+    if (*(message_data->this_chat)) {
         if (message_data->own_is_editing) {
             GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
             const char *message_text = gtk_entry_buffer_get_text(buffer);
+
+            // Check if the message is empty
+            if (strlen(message_text) == 0) {
+
+
+                return; // Do not proceed with updating the message
+            }
 
             gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
             if (!gtk_widget_get_visible(message_data->edited_label)) {
@@ -49,9 +56,10 @@ void change_message(GtkWidget *widget, gpointer user_data) {
             gtk_entry_buffer_set_text(buffer, "", -1);
         }
         g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
-        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
+        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);
     }
 }
+
 
 void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
