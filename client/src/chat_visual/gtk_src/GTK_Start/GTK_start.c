@@ -638,14 +638,14 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         g_signal_connect(GTK_data->group_manager->user_list_for_add, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry);
         g_signal_connect(GTK_data->group_manager->user_list_for_delete, "row-selected", G_CALLBACK(on_group_user_row_selected), name_entry_2);
 
-        //delete group
-        g_signal_connect(small_button, "clicked", G_CALLBACK(group_delete), GTK_data);
-        //Controller:
-        g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
-        g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
+    //delete group
+    g_signal_connect(small_button, "clicked", G_CALLBACK(group_delete), GTK_data);
+    //Controller:
+    g_signal_connect(left_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
+    g_signal_connect(right_button, "clicked", G_CALLBACK(switch_between_settings_in_group), entries);
 
-        // Show the new window
-        gtk_window_present(GTK_WINDOW(settings_window));
+    // Show the new window
+    gtk_window_present(GTK_WINDOW(settings_window));
 
         // Connect the destroy signal to close the window properly
         g_signal_connect(settings_window, "destroy", G_CALLBACK(gtk_window_destroy), NULL);
@@ -1080,10 +1080,10 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_child(GTK_WINDOW(window), main_grid);
     gtk_window_present(GTK_WINDOW(window));
     
-    pthread_t send_msg_thread;
-    if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)GTK_data) != 0) {
-        printf("ERROR: pthread\n");
-    }
+    // pthread_t send_msg_thread;
+    // if (pthread_create(&send_msg_thread, NULL, &send_msg_handler, (void*)GTK_data) != 0) {
+    //     printf("ERROR: pthread\n");
+    // }
 
     pthread_t recv_msg_thread;
     if (pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, (void*)GTK_data) != 0) {

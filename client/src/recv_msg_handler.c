@@ -333,6 +333,8 @@ void* recv_msg_handler(void* arg) {
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                         // Extract the login string from the JSON
                         char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
+                        int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                        chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
 
                         GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->deactivated_list));
                         while (child != NULL) {
@@ -342,6 +344,9 @@ void* recv_msg_handler(void* arg) {
                             if (strcmp(current_login, login) == 0) {
                                 // Remove the child row from the list box
                                 gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), child);
+
+                                gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/person.svg");
+                                chat->is_active = true;
 
                                 // Add the login to admin_login_list
                                 GtkWidget *row = gtk_list_box_row_new();
@@ -372,6 +377,9 @@ void* recv_msg_handler(void* arg) {
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                         char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
 
+                        int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                        chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
+
                         // Case 1: Remove from login_list
                         GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
                         while (child != NULL) {
@@ -389,6 +397,9 @@ void* recv_msg_handler(void* arg) {
                             const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
                             if (strcmp(current_login, login) == 0) {
                                 gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), child);
+
+                                gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/RIP.svg");
+                                chat->is_active = false;
 
                                 GtkWidget *row = gtk_list_box_row_new();
                                 GtkWidget *label = gtk_label_new(login);
@@ -846,8 +857,8 @@ void* recv_msg_handler(void* arg) {
                     gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
                     gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
                     gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
-                }
                     break;
+                }     
                 case 57: {
                     if(!cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint) {
                         int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
@@ -880,6 +891,20 @@ void* recv_msg_handler(void* arg) {
                     }
                     break;
                 }
+                case 60: {
+                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
+                    gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/person.svg");
+                    chat->is_active = true;
+                    break;
+                }
+                case 61: {
+                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
+                    gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/RIP.svg");
+                    chat->is_active = false;
+                    break;
+                }
                 case 62: {
                     int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
                     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
@@ -887,6 +912,7 @@ void* recv_msg_handler(void* arg) {
                     gtk_widget_set_visible(GTK_data->group_manager->chat_area_background, false);
                     gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
                     gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
+                    break;
                 }
                 case 63: {
                     int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
