@@ -37,6 +37,9 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_widget_set_hexpand(chat->message_entry, TRUE);
     gtk_widget_add_css_class(chat->message_entry, "message-entry");
     g_object_ref(chat->message_entry); 
+    if (!chat->is_active) {
+        gtk_widget_set_visible(chat->message_entry, false);
+    }
 
     GtkWidget *cancel_button = gtk_button_new_with_label("X");
     gtk_widget_add_css_class(cancel_button, "search-erase-button");
