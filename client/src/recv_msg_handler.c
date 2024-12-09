@@ -888,55 +888,58 @@ void* recv_msg_handler(void* arg) {
                     gtk_widget_set_visible(GTK_data->group_manager->chat_header, false);
                     gtk_widget_set_visible(GTK_data->group_manager->input_box, false);
                 }
-                // case 63: {
-                //     int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
-                //     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
-                //     int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
-                //     char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_nickname")->valuestring;
-                //     GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_add));
-                //     while (child != NULL) {
-                //         const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+                case 63: {
+                    int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_nickname")->valuestring;
+                    GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_delete));
+                    while (child != NULL) {
+                        const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
 
-                //         if (strcmp(current_nickname, nickname) == 0) {
-                //             GtkWidget *row = gtk_list_box_row_new();
-                //             GtkWidget *label = gtk_label_new(current_nickname);
-                //             gtk_widget_set_halign(label, GTK_ALIGN_START);
-                //             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
-                //             gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_delete), row);
-                //             g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
-                //             g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
+                        if (strcmp(current_nickname, nickname) == 0) {
+
+                            GtkWidget *row = gtk_list_box_row_new();
+                            GtkWidget *label = gtk_label_new(current_nickname);
+                            gtk_widget_set_halign(label, GTK_ALIGN_START);
+                            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                            gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_add), row);
+                            g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                            g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
                             
-                //             gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_add), child);
-                //             break;
-                //         }
-                //         child = gtk_widget_get_next_sibling(child);
-                //     }
-                // }
-                // case 64: {
-                //     int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
-                //     chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
-                //     int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
-                //     char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
-                //     GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_delete));
-                //     while (child != NULL) {
-                //         const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
+                            gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_delete), child);
+                            break;
+                        }
+                        child = gtk_widget_get_next_sibling(child);
+                    }
+                    break;
+                }
+                case 64: {
+                    int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
+                    chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+                    int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
+                    char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
+                    GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(chat->user_list_for_add));
+                    while (child != NULL) {
+                        const char *current_nickname = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
 
-                //         if (strcmp(current_nickname, nickname) == 0) {
+                        if (strcmp(current_nickname, nickname) == 0) {
 
-                //             GtkWidget *row = gtk_list_box_row_new();
-                //             GtkWidget *label = gtk_label_new(current_nickname);
-                //             gtk_widget_set_halign(label, GTK_ALIGN_START);
-                //             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
-                //             gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_add), row);
-                //             g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
-                //             g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
+                            GtkWidget *row = gtk_list_box_row_new();
+                            GtkWidget *label = gtk_label_new(nickname);
+                            gtk_widget_set_halign(label, GTK_ALIGN_START);
+                            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                            gtk_list_box_append(GTK_LIST_BOX(chat->user_list_for_delete), row);
+                            g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                            g_object_set_data(G_OBJECT(label), "chat_id", GINT_TO_POINTER(chat_id));
                             
-                //             gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_delete), child);
-                //             break;
-                //         }
-                //         child = gtk_widget_get_next_sibling(child);
-                //     }
-                // }
+                            gtk_list_box_remove(GTK_LIST_BOX(chat->user_list_for_add), child);
+                            break;
+                        }
+                        child = gtk_widget_get_next_sibling(child);
+                    }
+                }
+                break;
             }
             cJSON_Delete(parsed_json);
             free(message);
