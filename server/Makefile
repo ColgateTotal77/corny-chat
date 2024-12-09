@@ -2,7 +2,7 @@
 CC = clang
 
 CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -D_POSIX_C_SOURCE
-LDFLAGS = -lssl -lcrypto -lsqlite3
+LDFLAGS = -lssl -lcrypto
 
 # Директории заголовков и библиотеки
 HEADERFILES = ./inc
@@ -33,7 +33,7 @@ all: keys $(SERVER) #$(CLIENT)
 keys: $(KEY) $(CERT)
 
 $(SERVER): $(OBJFILES)
-	$(CC) $(CFLAGS) -pthread $(OBJFILES) -o $(SERVER) $(LIBRARY) $(JSON_C) $(LDFLAGS)
+	$(CC) $(CFLAGS) -pthread $(OBJFILES) -o $(SERVER) $(LIBRARY) $(JSON_C) $(LDFLAGS) ./sqlite_lib/sqlite3.c
 
 $(KEY):
 	openssl genrsa -out $(KEY) 2048
@@ -46,10 +46,10 @@ $(CERT): $(KEY)
 # Правило для создания объектных файлов и нужных подкаталогов
 $(OBJ)/%.o: $(SRC)/%.c $(PCH)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ -c $< -include-pch ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES)
+	$(CC) $(CFLAGS) -o $@ -c $< -include-pch ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES) -I ./sqlite_lib
 
 $(PCH):
-	$(CC) $(CFLAGS) -x c-header ./inc/pch.h -o ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES)
+	$(CC) $(CFLAGS) -x c-header ./inc/pch.h -o ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES) -I ./sqlite_lib
 
 # Удаление всех файлов
 uninstall: clean
