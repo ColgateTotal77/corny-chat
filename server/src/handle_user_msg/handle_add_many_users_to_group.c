@@ -29,9 +29,10 @@ bool get_int_arr_from_json(call_data_t* call_data, cJSON *json, chat_t *chat,
     return true;
 }
 
-static cJSON* user_was_added_to_group_notification(int user_id, char *login, char *nickname) {
+static cJSON* user_was_added_to_group_notification(int chat_id, int user_id, char *login, char *nickname) {
     cJSON *json = cJSON_CreateObject();
     cJSON_AddNumberToObject(json, "event_code", USER_WAS_ADDED_TO_GROUP);
+    cJSON_AddNumberToObject(json, "chat_id", chat_id);
     cJSON_AddNumberToObject(json, "user_id", user_id);
     cJSON_AddStringToObject(json, "login", login);
     cJSON_AddStringToObject(json, "nickname", nickname);
@@ -137,6 +138,7 @@ cJSON *handle_add_many_users_to_group(call_data_t *call_data, cJSON *json) {
         pthread_mutex_lock(&client_data->user_data->mutex);
 
         cJSON *new_user_was_added_notif = user_was_added_to_group_notification(
+            chat->chat_id,
             client_data->user_data->user_id,
             client_data->user_data->login,
             client_data->user_data->nickname
