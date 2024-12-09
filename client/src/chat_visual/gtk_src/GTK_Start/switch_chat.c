@@ -189,7 +189,6 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         gtk_widget_set_visible(g_object_get_data(G_OBJECT(GTK_data->message_entry), "cancel_button"), false);
     }
 
-    gtk_widget_set_visible(GTK_data->message_entry, false);
     GTK_data->message_entry = new_chat->message_entry;
     
     if (!gtk_widget_get_parent(GTK_data->message_entry)) {
