@@ -341,26 +341,23 @@ void* recv_msg_handler(void* arg) {
                         char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
                         int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
-
                         GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->deactivated_list));
                         while (child != NULL) {
                             // Get the text of the current child row
                             const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
-
                             if (strcmp(current_login, login) == 0) {
                                 // Remove the child row from the list box
-                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), child);
-
+                                sleep_ms(100);
+                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->deactivated_list), child); //sleep added to prevent segment fault
+                                sleep_ms(100);
                                 gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/person.svg");
                                 chat->is_active = true;
-
                                 // Add the login to admin_login_list
                                 GtkWidget *row = gtk_list_box_row_new();
                                 GtkWidget *label = gtk_label_new(login);
                                 gtk_widget_set_halign(label, GTK_ALIGN_START);
                                 gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
                                 gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), row);
-
                                 // Add the login to login_list
                                 row = gtk_list_box_row_new();
                                 label = gtk_label_new(login);
@@ -370,11 +367,9 @@ void* recv_msg_handler(void* arg) {
 
                                 break;
                             }
-
                             // Move to the next child
                             child = gtk_widget_get_next_sibling(child);
                         }
-
                         // Free the cJSON object if it was dynamically allocated
                         cJSON_Delete(parsed_json);
                     }
@@ -385,28 +380,28 @@ void* recv_msg_handler(void* arg) {
 
                         int user_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "user_id")->valueint;
                         chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(user_id));
-
                         // Case 1: Remove from login_list
                         GtkWidget *child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->login_list));
                         while (child != NULL) {
                             const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
                             if (strcmp(current_login, login) == 0) {
-                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child);
+                                sleep_ms(100);
+                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->login_list), child); //sleep added to prevent segment fault
+                                sleep_ms(100);
                                 break;
                             }
                             child = gtk_widget_get_next_sibling(child);
                         }
-
                         // Case 2: Remove from admin_login_list and add to deactivated_list
                         child = gtk_widget_get_first_child(GTK_WIDGET(GTK_data->profile_data->admin_login_list));
                         while (child != NULL) {
                             const char *current_login = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(GTK_LIST_BOX_ROW(child))));
                             if (strcmp(current_login, login) == 0) {
-                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), child);
-
+                                sleep_ms(100);
+                                gtk_list_box_remove(GTK_LIST_BOX(GTK_data->profile_data->admin_login_list), child); //sleep added to prevent segment fault
+                                sleep_ms(100);
                                 gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/RIP.svg");
                                 chat->is_active = false;
-
                                 GtkWidget *row = gtk_list_box_row_new();
                                 GtkWidget *label = gtk_label_new(login);
                                 gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -420,7 +415,6 @@ void* recv_msg_handler(void* arg) {
                             }
                             child = gtk_widget_get_next_sibling(child);
                         }
-
                         // Free parsed JSON after processing
                         cJSON_Delete(parsed_json);
                     }

@@ -173,10 +173,12 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     if (new_chat->is_active || new_chat->is_group) {
         gtk_widget_set_visible(GTK_data->message_entry, true);
         gtk_widget_set_visible(current_manager->send_button, true);
+        gtk_widget_set_visible(current_manager->smile_button, true);
     }
     else {
         gtk_widget_set_visible(GTK_data->message_entry, false);
         gtk_widget_set_visible(current_manager->send_button, false);
+        gtk_widget_set_visible(current_manager->smile_button, false);
     }
 
     gtk_widget_grab_focus(GTK_data->message_entry);

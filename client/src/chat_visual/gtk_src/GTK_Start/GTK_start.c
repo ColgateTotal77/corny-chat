@@ -953,6 +953,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_button_set_child(GTK_BUTTON(smile_button), smile_icon);
     gtk_box_append(GTK_BOX(input_box), smile_button);
 
+   
     // Connect smile button click handler
     g_signal_connect(smile_button, "clicked", G_CALLBACK(on_smile_button_clicked), GTK_data);
 
@@ -965,6 +966,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     chat_manager->error_label = error_label;
     chat_manager->avatar_circle = avatar_circle;
     chat_manager->settings_group_button = NULL;
+    chat_manager->smile_button = smile_button;
 
     chat_manager_t *group_manager = g_new(chat_manager_t, 1);
     group_manager->chats = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
@@ -973,6 +975,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     group_manager->error_label = error_label;
     group_manager->avatar_circle = avatar_circle_group;
     group_manager->settings_group_button = settings_group_button;
+    group_manager->smile_button = smile_button;
 
     GtkWidget *chat_user_label = gtk_label_new("");
     gtk_widget_add_css_class(chat_user_label, "header-name");

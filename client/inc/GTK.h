@@ -87,6 +87,7 @@ typedef struct {
 
     GtkWidget *user_list_for_add;
     GtkWidget *user_list_for_delete;
+    GtkWidget *smile_button;
 } chat_manager_t;
 
 typedef struct {
