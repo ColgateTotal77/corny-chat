@@ -499,7 +499,6 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_widget_set_margin_start(page_controller_container, 30);
     gtk_widget_set_margin_end(page_controller_container, 30);
 
-
     // Left button
     GtkWidget *left_button = gtk_button_new();
     gtk_widget_add_css_class(left_button, "left-button");
@@ -872,7 +871,7 @@ static void on_activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_valign(sidebar_container, GTK_ALIGN_START);
 
     // Keep existing margins
-    gtk_widget_set_margin_top(sidebar_container, 25);
+    gtk_widget_set_margin_top(sidebar_container, 31);
     gtk_widget_set_margin_bottom(sidebar_container, 17);
     gtk_widget_set_margin_start(sidebar_container, 10);
     gtk_widget_set_margin_end(sidebar_container, 10);
