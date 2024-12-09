@@ -170,7 +170,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
         gtk_widget_set_visible(g_object_get_data(G_OBJECT(GTK_data->message_entry), "cancel_button"), true);
     }
 
-    if (new_chat->is_active) {
+    if (new_chat->is_active || new_chat->is_group) {
         gtk_widget_set_visible(GTK_data->message_entry, true);
         gtk_widget_set_visible(current_manager->send_button, true);
     }
