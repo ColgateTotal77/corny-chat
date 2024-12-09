@@ -55,6 +55,7 @@ typedef struct {
     bool is_group;
     GtkWidget *avatar_circle;
     bool is_active;
+    int owner_id;
 
     GtkListBox *user_list_for_add;
     GtkListBox *user_list_for_delete;
@@ -156,7 +157,7 @@ void scroll_to_bottom(GtkWidget *container);
 void on_send_clicked (GtkWidget *widget, gpointer user_data);
 GtkWidget* create_message_container(chat_data_t *chat_data);
 GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, const char *time, gboolean is_online, gboolean is_group, GTK_data_t *GTK_data);
-chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_data_t *scroll_data);
+chat_data_t* create_chat_data(const char *contact_name, int contact_id, scroll_data_t *scroll_data, int owner_id);
 void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data);
 void change_sidebar_chat_info(chat_data_t *chat, char *message, char *time);
 void change_status_sidebar_chat(chat_data_t *chat, bool is_online);
@@ -191,4 +192,5 @@ void on_activate_button_clicked(GtkButton *button, gpointer user_data);
 void on_deactivate_button_clicked(GtkButton *button, gpointer user_data);
 gboolean reenable_button_after_delay(gpointer user_data);
 void on_admin_change_password_button_clicked(GtkButton *button, gpointer user_data);
-
+char *wrap_text_to_width(const char *message_text, int max_width, PangoContext *context);
+void prepare_message_label(GtkWidget *message_label, const char *message_text);

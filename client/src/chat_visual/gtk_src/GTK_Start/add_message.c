@@ -32,10 +32,17 @@ void change_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
 
     message_data_t *message_data = (message_data_t*)user_data;
-    if(*(message_data->this_chat)) {
+    if (*(message_data->this_chat)) {
         if (message_data->own_is_editing) {
             GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(message_data->message_entry));
             const char *message_text = gtk_entry_buffer_get_text(buffer);
+
+            // Check if the message is empty
+            if (strlen(message_text) == 0) {
+
+
+                return; // Do not proceed with updating the message
+            }
 
             gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
             if (!gtk_widget_get_visible(message_data->edited_label)) {
@@ -49,25 +56,57 @@ void change_message(GtkWidget *widget, gpointer user_data) {
             gtk_entry_buffer_set_text(buffer, "", -1);
         }
         g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
-        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);  
+        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);
+    }
+}
+
+void on_copy_button_clicked(GtkButton *button, gpointer user_data) {
+    GtkWidget *alignment_box = GTK_WIDGET(user_data);
+    message_data_t *message_data = g_object_get_data(G_OBJECT(alignment_box), "message_data");
+    
+    // Get the message text from the label
+    const char *message_text = gtk_label_get_text(GTK_LABEL(message_data->message_label));
+    
+    // Get the clipboard and set its content
+    GdkClipboard *clipboard = gtk_widget_get_clipboard(alignment_box);
+    gdk_clipboard_set_text(clipboard, message_text);
+
+    // Close the popover
+    GtkWidget *popover = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_POPOVER);
+    if (GTK_IS_POPOVER(popover)) {
+        gtk_popover_popdown(GTK_POPOVER(popover));
     }
 }
 
 void on_edit_button_clicked(GtkButton *button, gpointer user_data) {
-    (void)button;
     GtkWidget *alignment_box = GTK_WIDGET(user_data);
     message_data_t *message_data = g_object_get_data(G_OBJECT(alignment_box), "message_data");
-    reset_all_message_own_is_editing(message_data->messages);
-    g_signal_connect(message_data->send_button, "clicked", G_CALLBACK(change_message), message_data);    
-    g_signal_connect(message_data->message_entry, "activate", G_CALLBACK(change_message), message_data);  
 
-    g_signal_connect(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), "clicked", G_CALLBACK(cancel_changing_message), message_data);  
-    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), true);
+    reset_all_message_own_is_editing(message_data->messages);
+
+    g_signal_connect(message_data->send_button, "clicked", G_CALLBACK(change_message), message_data);
+    g_signal_connect(message_data->message_entry, "activate", G_CALLBACK(change_message), message_data);
+    g_signal_connect(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), "clicked", G_CALLBACK(cancel_changing_message), message_data);
     
+    gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), true);
+
+    // Set the text in the entry to the current message text
     gtk_editable_set_text(GTK_EDITABLE(message_data->message_entry), gtk_label_get_text(GTK_LABEL(message_data->message_label)));
+
+    // Focus the message entry immediately
+    gtk_widget_grab_focus(message_data->message_entry);
+
+    // Set the is_editing state
     g_object_set_data(G_OBJECT(message_data->message_entry), "is_editing", GINT_TO_POINTER(true));
     message_data->own_is_editing = true;
+
+    // Close the popover
+    GtkWidget *popover = gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_POPOVER);
+    if (GTK_IS_POPOVER(popover)) {
+        gtk_popover_popdown(GTK_POPOVER(popover));
+    }
 }
+
 
 void on_delete_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
@@ -90,6 +129,11 @@ void on_message_edit(GtkGestureClick *gesture) {
     gtk_popover_set_child(GTK_POPOVER(popover), box);
     gtk_widget_add_css_class(box, "box-popover");
 
+    GtkWidget *copy_button = gtk_button_new_with_label("Copy");
+    gtk_box_append(GTK_BOX(box), copy_button);
+    gtk_widget_add_css_class(copy_button, "copy-button-popover");
+    g_signal_connect(copy_button, "clicked", G_CALLBACK(on_copy_button_clicked), alignment_box);
+
     GtkWidget *edit_button = gtk_button_new_with_label("Change");
     gtk_box_append(GTK_BOX(box), edit_button);
     gtk_widget_add_css_class(edit_button, "edit-button-popover");
@@ -105,23 +149,26 @@ void on_message_edit(GtkGestureClick *gesture) {
     gtk_popover_popup(GTK_POPOVER(popover));
 }
 
-void add_message(const char *message_text, const char *time_text, gboolean is_sent, bool changed, chat_manager_t *manager, SSL* ssl, int msg_id, chat_data_t *chat, char *nicknake) {
+void add_message(const char *message_text, const char *time_text, gboolean is_sent, 
+                 bool changed, chat_manager_t *manager, SSL* ssl, 
+                 int msg_id, chat_data_t *chat, char *nickname) {
     GtkWidget *message_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
-    GtkWidget *message_label = gtk_label_new(message_text); 
-    gtk_widget_add_css_class(message_label, "message-text"); 
-    gtk_label_set_wrap(GTK_LABEL(message_label), TRUE); 
+    // Usage example
+    GtkWidget *message_label = gtk_label_new(NULL);
+    prepare_message_label(message_label, message_text);
+    // gtk_widget_set_valign(message_label, GTK_ALIGN_CENTER);
 
     GtkWidget *time_label = gtk_label_new(time_text);
     gtk_widget_add_css_class(time_label, "message-time");
 
     // Create a new box for alignment  
     GtkWidget *alignment_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_add_css_class(alignment_box, "alignment-bubble"); 
+    gtk_widget_add_css_class(alignment_box, "alignment-bubble");
       
     if (chat->is_group && !is_sent) {
-        GtkWidget *nick_label = gtk_label_new(nicknake);
+        GtkWidget *nick_label = gtk_label_new(nickname);
         gtk_widget_add_css_class(nick_label, "message-sender");
         gtk_label_set_xalign(GTK_LABEL(nick_label), 0.0);
         gtk_label_set_max_width_chars(GTK_LABEL(nick_label), 15);

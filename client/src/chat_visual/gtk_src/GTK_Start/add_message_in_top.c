@@ -5,8 +5,7 @@ void add_message_to_top(const char *message_text, const char *time_text, gboolea
     //gtk_widget_add_css_class(message_box, "message-bubble");
 
     GtkWidget *message_label = gtk_label_new(message_text); 
-    gtk_widget_add_css_class(message_label, "message-text"); 
-    gtk_label_set_wrap(GTK_LABEL(message_label), TRUE); 
+    prepare_message_label(message_label, message_text);
 
     GtkWidget *time_label = gtk_label_new(time_text);
     gtk_widget_add_css_class(time_label, "message-time");

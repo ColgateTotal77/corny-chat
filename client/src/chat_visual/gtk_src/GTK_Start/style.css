@@ -491,6 +491,11 @@ button.search-erase-button > label {
     background-color: #C9C9C9;
 }
 
+.copy-button-popover{
+    background: transparent;
+    border: none;
+}
+
 .edit-button-popover{
     background: transparent;
     border: none;
@@ -501,6 +506,11 @@ button.search-erase-button > label {
     border: none;
 }
 
+button.copy-button-popover > label{
+    background-color: #C9C9C9;
+    color: #000000;
+}
+
 button.edit-button-popover > label{
     background-color: #C9C9C9;
     color: #000000;
@@ -509,6 +519,96 @@ button.edit-button-popover > label{
 button.delete-button-popover > label{
     background-color: #C9C9C9;
     color: #000000;
+}
+
+/* Emoji button styling */
+.smile-button {
+    background-color: #D9D9D9;
+    border: none;
+    background: #D9D9D9;
+    color: black;
+    border-radius: 50%;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+    transition: background-color 0.3s ease;
+    margin-right: 5px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.smile-button:hover {
+    background-color: #BEBEBE;
+}
+
+.smile-button:active {
+    background-color: #A0A0A0;
+    transform: scale(0.95);
+}
+
+/* Emoji popover styling */
+.sticker-popover {
+    background-color: #D9D9D9;
+    background: transparent;
+    border: none;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.sticker-popover contents {
+    background-color: #D9D9D9;
+    border: none;
+    border-radius: 15px;
+}
+
+.sticker-grid {
+    background-color: #D9D9D9;
+    padding: 10px;
+}
+
+/* Individual sticker button styling */
+.sticker-button {
+    background-color: transparent;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 150px;
+    transition: background-color 0.2s ease;
+}
+
+.sticker-button:hover {
+    background-color: #BEBEBE;
+}
+
+.sticker-button:active {
+    background-color: #A0A0A0;
+    transform: scale(0.95);
+}
+
+/* Scrollbar styling for emoji popover */
+.sticker-popover scrollbar {
+    background-color: transparent;
+    border: none;
+}
+.sticker-popover arrow {
+    background-color: transparent;
+    background: transparent;
+    border: none;
+}
+
+.sticker-popover scrollbar slider {
+    background-color: #BEBEBE;
+    border-radius: 6px;
+    min-width: 8px;
+}
+
+.sticker-popover scrollbar slider:hover {
+    background-color: #A0A0A0;
+}
+
+.sticker-popover scrollbar slider:active {
+    background-color: #888888;
 }
 /* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE *//* DONE */
 
@@ -1248,7 +1348,6 @@ entry {
 .settings_list_box label {
     color: black;
     font-size: 20px;
-    font-weight: bold;
 }
 
 /* Name List Items */

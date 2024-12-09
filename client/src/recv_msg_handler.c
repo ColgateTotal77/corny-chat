@@ -98,7 +98,7 @@ void* recv_msg_handler(void* arg) {
 
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
-                        chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
+                        chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data, 0);
 
                         new_chat->is_active = is_active;
                         create_user_in_sidebar(user_id, nickname, is_online, GTK_data, new_chat);
@@ -190,11 +190,12 @@ void* recv_msg_handler(void* arg) {
                         int chat_id = cJSON_GetObjectItemCaseSensitive(group, "chat_id")->valueint;
                         char *chat_name = cJSON_GetObjectItemCaseSensitive(group, "chat_name")->valuestring;
                         int unread_messages = cJSON_GetObjectItemCaseSensitive(group, "unread_mes_qty")->valueint;
+                        int owner_id = cJSON_GetObjectItemCaseSensitive(group, "owner_id")->valueint;
                         
                         // Create a new scroll_data_t for the group
                         scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                         scroll_data->ssl = call_data->ssl;
-                        chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                        chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data, owner_id);
                         create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
                         gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
                         
@@ -635,7 +636,7 @@ void* recv_msg_handler(void* arg) {
                                     char *login = cJSON_GetObjectItemCaseSensitive(parsed_json, "login")->valuestring;
                                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                                     scroll_data->ssl = call_data->ssl;
-                                    chat_data_t *new_chat = create_chat_data(login, user_id, scroll_data);
+                                    chat_data_t *new_chat = create_chat_data(login, user_id, scroll_data, 0);
                                     create_user_in_sidebar(user_id, login, false, GTK_data, new_chat);
 
                                     GtkWidget *row = gtk_list_box_row_new();
@@ -686,7 +687,7 @@ void* recv_msg_handler(void* arg) {
 
                             scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                             scroll_data->ssl = call_data->ssl;
-                            chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                            chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data, GTK_data->user_id);
                             create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
                             gtk_image_set_from_file(GTK_IMAGE(new_chat->avatar_circle), "src/chat_visual/images/group.svg");
                             // create_group_in_sidebar(chat_id, chat_name, GTK_data);
@@ -820,7 +821,7 @@ void* recv_msg_handler(void* arg) {
                     char *chat_name = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_name")->valuestring;
                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                     scroll_data->ssl = call_data->ssl;
-                    chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data);
+                    chat_data_t *new_chat = create_chat_data(chat_name, chat_id, scroll_data, 0);
                     create_group_in_sidebar(chat_id, chat_name, GTK_data, new_chat);
                     break;
                 }
@@ -845,7 +846,7 @@ void* recv_msg_handler(void* arg) {
                     char *nickname = cJSON_GetObjectItemCaseSensitive(parsed_json, "nickname")->valuestring;
                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                     scroll_data->ssl = call_data->ssl;
-                    chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data);
+                    chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data, 0);
                     create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
                     break;
                 }
