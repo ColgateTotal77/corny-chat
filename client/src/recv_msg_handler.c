@@ -727,8 +727,17 @@ void* recv_msg_handler(void* arg) {
                         if (cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(parsed_json, "success"))) {
                             int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
                             int message_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                            char *created_at = cJSON_GetObjectItemCaseSensitive(parsed_json, "time")->valuestring;
                             char *message = cJSON_GetObjectItemCaseSensitive(parsed_json, "message")->valuestring;
                             chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(chat_id));
+
+                            strptime(created_at, "%Y-%m-%d %H:%M:%S", &message_time);
+                            time_t time_value = mktime(&message_time);
+                            time_value += time_zone; 
+                            adjusted_time = localtime(&time_value);
+                            strftime(time_to_send, sizeof(time_to_send), "%H:%M", adjusted_time);
+                                                        
+                            scroll_to_bottom(chat->messages_container);
 
                             add_message(message, time_to_send, true, false, GTK_data->group_manager, call_data->ssl, message_id, chat, "None");
                                 
