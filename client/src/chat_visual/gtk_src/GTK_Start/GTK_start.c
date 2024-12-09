@@ -441,6 +441,51 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
     gtk_widget_set_hexpand(main_grid, TRUE); // Allow horizontal expansion
     gtk_widget_set_vexpand(main_grid, TRUE); // Allow vertical expansion
 
+    if (GTK_data->group_manager->active_chat->owner_id != GTK_data->user_id) {
+        // Slider container
+        GtkWidget *slider_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+        gtk_widget_add_css_class(slider_container, "settings_slider-container");
+        gtk_grid_attach(GTK_GRID(main_grid), slider_container, 0, 3, 1, 1);
+        gtk_widget_set_hexpand(slider_container, TRUE);
+        gtk_widget_set_vexpand(slider_container, TRUE);
+    
+        // Slider container
+        gtk_widget_set_margin_top(slider_container, 30);
+        gtk_widget_set_margin_bottom(slider_container, 30);
+        gtk_widget_set_margin_start(slider_container, 30);
+        gtk_widget_set_margin_end(slider_container, 30);
+    
+        GtkWidget *slider_inner_container_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+        gtk_box_append(GTK_BOX(slider_container), slider_inner_container_1);
+
+        //// Top container with entry and add button
+        //GtkWidget *entry_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        //gtk_widget_add_css_class(entry_container, "settings_entry-container");
+        //gtk_widget_set_hexpand(entry_container, TRUE); // Allow horizontal expansion
+        
+        
+        // Append entry container to slider container
+        //gtk_box_append(GTK_BOX(slider_inner_container_1), entry_container);
+    
+        // Scrollable list of names
+        GtkWidget *scrolled_window = gtk_scrolled_window_new();
+        gtk_widget_add_css_class(scrolled_window, "settings_names-scroll");
+        gtk_widget_set_vexpand(scrolled_window, TRUE);
+        
+        // GTK_data->group_manager->user_list_for_add = gtk_list_box_new();
+    
+        // gtk_widget_add_css_class(GTK_data->group_manager->user_list_for_add , "settings_names-list");
+        gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), GTK_data->group_manager->user_list_for_delete );
+        gtk_box_append(GTK_BOX(slider_inner_container_1), scrolled_window);
+
+        // Show the new window
+        gtk_window_present(GTK_WINDOW(settings_window));
+    
+        // Connect the destroy signal to close the window properly
+        g_signal_connect(settings_window, "destroy", G_CALLBACK(gtk_window_destroy), NULL);
+        return;
+    }
+
     GtkWidget *page_controller_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_add_css_class(page_controller_container, "settings_page_controller");
     gtk_grid_attach(GTK_GRID(main_grid), page_controller_container, 0, 2, 1, 1);
