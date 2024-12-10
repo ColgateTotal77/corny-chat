@@ -33,7 +33,7 @@ int setup_server_socket(int port) {
     
     printf("Listening to socket... \n");
 
-    int max_length_of_pending_connections = 10;
+    int max_length_of_pending_connections = 100;
     if (listen(sock, max_length_of_pending_connections) < 0) {
         fprintf(stderr, "ERROR: setsockopt failed");
         return EXIT_FAILURE;

@@ -18,7 +18,7 @@ SRC = ./src
 SRCFILES := $(shell find $(SRC) -type f -name '*.c')
 OBJFILES := $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCFILES))
 
-CLIENT = client
+CLIENT = uchat
 LIBRARY = ../libmx/libmx.a
 JSON_C = ../json-c/json-c.a
 

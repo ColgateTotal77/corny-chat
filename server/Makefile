@@ -19,7 +19,7 @@ OBJFILES := $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCFILES))
 KEY = server.key
 CERT = server.crt
 
-SERVER = server
+SERVER = uchat_server
 LIBRARY = ../libmx/libmx.a
 JSON_C = ../json-c/json-c.a
 
