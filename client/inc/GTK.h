@@ -36,6 +36,7 @@ typedef struct {
     int message_id;
     SSL* ssl;
     gboolean *this_chat;
+    GtkWidget *error_label;
 } message_data_t;
 
 

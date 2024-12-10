@@ -145,7 +145,7 @@ void* recv_msg_handler(void* arg) {
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
-                                else if(i == all_mes_qty - 1) {
+                                if(i == all_mes_qty - 1) {
                                     if (local_time->tm_year > adjusted_time->tm_year || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
@@ -164,7 +164,7 @@ void* recv_msg_handler(void* arg) {
                                 if (i == 0) {
                                     chat->last_message_id = msg_id;
                                 }
-                                else if(i == all_mes_qty - 1) {
+                                if(i == all_mes_qty - 1) {
                                     if (local_time->tm_year > adjusted_time->tm_year || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon > adjusted_time->tm_mon) || 
                                     (local_time->tm_year == adjusted_time->tm_year && local_time->tm_mon == adjusted_time->tm_mon && local_time->tm_mday > adjusted_time->tm_mday)) {
