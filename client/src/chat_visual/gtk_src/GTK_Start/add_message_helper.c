@@ -2,10 +2,25 @@
 
 // Helper function to wrap text to a specified width
 char *wrap_text_to_width(const char *message_text, int max_width, PangoContext *context) {
-    // Validate the input text as UTF-8
-    if (!g_utf8_validate(message_text, -1, NULL)) {
-        g_warning("Invalid UTF-8 string detected!");
-        return NULL; // or some error handling
+    // Enhanced UTF-8 validation
+    const char *p = message_text;
+    while (*p) {
+        gunichar unichar = g_utf8_get_char(p);
+        
+        // Check for invalid Unicode sequences or control characters
+        if (unichar == (gunichar)-1) {
+            g_warning("Invalid UTF-8 sequence detected!");
+            return NULL;
+        }
+        
+        // Use g_unichar_iscntrl instead of g_unichar_is_control
+        // Remove emoji validation since no standard function exists
+        if (g_unichar_iscntrl(unichar)) {
+            g_warning("Control character detected!");
+            return NULL;
+        }
+        
+        p = g_utf8_next_char(p);
     }
 
     // Create a PangoLayout to measure and wrap the text
