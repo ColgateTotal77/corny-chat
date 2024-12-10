@@ -645,6 +645,7 @@ void* recv_msg_handler(void* arg) {
                                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                                     scroll_data->ssl = call_data->ssl;
                                     chat_data_t *new_chat = create_chat_data(login, user_id, scroll_data, 0);
+                                    // new_chat->is_active = true;
                                     create_user_in_sidebar(user_id, login, false, GTK_data, new_chat);
 
                                     GtkWidget *row = gtk_list_box_row_new();
@@ -658,6 +659,25 @@ void* recv_msg_handler(void* arg) {
                                     gtk_widget_set_halign(label, GTK_ALIGN_START);
                                     gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
                                     gtk_list_box_append(GTK_LIST_BOX(GTK_data->profile_data->login_list), row);
+
+                                    // GHashTableIter iter;
+                                    // gpointer key, value;
+                                    // g_hash_table_iter_init(&iter, GTK_data->group_manager->chats);
+                                    
+                                    // while (g_hash_table_iter_next(&iter, &key, &value)) {
+                                    //     chat_data_t *chat_data = (chat_data_t *)value;
+
+                                    //     GtkWidget *row = gtk_list_box_row_new();
+                                    //     GtkWidget *label = gtk_label_new(login);
+                                    //     gtk_widget_set_halign(label, GTK_ALIGN_START);
+                                    //     gtk_widget_set_margin_start(label, 10);
+                                    //     gtk_widget_set_margin_end(label, 10);
+                                    //     gtk_widget_set_margin_top(label, 5);
+                                    //     gtk_widget_set_margin_bottom(label, 5);
+                                    //     gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                                    //     gtk_list_box_append(GTK_LIST_BOX(chat_data->user_list_for_add), row);
+                                    //     g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                                    // }
                                     
                                 } else {
                                     // Error case
@@ -849,8 +869,28 @@ void* recv_msg_handler(void* arg) {
                     scroll_data_t *scroll_data = g_new(scroll_data_t, 1);
                     scroll_data->ssl = call_data->ssl;
                     chat_data_t *new_chat = create_chat_data(nickname, user_id, scroll_data, 0);
+                    // new_chat->is_active = true;
                     create_user_in_sidebar(user_id, nickname, false, GTK_data, new_chat);
-                    break;
+                    
+                    // GHashTableIter iter;
+                    // gpointer key, value;
+                    // g_hash_table_iter_init(&iter, GTK_data->group_manager->chats);
+                    
+                    // while (g_hash_table_iter_next(&iter, &key, &value)) {
+                    //     chat_data_t *chat_data = (chat_data_t *)value;
+
+                    //     GtkWidget *row = gtk_list_box_row_new();
+                    //     GtkWidget *label = gtk_label_new(nickname);
+                    //     gtk_widget_set_halign(label, GTK_ALIGN_START);
+                    //     gtk_widget_set_margin_start(label, 10);
+                    //     gtk_widget_set_margin_end(label, 10);
+                    //     gtk_widget_set_margin_top(label, 5);
+                    //     gtk_widget_set_margin_bottom(label, 5);
+                    //     gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), label);
+                    //     gtk_list_box_append(GTK_LIST_BOX(chat_data->user_list_for_add), row);
+                    //     g_object_set_data(G_OBJECT(label), "user_id", GINT_TO_POINTER(user_id));
+                    // }
+                break;
                 }
                 case 56: {
                     int chat_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "chat_id")->valueint;
@@ -862,18 +902,18 @@ void* recv_msg_handler(void* arg) {
                     break;
                 }     
                 case 57: {
-                    if(!cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint) {
-                        int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
-                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
-                        char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
-                        chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(group_id));
-                        change_message_from_others(chat, msg_id, new_message);
-                    }
-                    else {
+                    if(cJSON_GetObjectItemCaseSensitive(parsed_json, "message_type")->valueint == 0) {
                         int sender_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "sender_id")->valueint;
                         int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
                         char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
-                        chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(sender_id));
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->chat_manager->chats, GINT_TO_POINTER(sender_id));
+                        change_message_from_others(chat, msg_id, new_message);
+                    }
+                    else {
+                        int group_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "group_id")->valueint;
+                        int msg_id = cJSON_GetObjectItemCaseSensitive(parsed_json, "message_id")->valueint;
+                        char *new_message = cJSON_GetObjectItemCaseSensitive(parsed_json, "new_message")->valuestring;
+                        chat_data_t *chat = g_hash_table_lookup(GTK_data->group_manager->chats, GINT_TO_POINTER(group_id));
                         change_message_from_others(chat, msg_id, new_message);
                     }
                     break;
