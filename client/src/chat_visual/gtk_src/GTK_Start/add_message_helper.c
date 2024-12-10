@@ -2,6 +2,12 @@
 
 // Helper function to wrap text to a specified width
 char *wrap_text_to_width(const char *message_text, int max_width, PangoContext *context) {
+    // Validate the input text as UTF-8
+    if (!g_utf8_validate(message_text, -1, NULL)) {
+        g_warning("Invalid UTF-8 string detected!");
+        return NULL; // or some error handling
+    }
+
     // Create a PangoLayout to measure and wrap the text
     PangoLayout *layout = pango_layout_new(context);
     pango_layout_set_width(layout, max_width * PANGO_SCALE);
@@ -47,18 +53,22 @@ void prepare_message_label(GtkWidget *message_label, const char *message_text) {
     // Wrap text programmatically to fit a width of 450px
     char *wrapped_text = wrap_text_to_width(message_text, 450, context);
 
-    // Set the label text
-    gtk_label_set_text(GTK_LABEL(message_label), wrapped_text);
+    if (wrapped_text == NULL) {
+        gtk_label_set_text(GTK_LABEL(message_label), "Error: invalid UTF-8 string");
+    } else {
+        // Set the label text
+        gtk_label_set_text(GTK_LABEL(message_label), wrapped_text);
 
-    // Free the dynamically allocated wrapped text
-    free(wrapped_text);
+        // Free the dynamically allocated wrapped text
+        free(wrapped_text);
 
-    // Enable wrapping
-    gtk_label_set_wrap(GTK_LABEL(message_label), TRUE);
+        // Enable wrapping
+        gtk_label_set_wrap(GTK_LABEL(message_label), TRUE);
 
-    // Set wrap mode for better word handling
-    gtk_label_set_wrap_mode(GTK_LABEL(message_label), PANGO_WRAP_WORD_CHAR);
+        // Set wrap mode for better word handling
+        gtk_label_set_wrap_mode(GTK_LABEL(message_label), PANGO_WRAP_WORD_CHAR);
 
-    // Add a CSS class for styling
-    gtk_widget_add_css_class(message_label, "message-text");
+        // Add a CSS class for styling
+        gtk_widget_add_css_class(message_label, "message-text");
+    }
 }
