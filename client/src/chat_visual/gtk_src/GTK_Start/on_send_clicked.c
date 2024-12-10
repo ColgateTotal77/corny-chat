@@ -19,6 +19,7 @@ void on_send_clicked(GtkWidget *widget, gpointer user_data) {
 
     int message_size = strlen(message_text);
     if (message_size > 500) {
+        gtk_label_set_text(GTK_LABEL(GTK_data->chat_manager->error_label), "Message to send should not be more than 500");
         gtk_widget_set_visible(GTK_data->chat_manager->error_label, TRUE);
     }
     // Only send if the message is not empty

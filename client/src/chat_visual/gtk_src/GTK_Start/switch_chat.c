@@ -160,6 +160,7 @@ void switch_chat(GtkWidget *widget, GTK_data_t *GTK_data) {
     }
 
     GTK_data->message_entry = new_chat->message_entry;
+    gtk_widget_set_visible(current_manager->error_label, false);
     
     if (!gtk_widget_get_parent(GTK_data->message_entry)) {
         gtk_overlay_set_child(GTK_OVERLAY(GTK_data->entry_overlay), GTK_data->message_entry);
