@@ -22,6 +22,8 @@ CLIENT = uchat
 LIBRARY = ../libmx/libmx.a
 JSON_C = ../json-c/json-c.a
 
+PCH = pch.pch
+
 .PHONY: all clean uninstall reinstall
 
 # Компиляция серверного и клиентского приложений
@@ -33,13 +35,17 @@ $(CLIENT): $(LIBRARY) $(JSON_C) $(OBJFILES)
 
 
 # Правило для создания объектных файлов и нужных подкаталогов
-$(OBJ)/%.o: $(SRC)/%.c
+$(OBJ)/%.o: $(SRC)/%.c $(PCH)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -I $(HEADERFILES) -I $(GENERAL_HEADERFILES)
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -o $@ -c $< -include-pch ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES)
+
+$(PCH):
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -x c-header ./inc/pch.h -o ./inc/$(PCH) -I $(HEADERFILES) -I $(GENERAL_HEADERFILES)
 
 # Удаление всех файлов
 uninstall: clean
 	rm -f $(CLIENT)
+	rm ./inc/$(PCH)
 
 # Очистка объектных файлов
 clean:
