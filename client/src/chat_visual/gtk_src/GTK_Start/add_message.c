@@ -19,6 +19,7 @@ void cancel_changing_message(GtkWidget *widget, gpointer user_data) {
     (void) widget;
     message_data_t *message_data = (message_data_t*)user_data;
 
+    gtk_widget_set_visible(message_data->error_label, false);
     gtk_widget_set_visible(g_object_get_data(G_OBJECT(message_data->message_entry), "cancel_button"), false);
     reset_all_message_own_is_editing(message_data->messages);
 
@@ -39,23 +40,30 @@ void change_message(GtkWidget *widget, gpointer user_data) {
 
             // Check if the message is empty
             if (strlen(message_text) == 0) {
-
-                return;
+                gtk_label_set_text(GTK_LABEL(message_data->error_label), "Message to chandge should not be 0 lenght!");
+                gtk_widget_set_visible(message_data->error_label, true);
             }
-
-            gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
-            if (!gtk_widget_get_visible(message_data->edited_label)) {
-                gtk_widget_set_visible(message_data->edited_label, true);
+            else if(strlen(message_text) >= 500) {
+                gtk_label_set_text(GTK_LABEL(message_data->error_label), "Message to chandge should not be more than 500");
+                gtk_widget_set_visible(message_data->error_label, true);
             }
+            else {
+                gtk_label_set_text(GTK_LABEL(message_data->message_label), message_text);
+                if (!gtk_widget_get_visible(message_data->edited_label)) {
+                    gtk_widget_set_visible(message_data->edited_label, true);
+                }
 
-            update_message(message_data->ssl, message_data->message_id, (char *)message_text);
+                update_message(message_data->ssl, message_data->message_id, (char *)message_text);
 
-            cancel_changing_message(NULL, (gpointer)message_data);
+                cancel_changing_message(NULL, (gpointer)message_data);
 
-            gtk_entry_buffer_set_text(buffer, "", -1);
+                gtk_entry_buffer_set_text(buffer, "", -1);
+
+                g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
+                g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);
+            }
         }
-        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->send_button), (gpointer)change_message, message_data);
-        g_signal_handlers_disconnect_by_func(G_OBJECT(message_data->message_entry), (gpointer)change_message, message_data);
+
     }
 }
 
@@ -191,6 +199,7 @@ void add_message(const char *message_text, const char *time_text, gboolean is_se
     message_data->alignment_box = alignment_box;
     message_data->message_label = message_label;
     message_data->edited_label = edited_label;
+    message_data->error_label = manager->error_label;
     if (is_sent) {
         
         gtk_widget_set_halign(alignment_box, GTK_ALIGN_END); // Set the alignment to the right if the message is sent
