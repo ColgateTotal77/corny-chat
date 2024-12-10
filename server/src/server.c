@@ -151,23 +151,26 @@ static void demonize_process(void) {
         exit(1);
     }
     if (pid > 0) {
+        printf("daemon started with pid=%d\n", pid);
+        printf("Use 'ps -aux | grep -E '%d'' to show process info\n", pid);
+        printf("Use 'kill -SIGINT %d' to correctly stop process\n", pid);
         exit(0);
     }
     if (setsid() < 0) {
         exit(1);
     }
 
-    pid = fork();
-
-    if (pid < 0) {
-        exit(1);
-    }
-    if (pid > 0) {
-        printf("daemon started with pid=%d\n", pid);
-        printf("Use 'ps -jx | grep 'PID\\|%d'' to show process info\n", pid);
-        printf("Use 'kill -SIGINT %d' to correctly stop process\n", pid);
-        exit(0);
-    }
+    //pid = fork();
+//
+    //if (pid < 0) {
+    //    exit(1);
+    //}
+    //if (pid > 0) {
+    //    printf("daemon started with pid=%d\n", pid);
+    //    printf("Use 'ps -jx | grep 'PID\\|%d'' to show process info\n", pid);
+    //    printf("Use 'kill -SIGINT %d' to correctly stop process\n", pid);
+    //    exit(0);
+    //}
 
     int x;
     for (x = sysconf(_SC_OPEN_MAX); x>=0; x--) {
