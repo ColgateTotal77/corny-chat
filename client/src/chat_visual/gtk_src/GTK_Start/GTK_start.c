@@ -468,8 +468,9 @@ void on_settings_group_button_clicked(GtkWidget *button, gpointer user_data) {
         gtk_window_set_title(GTK_WINDOW(settings_window), "Group users list");
     }else{
         gtk_window_set_title(GTK_WINDOW(settings_window), "Settings");
-        gtk_window_set_default_size(GTK_WINDOW(settings_window), window_width, window_height);
     }
+    gtk_window_set_default_size(GTK_WINDOW(settings_window), window_width, window_height);
+
     // Set the new window as transient for the main window
     if (GTK_data && GTK_data->window) {
         gtk_window_set_transient_for(GTK_WINDOW(settings_window), GTK_WINDOW(GTK_data->window));
