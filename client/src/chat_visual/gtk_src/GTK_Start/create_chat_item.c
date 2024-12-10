@@ -23,6 +23,10 @@ GtkWidget* create_chat_item(const char *name, int chat_id, const char *message, 
     gtk_grid_attach(GTK_GRID(grid), avatar_circle, 0, 0, 1, 2);
     chat->avatar_circle = avatar_circle;
 
+    if(is_group) {
+        gtk_image_set_from_file(GTK_IMAGE(chat->avatar_circle), "src/chat_visual/images/group.svg");
+    }
+
     // Horizontal box to hold name label and status indicator
     GtkWidget *name_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
